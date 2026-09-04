@@ -1,17 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
-import Image from "next/image";
 import { Settings, Upload, Palette, Type } from "lucide-react";
+import Image from "next/image";
+import { useRef, useState } from "react";
 
-import { FORM, FormFeilds } from "@/components/common/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/common/card";
-import { Button } from "@/components/common/button";
-import { PageHeader } from "@/components/shared/page-header";
-import { useQuery } from "@/hooks/useQuery";
-import { useMutate } from "@/hooks/useMutate";
-import { studioSettingsSchema, type StudioSettingsInput } from "@/actions/settings.schema";
 import type { StudioSettingsData } from "@/actions/settings";
+import { studioSettingsSchema, type StudioSettingsInput } from "@/actions/settings.schema";
+import { Button } from "@/components/common/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/common/card";
+import { FORM, FormFeilds } from "@/components/common/form";
+import { PageHeader } from "@/components/shared/page-header";
+import { useMutate } from "@/hooks/useMutate";
+import { useQuery } from "@/hooks/useQuery";
 
 const FONT_SIZE_OPTIONS = [
   { label: "Small (14px)", value: "SMALL" },

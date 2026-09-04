@@ -1,7 +1,7 @@
 import { SessionProvider } from "next-auth/react";
 
-import { auth } from "@/auth";
 import { getStudioSettings } from "@/actions/settings";
+import { auth } from "@/auth";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppTopbar } from "@/components/layout/app-topbar";
 import { ThemeInjector } from "@/components/layout/theme-injector";

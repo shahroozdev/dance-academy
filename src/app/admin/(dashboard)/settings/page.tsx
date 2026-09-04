@@ -1,4 +1,5 @@
 import { getStudioSettings } from "@/actions/settings";
+
 import { SettingsClient } from "./settings-client";
 
 export default async function SettingsPage() {
