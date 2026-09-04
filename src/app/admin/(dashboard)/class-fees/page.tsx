@@ -84,13 +84,14 @@ export default function ClassFeesPage() {
           </Select>
         </div>
 
-        {isLoading ? (
+        {isLoading && (
           <div className="space-y-2 p-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : rows.length === 0 ? (
+        )}
+        {!isLoading && rows.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
             <DollarSign className="size-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
@@ -98,7 +99,8 @@ export default function ClassFeesPage() {
               generated for it on the Billing page.
             </p>
           </div>
-        ) : (
+        )}
+        {!isLoading && rows.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>

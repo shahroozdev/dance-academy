@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Upload, Palette, Type } from "lucide-react";
+import { Upload, Palette, Type } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 
@@ -19,36 +19,6 @@ const FONT_SIZE_OPTIONS = [
   { label: "Large (18px)", value: "LARGE" },
 ];
 
-function ColorField({
-  label,
-  name,
-  value,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <label htmlFor={name} className="text-sm font-medium min-w-[120px]">
-        {label}
-      </label>
-      <div className="relative">
-        <input
-          id={name}
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-10 w-14 cursor-pointer rounded-md border border-input bg-transparent p-0.5"
-        />
-      </div>
-      <span className="text-sm text-muted-foreground font-mono">{value}</span>
-    </div>
-  );
-}
-
 function AppearanceForm({ settings }: { settings: StudioSettingsData }) {
   const { mutate: updateSettings, isLoading } = useMutate("updateStudioSettings", {
     invalidateKeys: ["getStudioSettings"],
@@ -62,7 +32,7 @@ function AppearanceForm({ settings }: { settings: StudioSettingsData }) {
         secondaryColor: settings.secondaryColor,
         accentColor: settings.accentColor,
         fontSize: settings.fontSize,
-        studioName: settings.studioName,
+        studioName: settings.studioName ?? "Malhaar Dance Company",
       }}
       onSubmit={(data) => {
         updateSettings(data);
@@ -142,11 +112,9 @@ function BrandingForm({ settings }: { settings: StudioSettingsData }) {
     invalidateKeys: ["getStudioSettings"],
   });
 
-  const { mutate: uploadLogo, isLoading: isUploading } = useMutate("uploadLogo", {
+  const { mutate: uploadLogo } = useMutate("uploadLogo", {
     invalidateKeys: ["getStudioSettings"],
   });
-
-  const isLoading = isSavingName || isUploading;
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -226,10 +194,10 @@ function BrandingForm({ settings }: { settings: StudioSettingsData }) {
               secondaryColor: settings.secondaryColor,
               accentColor: settings.accentColor,
               fontSize: settings.fontSize,
-              studioName: settings.studioName,
+              studioName: settings.studioName ?? "Malhaar Dance Company",
             }}
             onSubmit={(data) => {
-              updateSettings({ studioName: data.studioName });
+              updateSettings({ studioName: data.studioName } as Parameters<typeof updateSettings>[0]);
             }}
           >
             {(form) => (

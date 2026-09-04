@@ -99,18 +99,20 @@ export default function ExpensesPage() {
           />
         </div>
 
-        {isLoading ? (
+        {isLoading && (
           <div className="space-y-2 p-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : !data?.data.length ? (
+        )}
+        {!isLoading && !data?.data.length && (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
             <ReceiptText className="size-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">No expenses match the current filters.</p>
           </div>
-        ) : (
+        )}
+        {!isLoading && data && data.data.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>

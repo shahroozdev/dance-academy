@@ -1,8 +1,7 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
-import { toggleClassActive } from "@/actions/classes";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
@@ -12,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { useRouter } from "@/hooks/useRouter";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);

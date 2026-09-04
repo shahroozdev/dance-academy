@@ -22,9 +22,9 @@ async function main() {
     },
   });
 
-  console.log(`Seeded owner admin user: ${owner.email}`);
+  console.warn(`Seeded owner admin user: ${owner.email}`);
   if (!process.env.SEED_OWNER_PASSWORD) {
-    console.log(`(default password: "${password}" — change it via SEED_OWNER_PASSWORD before real use)`);
+    console.warn(`(default password: "${password}" — change it via SEED_OWNER_PASSWORD before real use)`);
   }
 }
 

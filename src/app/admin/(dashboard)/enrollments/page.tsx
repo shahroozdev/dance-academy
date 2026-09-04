@@ -4,7 +4,6 @@ import { ListChecks, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { getEnrollments , endEnrollment } from "@/actions/enrollments";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
@@ -49,18 +48,20 @@ export default function EnrollmentsPage() {
         }
         headerClassName="border-b"
       >
-        {isLoading ? (
+        {isLoading && (
           <div className="space-y-2 p-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : !data?.data.length ? (
+        )}
+        {!isLoading && !data?.data.length && (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
             <ListChecks className="size-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">No enrollments found.</p>
           </div>
-        ) : (
+        )}
+        {!isLoading && data && data.data.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>

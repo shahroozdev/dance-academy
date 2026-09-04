@@ -2,8 +2,8 @@
 
 import { put } from "@vercel/blob";
 
-import type { StudioSettingsInput } from "@/actions/settings.schema";
-import { studioSettingsSchema } from "@/actions/settings.schema";
+import type { StudioSettingsUpdateInput } from "@/actions/settings.schema";
+import { studioSettingsUpdateSchema } from "@/actions/settings.schema";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 
@@ -52,10 +52,10 @@ export async function getStudioSettings(): Promise<StudioSettingsData> {
 // ---------- Mutations ----------
 
 export async function updateStudioSettings(
-  input: StudioSettingsInput,
+  input: StudioSettingsUpdateInput,
 ): Promise<StudioSettingsData> {
   await requireOwner();
-  const data = studioSettingsSchema.parse(input);
+  const data = studioSettingsUpdateSchema.parse(input);
 
   const settings = await db.studioSettings.upsert({
     where: { id: "default" },

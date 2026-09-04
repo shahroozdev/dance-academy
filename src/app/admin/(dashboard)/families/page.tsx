@@ -1,10 +1,8 @@
 "use client";
 
 import { Plus, Users } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { getFamilies } from "@/actions/families";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
@@ -13,6 +11,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@/hooks/useQuery";
+import { useRouter } from "@/hooks/useRouter";
 
 export default function FamiliesPage() {
   const router = useRouter();
@@ -55,18 +54,20 @@ export default function FamiliesPage() {
           />
         </div>
 
-        {isLoading ? (
+        {isLoading && (
           <div className="space-y-2 p-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : !data?.data.length ? (
+        )}
+        {!isLoading && !data?.data.length && (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
             <Users className="size-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">No families found.</p>
           </div>
-        ) : (
+        )}
+        {!isLoading && data && data.data.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>

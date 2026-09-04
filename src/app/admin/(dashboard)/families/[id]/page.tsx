@@ -1,9 +1,7 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams } from "next/navigation";
 
-import { getFamilyById, toggleFamilyActive } from "@/actions/families";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
@@ -13,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { useRouter } from "@/hooks/useRouter";
 
 export default function FamilyDetailPage() {
   const params = useParams();
@@ -23,8 +22,6 @@ export default function FamilyDetailPage() {
   const { mutate: toggleActive } = useMutate("toggleFamilyActive", {
     invalidateKeys: ["getFamilies", "getFamilyById"],
   });
-
-  const [confirmToggle, setConfirmToggle] = useState(false);
 
   if (isLoading) {
     return (

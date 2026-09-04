@@ -1,7 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 import { familyCreateSchema, type FamilyCreateInput } from "@/actions/families.schema";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
@@ -9,6 +7,7 @@ import { FORM, FormFeilds } from "@/components/common/form";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { useMutate } from "@/hooks/useMutate";
+import { useRouter } from "@/hooks/useRouter";
 
 export default function NewFamilyPage() {
   const router = useRouter();

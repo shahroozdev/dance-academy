@@ -1,7 +1,3 @@
-import type { ClassListItem } from "@/actions/classes";
-import type { FamilyListItem } from "@/actions/families";
-import type { StudentListItem } from "@/actions/students";
-
 export type TableKey = "families" | "students" | "classes";
 
 export type TableColumnsMap = {

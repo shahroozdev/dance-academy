@@ -1,9 +1,8 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 
-import { getFamilies } from "@/actions/families";
 import { studentCreateSchema, type StudentCreateInput } from "@/actions/students.schema";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
@@ -12,6 +11,7 @@ import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { useRouter } from "@/hooks/useRouter";
 
 export default function NewStudentPage() {
   const router = useRouter();

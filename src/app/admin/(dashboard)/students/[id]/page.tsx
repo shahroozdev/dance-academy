@@ -1,9 +1,7 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams } from "next/navigation";
 
-import { toggleStudentActive } from "@/actions/students";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
@@ -13,6 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { useRouter } from "@/hooks/useRouter";
+
+const BILLING_STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
+  PAID: "default",
+  PARTIAL: "secondary",
+};
 
 function formatAge(dob: Date | string | null): string | null {
   if (!dob) return null;
@@ -225,17 +229,7 @@ export default function StudentDetailPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <p className="font-medium">${Number(billing.finalAmountDue).toFixed(2)}</p>
-                  <Badge
-                    variant={
-                      billing.status === "PAID"
-                        ? "default"
-                        : billing.status === "PARTIAL"
-                          ? "secondary"
-                          : "destructive"
-                    }
-                  >
-                    {billing.status}
-                  </Badge>
+                  <Badge variant={BILLING_STATUS_VARIANT[billing.status] ?? "destructive"}>{billing.status}</Badge>
                 </div>
               </div>
             ))}

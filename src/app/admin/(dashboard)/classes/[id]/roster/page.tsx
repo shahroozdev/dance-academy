@@ -39,17 +39,19 @@ export default function ClassRosterPage() {
         }
         headerClassName="border-b"
       >
-        {isLoading ? (
+        {isLoading && (
           <div className="space-y-2 p-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : !roster?.length ? (
+        )}
+        {!isLoading && !roster?.length && (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <p className="text-sm text-muted-foreground">No students enrolled in this class.</p>
           </div>
-        ) : (
+        )}
+        {!isLoading && roster && roster.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>

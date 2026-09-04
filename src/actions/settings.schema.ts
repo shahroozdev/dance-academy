@@ -11,3 +11,6 @@ export const studioSettingsSchema = z.object({
 });
 
 export type StudioSettingsInput = z.infer<typeof studioSettingsSchema>;
+
+export const studioSettingsUpdateSchema = studioSettingsSchema.partial();
+export type StudioSettingsUpdateInput = z.infer<typeof studioSettingsUpdateSchema>;

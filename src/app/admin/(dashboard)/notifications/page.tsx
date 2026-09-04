@@ -52,17 +52,19 @@ export default function NotificationsPage() {
         headerClassName="border-b"
         contentClassName="p-0"
       >
-        {isLoadingPending ? (
+        {isLoadingPending && (
           <div className="space-y-2 p-2">
             {Array.from({ length: 3 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : !pending?.length ? (
+        )}
+        {!isLoadingPending && !pending?.length && (
           <div className="p-6 text-center text-sm text-muted-foreground">
             No pending notifications for this month — either no bills exist yet, or everyone&apos;s been notified.
           </div>
-        ) : (
+        )}
+        {!isLoadingPending && pending && pending.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>
@@ -100,15 +102,17 @@ export default function NotificationsPage() {
         headerClassName="border-b"
         contentClassName="p-0"
       >
-        {isLoadingLogs ? (
+        {isLoadingLogs && (
           <div className="space-y-2 p-2">
             {Array.from({ length: 3 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : !logs?.data.length ? (
+        )}
+        {!isLoadingLogs && !logs?.data.length && (
           <div className="p-6 text-center text-sm text-muted-foreground">No notifications sent yet.</div>
-        ) : (
+        )}
+        {!isLoadingLogs && logs && logs.data.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>

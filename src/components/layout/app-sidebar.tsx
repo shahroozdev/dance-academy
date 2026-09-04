@@ -21,13 +21,13 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-export function AppSidebar() {
+export function AppSidebar({ logoSrc }: { logoSrc?: string | null }) {
   const pathname = usePathname();
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <AppBrand className="px-1 py-1" />
+        <AppBrand className="px-1 py-1" logoSrc={logoSrc} />
       </SidebarHeader>
 
       <SidebarContent>

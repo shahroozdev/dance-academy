@@ -193,20 +193,22 @@ export default function BillingPage() {
           />
         </div>
 
-        {isLoading ? (
+        {isLoading && (
           <div className="space-y-2 p-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        ) : families.length === 0 ? (
+        )}
+        {!isLoading && families.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
             <Receipt className="size-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
               No bills match the current filters for {formatMonthLabel(month)}.
             </p>
           </div>
-        ) : (
+        )}
+        {!isLoading && families.length > 0 && (
           <div className="divide-y">
             {families.map((family) => {
               const isExpanded = expandedFamilies.has(family.familyId);

@@ -21,23 +21,19 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
 
   return (
     <Modal open onOpenChange={(open) => !open && onClose()} className="max-w-sm">
-      {({ close }) => (
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-medium">Adjustment</h3>
-            <p className="text-sm text-muted-foreground">
-              A one-month change. It never touches the class rate or other months.
-            </p>
-          </div>
-
-          {isLoading || !billing ? (
-            <Skeleton className="h-32 w-full" />
-          ) : billing.status === "PAID" ? (
+      {({ close }) => {
+        let body: React.ReactNode;
+        if (isLoading || !billing) {
+          body = <Skeleton className="h-32 w-full" />;
+        } else if (billing.status === "PAID") {
+          body = (
             <p className="text-sm text-destructive">
               This bill is fully paid. Record a payment adjustment first, then reopen it before
               changing the manual adjustment.
             </p>
-          ) : (
+          );
+        } else {
+          body = (
             <FORM
               schema={billingAdjustmentSchema}
               defaultValues={{ adjustment: billing.adjustment, adjustmentNotes: billing.adjustmentNotes ?? "" }}
@@ -68,9 +64,22 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
                 </div>
               )}
             </FORM>
-          )}
-        </div>
-      )}
+          );
+        }
+
+        return (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium">Adjustment</h3>
+              <p className="text-sm text-muted-foreground">
+                A one-month change. It never touches the class rate or other months.
+              </p>
+            </div>
+
+            {body}
+          </div>
+        );
+      }}
     </Modal>
   );
 }

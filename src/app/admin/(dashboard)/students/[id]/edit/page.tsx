@@ -1,9 +1,8 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useMemo } from "react";
 
-import { getFamilies } from "@/actions/families";
 import { studentCreateSchema, type StudentCreateInput } from "@/actions/students.schema";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
@@ -13,6 +12,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { useRouter } from "@/hooks/useRouter";
 
 export default function EditStudentPage() {
   const params = useParams();

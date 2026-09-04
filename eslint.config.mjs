@@ -159,6 +159,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored skill packages, not app source.
+    ".opencode/**",
+    ".claude/**",
   ]),
 ]);
 

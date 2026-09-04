@@ -1,7 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useParams } from "next/navigation";
 
 import { familyCreateSchema, type FamilyCreateInput } from "@/actions/families.schema";
 import { Button } from "@/components/common/button";
@@ -12,6 +11,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { useRouter } from "@/hooks/useRouter";
 
 export default function EditFamilyPage() {
   const params = useParams();

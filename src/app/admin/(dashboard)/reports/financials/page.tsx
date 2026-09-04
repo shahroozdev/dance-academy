@@ -196,18 +196,17 @@ function Row({
   emphasized?: boolean;
   positive?: boolean;
 }) {
+  let positiveClass = "";
+  if (positive === false) {
+    positiveClass = "text-destructive";
+  } else if (positive === true) {
+    positiveClass = "text-primary";
+  }
+
   return (
     <div className="flex items-center justify-between">
       <span className={emphasized ? "font-medium text-foreground" : "text-muted-foreground"}>{label}</span>
-      <span
-        className={
-          emphasized
-            ? `text-lg font-semibold ${positive === false ? "text-destructive" : positive === true ? "text-primary" : ""}`
-            : undefined
-        }
-      >
-        {value}
-      </span>
+      <span className={emphasized ? `text-lg font-semibold ${positiveClass}` : undefined}>{value}</span>
     </div>
   );
 }

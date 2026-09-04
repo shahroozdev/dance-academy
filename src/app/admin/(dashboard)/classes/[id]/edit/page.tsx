@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 import { classCreateSchema, type ClassCreateInput } from "@/actions/classes.schema";
 import { Button } from "@/components/common/button";
@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { useRouter } from "@/hooks/useRouter";
 
 const DAY_OPTIONS = [
   { label: "Monday", value: "MONDAY" },
