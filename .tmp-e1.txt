@@ -1,0 +1,118 @@
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\build-phase.mjs
+  429:20   error  Do not nest ternary expressions  no-nested-ternary
+  572:21   error  Do not nest ternary expressions  no-nested-ternary
+  595:212  error  Do not nest ternary expressions  no-nested-ternary
+  655:27   error  Do not nest ternary expressions  no-nested-ternary
+  655:54   error  Do not nest ternary expressions  no-nested-ternary
+  655:90   error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\comp-diff.mjs
+  213:40  error  Expected { after 'for' condition  curly
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\comp-spec.mjs
+   80:32  error  Expected { after 'for' condition  curly
+  139:31  error  Expected { after 'for' condition  curly
+  153:31  error  Expected { after 'for' condition  curly
+  162:32  error  Expected { after 'for' condition  curly
+  176:40  error  Expected { after 'for' condition  curly
+  230:32  error  Expected { after 'for' condition  curly
+  268:94  error  Do not nest ternary expressions   no-nested-ternary
+  390:20  error  Do not nest ternary expressions   no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\concept-seed.mjs
+  401:25  error  Do not nest ternary expressions  no-nested-ternary
+  403:15  error  Do not nest ternary expressions  no-nested-ternary
+  560:24  error  Do not nest ternary expressions  no-nested-ternary
+  561:7   error  Do not nest ternary expressions  no-nested-ternary
+  563:9   error  Do not nest ternary expressions  no-nested-ternary
+  625:23  error  Do not nest ternary expressions  no-nested-ternary
+  633:25  error  Do not nest ternary expressions  no-nested-ternary
+  659:20  error  Do not nest ternary expressions  no-nested-ternary
+  699:15  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\context.mjs
+  157:17  error  Do not nest ternary expressions  no-nested-ternary
+  805:17  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\detector\browser\injected\index.mjs
+  1819:22  error  Do not nest ternary expressions  no-nested-ternary
+  1835:29  error  Do not nest ternary expressions  no-nested-ternary
+  1837:9   error  Do not nest ternary expressions  no-nested-ternary
+  1844:22  error  Do not nest ternary expressions  no-nested-ternary
+  1846:11  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\detector\detect-antipatterns-browser.js
+   957:5   error  Do not nest ternary expressions                        no-nested-ternary
+   958:5   error  Do not nest ternary expressions                        no-nested-ternary
+   959:5   error  Do not nest ternary expressions                        no-nested-ternary
+   960:5   error  Do not nest ternary expressions                        no-nested-ternary
+  1433:17  error  Do not nest ternary expressions                        no-nested-ternary
+  1435:10  error  Do not nest ternary expressions                        no-nested-ternary
+  1761:17  error  Do not nest ternary expressions                        no-nested-ternary
+  2209:9   error  Do not nest ternary expressions                        no-nested-ternary
+  2210:11  error  Do not nest ternary expressions                        no-nested-ternary
+  2240:16  error  Do not nest ternary expressions                        no-nested-ternary
+  2249:16  error  Do not nest ternary expressions                        no-nested-ternary
+  2340:20  error  Do not nest ternary expressions                        no-nested-ternary
+  3468:14  error  Do not nest ternary expressions                        no-nested-ternary
+  3476:16  error  Do not nest ternary expressions                        no-nested-ternary
+  4210:21  error  Do not nest ternary expressions                        no-nested-ternary
+  4622:15  error  'childStyle' is never reassigned. Use 'const' instead  prefer-const
+  4723:21  error  Do not nest ternary expressions                        no-nested-ternary
+  8717:22  error  Do not nest ternary expressions                        no-nested-ternary
+  8733:29  error  Do not nest ternary expressions                        no-nested-ternary
+  8735:9   error  Do not nest ternary expressions                        no-nested-ternary
+  8742:22  error  Do not nest ternary expressions                        no-nested-ternary
+  8744:11  error  Do not nest ternary expressions                        no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\detector\engines\regex\detect-text.mjs
+  838:20  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\detector\profile\profiler.mjs
+  105:18  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\detector\rules\checks.mjs
+   160:17  error  Do not nest ternary expressions                        no-nested-ternary
+   162:10  error  Do not nest ternary expressions                        no-nested-ternary
+   488:17  error  Do not nest ternary expressions                        no-nested-ternary
+   936:9   error  Do not nest ternary expressions                        no-nested-ternary
+   937:11  error  Do not nest ternary expressions                        no-nested-ternary
+   967:16  error  Do not nest ternary expressions                        no-nested-ternary
+   976:16  error  Do not nest ternary expressions                        no-nested-ternary
+  1067:20  error  Do not nest ternary expressions                        no-nested-ternary
+  2195:14  error  Do not nest ternary expressions                        no-nested-ternary
+  2203:16  error  Do not nest ternary expressions                        no-nested-ternary
+  2937:21  error  Do not nest ternary expressions                        no-nested-ternary
+  3349:15  error  'childStyle' is never reassigned. Use 'const' instead  prefer-const
+  3450:21  error  Do not nest ternary expressions                        no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\detector\shared\color.mjs
+  255:5  error  Do not nest ternary expressions  no-nested-ternary
+  256:5  error  Do not nest ternary expressions  no-nested-ternary
+  257:5  error  Do not nest ternary expressions  no-nested-ternary
+  258:5  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\embed-prompt.mjs
+  34:16  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\generate-image.mjs
+  244:23  error  Do not nest ternary expressions  no-nested-ternary
+  374:16  error  Do not nest ternary expressions  no-nested-ternary
+  405:18  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\hook-lib.mjs
+   681:22  error  Do not nest ternary expressions                     no-nested-ternary
+  1114:9   error  'working' is never reassigned. Use 'const' instead  prefer-const
+  1139:9   error  'working' is never reassigned. Use 'const' instead  prefer-const
+  1625:17  error  Do not nest ternary expressions                     no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\lib\font-fingerprint.mjs
+   78:20  error  Do not nest ternary expressions  no-nested-ternary
+   78:72  error  Do not nest ternary expressions  no-nested-ternary
+  528:60  error  Do not nest ternary expressions  no-nested-ternary
+  529:60  error  Do not nest ternary expressions  no-nested-ternary
+
+✖ 84 problems (84 errors, 0 warnings)
+  11 errors and 0 warnings potentially fixable with the `--fix` option.
+

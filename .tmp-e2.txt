@@ -1,0 +1,65 @@
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\lib\hero-checks.mjs
+  174:34  error  Expected { after 'for' condition  curly
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\lib\image-metrics.mjs
+  242:17  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\lib\impeccable-config.mjs
+  608:22  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\lib\staleness.mjs
+  231:20  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\lib\surface-briefs.mjs
+   77:11  error  Do not nest ternary expressions  no-nested-ternary
+  108:15  error  Do not nest ternary expressions  no-nested-ternary
+  121:13  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\live-browser.js
+    433:7   error  'annotState' is never reassigned. Use 'const' instead   prefer-const
+    976:27  error  Expected { after 'if' condition                         curly
+   1270:33  error  Do not nest ternary expressions                         no-nested-ternary
+   2862:21  error  Do not nest ternary expressions                         no-nested-ternary
+   2876:18  error  Do not nest ternary expressions                         no-nested-ternary
+   4418:21  error  Do not nest ternary expressions                         no-nested-ternary
+   5836:26  error  Do not nest ternary expressions                         no-nested-ternary
+   5889:24  error  Do not nest ternary expressions                         no-nested-ternary
+   6262:22  error  Do not nest ternary expressions                         no-nested-ternary
+   7600:5   error  Unexpected var, use let or const instead                no-var
+   7600:17  error  Do not nest ternary expressions                         no-nested-ternary
+   8501:5   error  'texture' is never reassigned. Use 'const' instead      prefer-const
+   8730:20  error  Do not nest ternary expressions                         no-nested-ternary
+   8952:19  error  Do not nest ternary expressions                         no-nested-ternary
+   9392:24  error  Do not nest ternary expressions                         no-nested-ternary
+   9416:24  error  Do not nest ternary expressions                         no-nested-ternary
+   9754:30  error  Do not nest ternary expressions                         no-nested-ternary
+  11591:7   error  'designState' is never reassigned. Use 'const' instead  prefer-const
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\live-complete.mjs
+  71:17  error  Do not nest ternary expressions  no-nested-ternary
+  85:16  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\live-copy-edit-agent.mjs
+  465:18  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\live-inject.mjs
+  313:20  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\live-resume.mjs
+  108:23  error  Do not nest ternary expressions  no-nested-ternary
+  110:9   error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\live-server.mjs
+    78:22  error  Do not nest ternary expressions  no-nested-ternary
+  1254:12  error  Do not nest ternary expressions  no-nested-ternary
+  1418:27  error  Do not nest ternary expressions  no-nested-ternary
+  1420:13  error  Do not nest ternary expressions  no-nested-ternary
+  1422:15  error  Do not nest ternary expressions  no-nested-ternary
+
+D:\trycatchsolution\Malhaar_Dance_Company\.claude\skills\impeccable\scripts\live-target.mjs
+  17:30  error  Do not nest ternary expressions  no-nested-ternary
+
+✖ 37 problems (37 errors, 0 warnings)
+  5 errors and 0 warnings potentially fixable with the `--fix` option.
+

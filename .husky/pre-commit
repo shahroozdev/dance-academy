@@ -1,0 +1,35 @@
+echo "Running lint-staged..."
+if ! npx lint-staged; then
+  echo ""
+  echo "ESLint found errors that autofix could not resolve."
+
+  if command -v claude >/dev/null 2>&1; then
+    STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs')
+    if [ -n "$STAGED_FILES" ]; then
+      echo "Asking Claude Code to fix the remaining lint errors..."
+      claude -p "Fix the ESLint errors in these staged files without changing behavior, following this repo's AGENTS.md conventions (in particular the Code Rules). Run 'npx eslint <file>' to see the errors, then edit the files to fix them — do not just silence rules. Files:
+$STAGED_FILES" \
+        --permission-mode acceptEdits \
+        --allowedTools "Read Edit Grep Glob Bash(npx eslint*)" \
+        || true
+
+      echo "$STAGED_FILES" | tr '\n' '\0' | xargs -0 -r git add
+
+      echo "$STAGED_FILES" | tr '\n' '\0' | xargs -0 npx eslint
+      if [ $? -eq 0 ]; then
+        echo ""
+        echo "Claude fixed the lint errors and re-staged the files."
+        echo "Review the changes (git diff --cached) and run 'git commit' again."
+      else
+        echo ""
+        echo "Claude could not fully resolve the lint errors. Fix the remaining issues manually and retry."
+      fi
+    fi
+  else
+    echo "claude CLI not found on PATH — fix the errors manually, then retry (or install Claude Code)."
+  fi
+
+  exit 1
+fi
+
+sh "$(dirname "$0")/../scripts/husky/check-migrations.sh"
