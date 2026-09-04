@@ -5,9 +5,9 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/components/Link";
 import { useQuery } from "@/hooks/useQuery";
 
 export default function ClassRosterPage() {

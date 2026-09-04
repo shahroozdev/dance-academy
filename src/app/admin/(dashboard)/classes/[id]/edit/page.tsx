@@ -6,9 +6,9 @@ import { classCreateSchema, type ClassCreateInput } from "@/actions/classes.sche
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { FORM, FormFeilds } from "@/components/common/form";
+import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/components/Link";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 

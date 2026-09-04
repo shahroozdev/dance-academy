@@ -4,18 +4,17 @@ import { ListChecks, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { getEnrollments } from "@/actions/enrollments";
-import { endEnrollment } from "@/actions/enrollments";
+import { getEnrollments , endEnrollment } from "@/actions/enrollments";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
-import { Link } from "@/components/Link";
 
 export default function EnrollmentsPage() {
   const searchParams = useSearchParams();
