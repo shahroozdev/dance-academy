@@ -3,6 +3,8 @@
 import type { RegistrationRequestCreateInput } from "@/actions/registrations.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
+import { buildEnrollmentConfirmedEmail, buildRegistrationReceivedEmail } from "@/lib/email-templates";
 
 // ---------- Queries ----------
 
@@ -53,7 +55,7 @@ export async function previewRegistrationApproval(id: string): Promise<Registrat
 // ---------- Mutations ----------
 
 export async function createRegistrationRequest(data: RegistrationRequestCreateInput) {
-  return db.registrationRequest.create({
+  const request = await db.registrationRequest.create({
     data: {
       parentGuardianName: data.parentGuardianName,
       parentEmail: data.parentEmail || null,
@@ -69,7 +71,22 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
       studioPolicyAgreement: data.studioPolicyAgreement,
       photoVideoConsent: data.photoVideoConsent,
     },
+    include: { requestedClass: { select: { name: true } } },
   });
+
+  // Best-effort — sendEmail never throws, so a slow/misconfigured mail server can't fail the
+  // registration itself. Awaited (not fire-and-forget) so it actually completes before this
+  // server action returns, since a serverless runtime can suspend right after the response.
+  if (request.parentEmail && request.requestedClass) {
+    const { subject, text } = buildRegistrationReceivedEmail({
+      parentGuardianName: request.parentGuardianName,
+      studentFullName: request.studentFullName,
+      className: request.requestedClass.name,
+    });
+    await sendEmail({ to: request.parentEmail, subject, text });
+  }
+
+  return request;
 }
 
 export async function rejectRegistrationRequest(id: string) {
@@ -80,7 +97,7 @@ export async function rejectRegistrationRequest(id: string) {
 }
 
 export async function approveRegistrationRequest(id: string) {
-  return db.$transaction(async (tx) => {
+  const { processedRequest, familyEmail, studentFullName, classId } = await db.$transaction(async (tx) => {
     const request = await tx.registrationRequest.findUniqueOrThrow({ where: { id } });
     if (request.status !== "PENDING") {
       throw new Error("This registration request has already been processed.");
@@ -140,7 +157,7 @@ export async function approveRegistrationRequest(id: string) {
       });
     }
 
-    return tx.registrationRequest.update({
+    const processedRequest = await tx.registrationRequest.update({
       where: { id },
       data: {
         status: "PROCESSED",
@@ -149,7 +166,29 @@ export async function approveRegistrationRequest(id: string) {
         matchedStudentId: student.id,
       },
     });
+
+    return {
+      processedRequest,
+      familyEmail: family.email,
+      studentFullName: student.fullName,
+      classId: request.requestedClassId,
+    };
   });
+
+  // Sent after the transaction commits — an SMTP call has no business holding a DB transaction open.
+  if (familyEmail) {
+    const requestedClass = await db.class.findUnique({ where: { id: classId! }, select: { name: true } });
+    if (requestedClass) {
+      const { subject, text } = buildEnrollmentConfirmedEmail({
+        parentGuardianName: processedRequest.parentGuardianName,
+        studentFullName,
+        className: requestedClass.name,
+      });
+      await sendEmail({ to: familyEmail, subject, text });
+    }
+  }
+
+  return processedRequest;
 }
 
 function deriveFamilyName(parentGuardianName: string): string {

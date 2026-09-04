@@ -1,17 +1,8 @@
-import { Settings } from "lucide-react";
+import { getStudioSettings } from "@/actions/settings";
+import { SettingsClient } from "./settings-client";
 
-import { ComingSoon } from "@/components/shared/coming-soon";
-import { PageHeader } from "@/components/shared/page-header";
+export default async function SettingsPage() {
+  const settings = await getStudioSettings();
 
-export default function SettingsPage() {
-  return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title="Settings" subtitle="Manage studio settings and admin users." />
-      <ComingSoon
-        icon={Settings}
-        title="Settings module coming soon"
-        description="Studio details, admin accounts, and roles will be managed here."
-      />
-    </div>
-  );
+  return <SettingsClient initialSettings={settings} />;
 }

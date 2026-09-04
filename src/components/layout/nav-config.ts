@@ -1,7 +1,9 @@
 import {
+  BarChart3,
   BellRing,
   CalendarDays,
   ClipboardList,
+  DollarSign,
   GraduationCap,
   LayoutDashboard,
   ListChecks,
@@ -50,9 +52,11 @@ export const navGroups: NavGroup[] = [
     label: "Finance",
     items: [
       { label: "Billing", href: "/admin/billing", icon: Receipt },
+      { label: "Class Fees", href: "/admin/class-fees", icon: DollarSign },
       { label: "Payments", href: "/admin/payments", icon: Wallet },
       { label: "Expenses", href: "/admin/expenses", icon: ReceiptText },
       { label: "Other Income", href: "/admin/income", icon: TrendingUp },
+      { label: "Financial Report", href: "/admin/reports/financials", icon: BarChart3 },
     ],
   },
   {

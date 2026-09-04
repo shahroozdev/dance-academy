@@ -333,6 +333,26 @@ model OtherIncome {
   @@index([category])
 }
 
+// ---------- Studio Settings (singleton) ----------
+
+enum FontSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+model StudioSettings {
+  id             String    @id @default("default")
+  primaryColor   String    @default("#9B1B5E")
+  secondaryColor String    @default("#F5D0E0")
+  accentColor    String    @default("#E8A0D0")
+  fontSize       FontSize  @default(MEDIUM)
+  logoUrl        String?
+  studioName     String?   @default("Malhaar Dance Company")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
 // ---------- Notification Log ----------
 
 enum NotificationChannel {
