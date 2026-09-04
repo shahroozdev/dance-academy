@@ -1,17 +1,17 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/common/card";
+import { getClasses } from "@/actions/classes";
+import { RegisterForm } from "@/app/register/register-form";
 
-export default function RegisterPage() {
+// Always reflects the current active class list — parents must never see a build-time snapshot.
+export const dynamic = "force-dynamic";
+
+export default async function RegisterPage() {
+  const { data: classes } = await getClasses({ isActive: true, pageSize: 100, sortBy: "name" });
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle>Malhaar Dance Company Registration</CardTitle>
-          <CardDescription>
-            The registration form is coming soon. See docs/03-routes-and-pages.md §3.2 for the planned fields.
-          </CardDescription>
-        </CardHeader>
-        <CardContent />
-      </Card>
+    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4 py-10">
+      <RegisterForm
+        classOptions={classes.map((c) => ({ label: `${c.name} (${c.danceStyle})`, value: c.id }))}
+      />
     </div>
   );
 }

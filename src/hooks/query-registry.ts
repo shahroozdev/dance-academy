@@ -1,13 +1,26 @@
-// Registry of server actions readable from client components via useQuery,
-// and server components via FetchSection (see AGENTS.md Code Rule 17). Add
-// an entry here whenever a new domain action under src/actions/** needs to
-// be called from a client component or FetchSection — both hooks infer
-// argument/return types from this map.
-//
-// Example, once a domain action exists:
-//   import { getFamilies } from "@/actions/families";
-//   export const queryRegistry = { getFamilies } as const;
-export const queryRegistry = {} as const;
+import { getClasses, getClassById, getClassRoster } from "@/actions/classes";
+import { getEnrollments } from "@/actions/enrollments";
+import { getFamilies, getFamilyById } from "@/actions/families";
+import {
+  getRegistrationRequests,
+  getRegistrationRequestById,
+  previewRegistrationApproval,
+} from "@/actions/registrations";
+import { getStudents, getStudentById } from "@/actions/students";
+
+export const queryRegistry = {
+  getFamilies,
+  getFamilyById,
+  getStudents,
+  getStudentById,
+  getClasses,
+  getClassById,
+  getClassRoster,
+  getEnrollments,
+  getRegistrationRequests,
+  getRegistrationRequestById,
+  previewRegistrationApproval,
+} as const;
 
 export type QueryRegistry = typeof queryRegistry;
 export type QueryKey = keyof QueryRegistry;

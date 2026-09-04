@@ -13,6 +13,12 @@ Design principles from the requirements doc, encoded directly into constraints:
   summing linked Payment rows, never hand-edited.
 - **Financial income is derived from actual Payments**, not from Billing due-amounts (§11.1) — the
   Expense/Income reporting layer reads `Payment.paymentDate`, never `MonthlyStudentBilling`.
+- **Emergency contact fields live on `Student`, not just `RegistrationRequest`** — §3.1 collects
+  them on the public form, but §4.1/§4.2's "minimum fields" lists omit them for Family/Student. That's
+  a gap in the requirements doc, not an intentional decision: safety-contact info collected once
+  must not become unreachable after the request is approved and archived. The approval flow (§Phase 2)
+  copies these three fields onto the created/matched `Student` row; they're also editable directly
+  from `/admin/students/[id]/edit` for students added without going through public registration.
 
 ## 2.1 Full schema
 
@@ -82,6 +88,9 @@ model Student {
   isActive           Boolean   @default(true)
   medicalNotes       String?
   generalNotes       String?
+  emergencyContactName         String? // copied from RegistrationRequest on approval; editable afterward
+  emergencyContactRelationship String?
+  emergencyPhone                String?
   enrollments        Enrollment[]
   monthlyBillings    MonthlyStudentBilling[]
   createdAt          DateTime  @default(now())

@@ -65,6 +65,9 @@ model Student {
   isActive        Boolean                 @default(true)
   medicalNotes    String?
   generalNotes    String?
+  emergencyContactName         String?
+  emergencyContactRelationship String?
+  emergencyPhone                String?
   enrollments     Enrollment[]
   monthlyBillings MonthlyStudentBilling[]
   createdAt       DateTime                @default(now())

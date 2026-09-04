@@ -29,7 +29,10 @@ export function useMutate<K extends MutationKey>(key: K, options: UseMutateOptio
     setIsLoading(true);
     setError(null);
     try {
-      const action = mutationRegistry[key] as (
+      // Registry union type is too complex for TS to verify — safe at runtime because
+      // the registry key maps to the exact action that expects these args.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const action = mutationRegistry[key] as any as (
         ...actionArgs: MutationArgs<K>
       ) => Promise<MutationData<K>>;
       const result = await action(...args);

@@ -34,7 +34,10 @@ export function useQuery<K extends QueryKey>(
     setIsLoading(true);
     setError(null);
 
-    const action = queryRegistry[key] as (...actionArgs: QueryArgs<K>) => Promise<QueryData<K>>;
+    // Registry union type is too complex for TS to verify — safe at runtime because
+    // the registry key maps to the exact action that expects these args.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const action = queryRegistry[key] as any as (...actionArgs: QueryArgs<K>) => Promise<QueryData<K>>;
     action(...args)
       .then((result) => {
         if (latestRequestId.current !== requestId) return;

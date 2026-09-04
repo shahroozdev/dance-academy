@@ -1,11 +1,32 @@
-// Registry of server actions writable from client components via useMutate
-// (see AGENTS.md Code Rule 17). Add an entry here whenever a new domain
-// write under src/actions/** needs to be called from a client component.
-//
-// Example, once a domain action exists:
-//   import { createFamily } from "@/actions/families";
-//   export const mutationRegistry = { createFamily } as const;
-export const mutationRegistry = {} as const;
+import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
+import { createEnrollment, endEnrollment } from "@/actions/enrollments";
+import {
+  createFamily,
+  updateFamily,
+  toggleFamilyActive,
+} from "@/actions/families";
+import { approveRegistrationRequest, rejectRegistrationRequest } from "@/actions/registrations";
+import {
+  createStudent,
+  updateStudent,
+  toggleStudentActive,
+} from "@/actions/students";
+
+export const mutationRegistry = {
+  createFamily,
+  updateFamily,
+  toggleFamilyActive,
+  createStudent,
+  updateStudent,
+  toggleStudentActive,
+  createClass,
+  updateClass,
+  toggleClassActive,
+  createEnrollment,
+  endEnrollment,
+  approveRegistrationRequest,
+  rejectRegistrationRequest,
+} as const;
 
 export type MutationRegistry = typeof mutationRegistry;
 export type MutationKey = keyof MutationRegistry;
