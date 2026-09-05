@@ -1,9 +1,9 @@
 "use server";
 
-import { sendStudioEmail } from "@/actions/email";
+import { sendTemplatedEmail } from "@/actions/email";
 import { isPaymentReminderDue } from "@/lib/billing";
 import { db } from "@/lib/db";
-import { buildPaymentReminderMessage } from "@/lib/notifications";
+import { buildFeeSummary, firstName } from "@/lib/notifications";
 
 export type SendPaymentRemindersSummary = {
   familiesReminded: number;
@@ -62,15 +62,15 @@ export async function sendPaymentReminders(): Promise<SendPaymentRemindersSummar
 
   for (const group of groups.values()) {
     const monthLabel = group.month.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
-    const message = buildPaymentReminderMessage({
-      parentGuardianName: group.parentGuardianName,
+    const vars = {
+      parentName: firstName(group.parentGuardianName),
       monthLabel,
-      students: group.students,
-    });
+      feeSummary: buildFeeSummary(group.students),
+    };
 
     const result = group.email
-      ? await sendStudioEmail({ to: group.email, subject: `Payment Reminder — ${monthLabel} Dance Fees`, text: message })
-      : { sent: false, error: "No email on file" };
+      ? await sendTemplatedEmail("PAYMENT_REMINDER", vars, group.email)
+      : { sent: false, error: "No email on file", text: "" };
 
     await db.$transaction(async (tx) => {
       await tx.notificationLog.create({
@@ -79,7 +79,7 @@ export async function sendPaymentReminders(): Promise<SendPaymentRemindersSummar
           month: group.month,
           channel: "EMAIL",
           status: result.sent ? "SENT" : "FAILED",
-          messageContent: message,
+          messageContent: result.text || "(no email on file — reminder not sent)",
           sentAt: result.sent ? new Date() : null,
           errorMessage: result.error ?? null,
         },

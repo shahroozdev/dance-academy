@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 
 import { allNavItems } from "@/components/layout/nav-config";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { UserNav } from "@/components/layout/user-nav";
 import {
   Breadcrumb,
@@ -62,7 +63,10 @@ export function AppTopbar() {
         </Breadcrumb>
       </div>
 
-      <UserNav />
+      <div className="flex shrink-0 items-center gap-2">
+        <NotificationBell />
+        <UserNav />
+      </div>
     </header>
   );
 }

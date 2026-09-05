@@ -322,3 +322,8 @@ selected.
   [05-notifications-whatsapp.md](./05-notifications-whatsapp.md)); fee notices/reminders today go
   out over email + a manual `wa.me` link.
 - **Business profile**: studio name.
+- **Email Templates**: subject + body (with `{{placeholders}}`) for each of the 4 outbound emails
+  (`REGISTRATION_RECEIVED`, `ENROLLMENT_CONFIRMED`, `MONTHLY_FEE_NOTICE`, `PAYMENT_REMINDER`),
+  editable per-template with a "Reset to Default" fallback. Only this content is admin-editable —
+  the surrounding HTML (theme-colored header with the studio's logo, footer) is a fixed shell built
+  from `StudioSettings` (see `src/lib/email-html.ts`), not stored per-template.

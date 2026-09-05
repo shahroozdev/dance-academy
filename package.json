@@ -9,6 +9,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "test": "vitest run",
+    "db:seed-mock": "tsx prisma/seed-mock-data.ts",
     "prepare": "husky"
   },
   "dependencies": {

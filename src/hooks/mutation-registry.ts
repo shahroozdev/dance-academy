@@ -1,6 +1,7 @@
 import { generateMonthlyBilling, recalculateBilling, setBillingAdjustment } from "@/actions/billing";
 import { updateClassMonthlyFee } from "@/actions/class-fees";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
+import { updateEmailTemplate } from "@/actions/email-templates";
 import { createEnrollment, endEnrollment } from "@/actions/enrollments";
 import { createExpense, updateExpense } from "@/actions/expenses";
 import {
@@ -44,6 +45,7 @@ export const mutationRegistry = {
   updateOtherIncome,
   updateStudioSettings,
   uploadLogo,
+  updateEmailTemplate,
   markFamilyNotificationSent,
   sendFamilyNotificationEmail,
 } as const;

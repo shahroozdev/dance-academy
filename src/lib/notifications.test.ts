@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildFamilyMessage,
-  buildPaymentReminderMessage,
+  buildFeeSummary,
   buildWhatsAppLink,
   normalizePhoneForWhatsApp,
 } from "@/lib/notifications";
@@ -55,37 +55,18 @@ describe("buildFamilyMessage", () => {
   });
 });
 
-describe("buildPaymentReminderMessage", () => {
-  it("frames the message as a past-due nudge, not the original notice", () => {
-    const message = buildPaymentReminderMessage({
-      parentGuardianName: "Anu Sharma",
-      monthLabel: "September 2026",
-      students: [
+describe("buildFeeSummary", () => {
+  it("lists each student's amount plus a family total when there's more than one", () => {
+    expect(
+      buildFeeSummary([
         { name: "Nia", finalAmountDue: 144.4 },
         { name: "Leia", finalAmountDue: 76.0 },
-      ],
-    });
-
-    expect(message).toBe(
-      [
-        "Hi Anu,",
-        "This is a friendly reminder that September 2026 dance fees are still outstanding:",
-        "Nia – $144.40",
-        "Leia – $76.00",
-        "Total family amount due: $220.40",
-        "",
-        "Please send the payment as soon as possible. Thank you!",
-      ].join("\n"),
-    );
+      ]),
+    ).toBe("Nia – $144.40\nLeia – $76.00\nTotal family amount due: $220.40");
   });
 
-  it("omits the redundant family-total line for a single-student family", () => {
-    const message = buildPaymentReminderMessage({
-      parentGuardianName: "Priya Nair",
-      monthLabel: "September 2026",
-      students: [{ name: "Meera", finalAmountDue: 80 }],
-    });
-    expect(message).not.toContain("Total family amount due");
+  it("omits the redundant total line for a single-student family", () => {
+    expect(buildFeeSummary([{ name: "Meera", finalAmountDue: 80 }])).toBe("Meera – $80.00");
   });
 });
 

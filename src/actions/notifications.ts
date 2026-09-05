@@ -1,10 +1,10 @@
 "use server";
 
-import { sendStudioEmail } from "@/actions/email";
+import { sendTemplatedEmail } from "@/actions/email";
 import type { Prisma } from "@/generated/prisma/client";
 import { normalizeMonth, round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
-import { buildFamilyMessage, buildWhatsAppLink } from "@/lib/notifications";
+import { buildFamilyMessage, buildFeeSummary, buildWhatsAppLink, firstName } from "@/lib/notifications";
 
 export type FamilyNotificationPreview = {
   familyId: string;
@@ -127,11 +127,15 @@ export async function sendFamilyNotificationEmail(
 
   const preview = await getFamilyNotificationPreview(familyId, monthInput);
   const monthLabel = month.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
-  const result = await sendStudioEmail({
-    to: family.email,
-    subject: `${monthLabel} Dance Fees — Malhaar Dance Company`,
-    text: preview.message,
-  });
+  const result = await sendTemplatedEmail(
+    "MONTHLY_FEE_NOTICE",
+    {
+      parentName: firstName(family.parentGuardianName),
+      monthLabel,
+      feeSummary: buildFeeSummary(preview.students),
+    },
+    family.email,
+  );
 
   await db.$transaction(async (tx) => {
     await tx.notificationLog.create({
@@ -140,7 +144,7 @@ export async function sendFamilyNotificationEmail(
         month,
         channel: "EMAIL",
         status: result.sent ? "SENT" : "FAILED",
-        messageContent: preview.message,
+        messageContent: result.text,
         sentAt: result.sent ? new Date() : null,
         errorMessage: result.error ?? null,
       },
@@ -154,6 +158,40 @@ export async function sendFamilyNotificationEmail(
   });
 
   return result;
+}
+
+export type AdminNotificationSummary = {
+  pendingRegistrations: number;
+  pendingFamilyNotifications: number;
+  failedNotifications: number;
+  total: number;
+};
+
+const FAILED_NOTIFICATION_WINDOW_DAYS = 30;
+
+// Powers the admin header's notification bell. These are three "needs your attention" counts,
+// not a persisted read/unread inbox — each one self-resolves through normal use (approving a
+// registration, sending a notification) rather than a separate "mark as read" action. Failed
+// sends are windowed to the last 30 days so an old, already-handled failure doesn't sit in the
+// count forever with no way to clear it.
+export async function getAdminNotificationSummary(): Promise<AdminNotificationSummary> {
+  const failedSince = new Date();
+  failedSince.setDate(failedSince.getDate() - FAILED_NOTIFICATION_WINDOW_DAYS);
+
+  const [pendingRegistrations, pendingFamilies, failedNotifications] = await Promise.all([
+    db.registrationRequest.count({ where: { status: "PENDING" } }),
+    getPendingNotifications(new Date().toISOString()),
+    db.notificationLog.count({ where: { status: "FAILED", createdAt: { gte: failedSince } } }),
+  ]);
+
+  const pendingFamilyNotifications = pendingFamilies.length;
+
+  return {
+    pendingRegistrations,
+    pendingFamilyNotifications,
+    failedNotifications,
+    total: pendingRegistrations + pendingFamilyNotifications + failedNotifications,
+  };
 }
 
 export async function getNotificationLogs(params?: {

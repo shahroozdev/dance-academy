@@ -379,6 +379,28 @@ model StudioSettings {
   updatedAt DateTime @updatedAt
 }
 
+// ---------- Email Templates ----------
+//
+// The customizable part of each outbound email — subject + body text with {{placeholder}} tokens
+// (see src/lib/email-templates.ts for the fixed set of keys/placeholders per template). The
+// surrounding HTML (theme-colored header with logo, footer) is NOT stored here — it's a fixed
+// shell built by src/lib/email-html.ts from StudioSettings, not admin-editable.
+
+enum EmailTemplateKey {
+  REGISTRATION_RECEIVED
+  ENROLLMENT_CONFIRMED
+  MONTHLY_FEE_NOTICE
+  PAYMENT_REMINDER
+}
+
+model EmailTemplate {
+  key       EmailTemplateKey @id
+  subject   String
+  body      String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
 // ---------- Notification Log ----------
 
 enum NotificationChannel {

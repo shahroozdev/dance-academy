@@ -1,10 +1,10 @@
 "use server";
 
-import { sendStudioEmail } from "@/actions/email";
+import { sendTemplatedEmail } from "@/actions/email";
 import type { RegistrationRequestCreateInput } from "@/actions/registrations.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-import { buildEnrollmentConfirmedEmail, buildRegistrationReceivedEmail } from "@/lib/email-templates";
+import { firstName } from "@/lib/notifications";
 
 // ---------- Queries ----------
 
@@ -37,7 +37,10 @@ export type RegistrationRequestDetail = Awaited<ReturnType<typeof getRegistratio
 export async function getRegistrationRequestById(id: string) {
   return db.registrationRequest.findUniqueOrThrow({
     where: { id },
-    include: { requestedClass: true, matchedFamily: true },
+    // requestedClass is select-only (never `true`) — Class.standardRate is a Decimal, which
+    // can't cross the server-action boundary to a Client Component un-serialized, and nothing
+    // in the UI needs it here anyway (only the class name is displayed).
+    include: { requestedClass: { select: { id: true, name: true } }, matchedFamily: true },
   });
 }
 
@@ -74,16 +77,19 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
     include: { requestedClass: { select: { name: true } } },
   });
 
-  // Best-effort — sendStudioEmail never throws, so a slow/misconfigured mail server can't fail the
-  // registration itself. Awaited (not fire-and-forget) so it actually completes before this
+  // Best-effort — sendTemplatedEmail never throws, so a slow/misconfigured mail server can't fail
+  // the registration itself. Awaited (not fire-and-forget) so it actually completes before this
   // server action returns, since a serverless runtime can suspend right after the response.
   if (request.parentEmail && request.requestedClass) {
-    const { subject, text } = buildRegistrationReceivedEmail({
-      parentGuardianName: request.parentGuardianName,
-      studentFullName: request.studentFullName,
-      className: request.requestedClass.name,
-    });
-    await sendStudioEmail({ to: request.parentEmail, subject, text });
+    await sendTemplatedEmail(
+      "REGISTRATION_RECEIVED",
+      {
+        parentName: firstName(request.parentGuardianName),
+        studentName: request.studentFullName,
+        className: request.requestedClass.name,
+      },
+      request.parentEmail,
+    );
   }
 
   return request;
@@ -179,12 +185,15 @@ export async function approveRegistrationRequest(id: string) {
   if (familyEmail) {
     const requestedClass = await db.class.findUnique({ where: { id: classId! }, select: { name: true } });
     if (requestedClass) {
-      const { subject, text } = buildEnrollmentConfirmedEmail({
-        parentGuardianName: processedRequest.parentGuardianName,
-        studentFullName,
-        className: requestedClass.name,
-      });
-      await sendStudioEmail({ to: familyEmail, subject, text });
+      await sendTemplatedEmail(
+        "ENROLLMENT_CONFIRMED",
+        {
+          parentName: firstName(processedRequest.parentGuardianName),
+          studentName: studentFullName,
+          className: requestedClass.name,
+        },
+        familyEmail,
+      );
     }
   }
 
