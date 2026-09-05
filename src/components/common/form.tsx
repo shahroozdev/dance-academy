@@ -36,8 +36,19 @@ export function FORM<T extends FieldValues>({
 }: FORMProps<T>) {
   const form = useForm<T>({
     resolver: zodResolver(schema as ZodType<T, T>),
-    defaultValues,
+    // Passed as `values` (not `defaultValues`) so the form resyncs whenever the caller's data
+    // reloads — e.g. after a save invalidates the query it came from. With plain
+    // `defaultValues`, the isDirty comparison stays pinned to whatever the form happened to
+    // mount with, so re-selecting that original value later reads as "no change" (submit stays
+    // disabled) even though the server currently holds something else. `keepDirtyValues`
+    // protects any edit the user is mid-typing from being clobbered by that resync; it requires
+    // `dirtyFields` to be subscribed, hence the read below. Every caller supplies a fully
+    // populated object here, so the cast to T (narrower than the public DefaultValues<T> prop
+    // type) always holds in practice.
+    values: defaultValues as T | undefined,
+    resetOptions: { keepDirtyValues: true },
   });
+  void form.formState.dirtyFields;
 
   const scrollToFirstInvalidField = () => {
     const firstInvalidName = Object.keys(form.formState.errors)[0];

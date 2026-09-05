@@ -99,8 +99,13 @@ function AppearanceForm({ settings }: { settings: StudioSettingsData }) {
 
   const form = useForm<AppearanceFormInput>({
     resolver: zodResolver(appearanceFormSchema),
-    defaultValues: { themePreset: findThemePresetKey(settings), fontSize: settings.fontSize },
+    // `values` (not `defaultValues`) so isDirty is always computed against what's actually
+    // saved — see the matching comment in components/common/form.tsx for why that matters
+    // (re-picking the value the form mounted with otherwise reads as "no change").
+    values: { themePreset: findThemePresetKey(settings), fontSize: settings.fontSize },
+    resetOptions: { keepDirtyValues: true },
   });
+  void form.formState.dirtyFields;
 
   const onSubmit = form.handleSubmit((data) => {
     const preset = THEME_PRESETS.find((p) => p.key === data.themePreset) ?? THEME_PRESETS[0];
