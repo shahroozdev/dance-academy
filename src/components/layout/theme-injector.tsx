@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import type { StudioSettingsData } from "@/actions/settings";
+import { useQuery } from "@/hooks/useQuery";
 
 const FONT_SIZE_MAP: Record<"SMALL" | "MEDIUM" | "LARGE", string> = {
   SMALL: "14px",
@@ -10,8 +11,14 @@ const FONT_SIZE_MAP: Record<"SMALL" | "MEDIUM" | "LARGE", string> = {
   LARGE: "18px",
 };
 
-export function ThemeInjector({ settings }: { settings: StudioSettingsData }) {
+// Reads the same getStudioSettings query cache the Settings page writes through, so saving a
+// theme/font-size change there is reflected here immediately (via query-cache-events) instead of
+// requiring a full reload — this component stays mounted for the lifetime of the admin layout.
+export function ThemeInjector({ initialSettings }: { initialSettings: StudioSettingsData }) {
+  const { data: settings } = useQuery("getStudioSettings", [], { initialData: initialSettings });
+
   useEffect(() => {
+    if (!settings) return;
     const root = document.documentElement;
     root.style.setProperty("--primary", settings.primaryColor);
     root.style.setProperty("--secondary", settings.secondaryColor);

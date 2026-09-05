@@ -1,4 +1,4 @@
-import { isAfter, isBefore } from "date-fns";
+import { addDays, isAfter, isBefore } from "date-fns";
 
 export type BillingStatusValue = "UNPAID" | "PARTIAL" | "PAID" | "OVERPAID";
 
@@ -121,6 +121,27 @@ export function computeStudentBilling({
     adjustment: round2(adjustment),
     finalAmountDue,
   };
+}
+
+// ---------- Payment reminders (§5.4) ----------
+
+// A bill's due date is `dueDayOfMonth` of its billing month, pinned to UTC for the same reason
+// month boundaries are above — a server west of UTC must not shift which calendar day this lands on.
+export function computeDueDate(month: Date, dueDayOfMonth: number): Date {
+  return new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), dueDayOfMonth));
+}
+
+// True once a bill's due date has passed by at least `reminderDaysAfterDue` days, as of `now`
+// (injected rather than read internally, so this stays pure/testable). Doesn't check bill
+// status — callers combine this with `status IN (UNPAID, PARTIAL)`.
+export function isPaymentReminderDue(
+  month: Date,
+  dueDayOfMonth: number,
+  reminderDaysAfterDue: number,
+  now: Date,
+): boolean {
+  const reminderDate = addDays(computeDueDate(month, dueDayOfMonth), reminderDaysAfterDue);
+  return !isBefore(now, reminderDate);
 }
 
 // ---------- Payment status derivation (§10) ----------

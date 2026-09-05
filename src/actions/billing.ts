@@ -91,8 +91,8 @@ export type GenerateMonthlyBillingSummary = {
 
 export async function generateMonthlyBilling(monthInput: string): Promise<GenerateMonthlyBillingSummary> {
   const month = normalizeMonth(monthInput);
-  const multiClassDiscountPct = getMultiClassDiscountPct();
-  const siblingDiscountPct = getSiblingDiscountPct();
+  const multiClassDiscountPct = await getMultiClassDiscountPct();
+  const siblingDiscountPct = await getSiblingDiscountPct();
 
   return db.$transaction(
     async (tx) => {
@@ -325,6 +325,9 @@ export async function setBillingAdjustment(id: string, data: BillingAdjustmentIn
 // re-runs the discount calc, but preserves the existing adjustment (§4.4: a one-bill change,
 // never reset by a fee update elsewhere).
 export async function recalculateBilling(id: string) {
+  const multiClassDiscountPct = await getMultiClassDiscountPct();
+  const siblingDiscountPct = await getSiblingDiscountPct();
+
   return db.$transaction(async (tx) => {
     const billing = await tx.monthlyStudentBilling.findUniqueOrThrow({ where: { id }, include: { payments: true } });
     if (billing.payments.length > 0) {
@@ -339,8 +342,8 @@ export async function recalculateBilling(id: string) {
       lineItems: lineItemInputs,
       hasSiblingDiscount: siblingCount >= 2,
       adjustment: Number(billing.adjustment),
-      multiClassDiscountPct: getMultiClassDiscountPct(),
-      siblingDiscountPct: getSiblingDiscountPct(),
+      multiClassDiscountPct,
+      siblingDiscountPct,
     });
     const status = computeBillingStatus(computed.finalAmountDue, 0);
 

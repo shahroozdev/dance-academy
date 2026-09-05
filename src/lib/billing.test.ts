@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   computeBillingStatus,
+  computeDueDate,
   computeStudentBilling,
   countWeekdayOccurrencesInMonth,
   enrollmentOverlapsMonth,
+  isPaymentReminderDue,
   normalizeMonth,
 } from "@/lib/billing";
 
@@ -173,5 +175,31 @@ describe("countWeekdayOccurrencesInMonth", () => {
 
   it("falls back to 4 when the class has no scheduled day", () => {
     expect(countWeekdayOccurrencesInMonth(normalizeMonth("2026-09-01"), "")).toBe(4);
+  });
+});
+
+describe("computeDueDate", () => {
+  it("lands on the configured day of the billing month, in UTC", () => {
+    expect(computeDueDate(normalizeMonth("2026-09-01"), 5).toISOString()).toBe("2026-09-05T00:00:00.000Z");
+  });
+});
+
+describe("isPaymentReminderDue", () => {
+  const september = normalizeMonth("2026-09-01");
+
+  it("is not due before the due date has passed", () => {
+    expect(isPaymentReminderDue(september, 5, 7, new Date("2026-09-10T00:00:00.000Z"))).toBe(false);
+  });
+
+  it("is not due on the day the reminder window ends but hasn't yet elapsed", () => {
+    expect(isPaymentReminderDue(september, 5, 7, new Date("2026-09-11T23:59:59.999Z"))).toBe(false);
+  });
+
+  it("becomes due exactly N days after the due date", () => {
+    expect(isPaymentReminderDue(september, 5, 7, new Date("2026-09-12T00:00:00.000Z"))).toBe(true);
+  });
+
+  it("stays due any time after the threshold", () => {
+    expect(isPaymentReminderDue(september, 5, 7, new Date("2026-10-01T00:00:00.000Z"))).toBe(true);
   });
 });

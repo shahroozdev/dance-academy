@@ -32,6 +32,25 @@ export function buildFamilyMessage({ parentGuardianName, monthLabel, students }:
   return parts.join("\n");
 }
 
+// Payment-reminder variant of buildFamilyMessage (§5.4) — same per-student breakdown, framed as a
+// past-due nudge rather than the original notice. Sent once per bill by the reminder cron.
+export function buildPaymentReminderMessage({ parentGuardianName, monthLabel, students }: FamilyMessageInput): string {
+  const lines = students.map((s) => `${s.name} – ${formatCurrency(s.finalAmountDue)}`);
+  const total = round2(students.reduce((sum, s) => sum + s.finalAmountDue, 0));
+
+  const parts = [
+    `Hi ${firstName(parentGuardianName)},`,
+    `This is a friendly reminder that ${monthLabel} dance fees are still outstanding:`,
+    ...lines,
+  ];
+  if (students.length > 1) {
+    parts.push(`Total family amount due: ${formatCurrency(total)}`);
+  }
+  parts.push("", "Please send the payment as soon as possible. Thank you!");
+
+  return parts.join("\n");
+}
+
 // Best-effort normalization for a wa.me deep link — assumes a 10-digit number without a country
 // code is a US number, since this studio uses Zelle (a US-only payment system).
 export function normalizePhoneForWhatsApp(phone: string): string {

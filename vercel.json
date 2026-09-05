@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cron/generate-monthly-billing", "schedule": "0 6 1 * *" },
+    { "path": "/api/cron/send-payment-reminders", "schedule": "0 12 * * *" }
+  ]
+}

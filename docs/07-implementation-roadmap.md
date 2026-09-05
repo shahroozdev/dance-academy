@@ -44,13 +44,19 @@ up front to avoid that.
 
 ## Phase 5 — Parent notifications
 - `buildFamilyMessage` + "Copy Message"/`wa.me` deep-link fallback shipped first (zero external
-  dependency, usable immediately).
-- Meta Business verification + Cloud API credentials; submit `monthly_fee_notice` template for
-  approval.
-- WhatsApp send integration + `NotificationLog`, `/admin/notifications` page.
-- `payment_reminder` template + `/api/cron/send-payment-reminders`.
-- **Demo**: generate a month's bills, send the family-combined message via WhatsApp, confirm the
-  log records status/sent date; simulate a past-due unpaid bill and trigger a reminder.
+  dependency, usable immediately). **Done** — this remains the WhatsApp channel; automated Cloud
+  API sending (below) has not been built yet.
+- `NotificationLog`, `/admin/notifications` page, email send via `sendStudioEmail`. **Done.**
+- `/api/cron/generate-monthly-billing` (runs on the 1st) and `/api/cron/send-payment-reminders`
+  (`buildPaymentReminderMessage`, runs daily) — both `CRON_SECRET`-protected Route Handlers backed
+  by `Settings.dueDayOfMonth`/`Settings.paymentReminderDaysAfterDue`. **Done.**
+- Still open: Meta Business verification + Cloud API credentials, `monthly_fee_notice` /
+  `payment_reminder` template submission/approval, and the actual WhatsApp Cloud API send
+  integration (`StudioSettings` already has encrypted fields ready for the token once this is
+  built).
+- **Demo**: generate a month's bills, send the family-combined message (email or `wa.me` link),
+  confirm the log records status/sent date; simulate a past-due unpaid bill and trigger a reminder
+  via `/api/cron/send-payment-reminders`.
 
 ## Phase 6 — Expenses & financial dashboard
 - `Expense`, `OtherIncome` models + CRUD pages.
@@ -68,7 +74,8 @@ up front to avoid that.
 ### Required "Programmer Deliverables" (§16), mapped to where they live
 - Working MVP → the deployed Vercel app.
 - Table relationships & billing flow explanation → [02-database-schema.md](./02-database-schema.md) + [04-business-logic-billing-discounts.md](./04-business-logic-billing-discounts.md).
-- List of automations & when they run → the two `/api/cron/*` jobs (documented in
+- List of automations & when they run → the two `/api/cron/*` jobs, both implemented (see
+  `vercel.json` for schedules; documented in
   [05-notifications-whatsapp.md](./05-notifications-whatsapp.md) and
   [04-business-logic-billing-discounts.md §4.5](./04-business-logic-billing-discounts.md#45-monthly-generation-job--idempotency-rules)), plus the on-demand "Generate Bills"/"Send Notifications" buttons.
 - Remaining manual monthly tasks → reviewing/approving generated bills and adjustments before

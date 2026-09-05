@@ -42,22 +42,27 @@ middleware that checks for a valid session and redirects to `/admin/login` other
 | `/admin/reports/financials` | Admin | Monthly/Yearly/All-time income–expense–profit dashboard (§11.3) |
 | `/admin/settings` | Admin | Discount %, WhatsApp templates, admin users, business profile |
 
-API routes (Route Handlers) largely mirror these 1:1 under `/api/admin/...`, plus:
+Most of what this section originally planned as `/api/admin/...` Route Handlers is implemented
+instead as server actions (`src/actions/*`) called through `queryRegistry`/`mutationRegistry` (see
+[useQuery](../src/hooks/useQuery.ts)/[useMutate](../src/hooks/useMutate.ts)) — there is no literal
+`/api/admin/*` route for most of these; the row exists to document the operation, not a URL.
+Actual HTTP route handlers exist only where something outside the Next.js request/response cycle
+needs to call in — public form submission, cron, and future webhooks:
 
 | API route | Purpose |
 |---|---|
 | `POST /api/public/register` | Public form submission → creates `RegistrationRequest` |
-| `POST /api/admin/registrations/[id]/approve` | Find-or-create Family/Student, create Enrollment |
-| `POST /api/admin/billing/generate` | Manual "Generate bills for month X" trigger |
-| `POST /api/admin/billing/[id]/recalculate` | Recompute one bill (before payments exist) |
-| `POST /api/admin/billing/[id]/adjustment` | Set one-month adjustment + note |
-| `POST /api/admin/billing/[id]/notify` | Send/queue WhatsApp notification for this bill's family |
-| `POST /api/admin/notifications/send-bulk` | Send notifications for every DRAFT/UNPAID bill in a month |
-| `POST /api/admin/payments` | Record a payment, recompute paid/balance/status on its bill |
-| `GET /api/admin/reports/financials` | Aggregated income/expense/profit for a given period |
-| `POST /api/cron/generate-monthly-billing` | Scheduled: runs on the 1st, idempotent |
-| `POST /api/cron/send-payment-reminders` | Scheduled: reminders for unpaid bills past due date |
-| `POST /api/webhooks/whatsapp` | Meta delivery-status callback → updates `NotificationLog` |
+| — `approveRegistrationRequest` (action) | Find-or-create Family/Student, create Enrollment |
+| — `generateMonthlyBilling` (action) | Manual "Generate bills for month X" trigger |
+| — `recalculateBilling` (action) | Recompute one bill (before payments exist) |
+| — `setBillingAdjustment` (action) | Set one-month adjustment + note |
+| — `sendFamilyNotificationEmail` (action) | Send notification for this bill's family (email today; WhatsApp via manual `wa.me` link) |
+| — `markFamilyNotificationSent` (action) | Record a manual/bulk send in `NotificationLog` |
+| — `createPayment` (action) | Record a payment, recompute paid/balance/status on its bill |
+| — `getFinancialSummary`/`getMonthlyTrend` (actions) | Aggregated income/expense/profit for a given period |
+| `POST/GET /api/cron/generate-monthly-billing` | **Implemented.** Scheduled (see `vercel.json`) — calls `generateMonthlyBilling` for the current month, idempotent (§4.5), secured by `CRON_SECRET` |
+| `POST/GET /api/cron/send-payment-reminders` | **Implemented.** Scheduled daily — calls `sendPaymentReminders` (§5.4), secured by `CRON_SECRET` |
+| `POST /api/webhooks/whatsapp` | Not yet implemented — no automated WhatsApp Cloud API send exists yet to have delivery status for |
 | `POST/GET /api/auth/[...nextauth]` | Auth.js session handling |
 
 ---
@@ -306,10 +311,14 @@ selected.
 
 - **Discount rules**: Multi-Class Discount % and Sibling Discount % (default 5%/5%, editable —
   changes apply to future bill generation only, never retroactively).
+- **Due date & reminders**: Due Day of Month (default 5) and Reminder Days After Due (default 7) —
+  drives `/api/cron/send-payment-reminders` (§5.4).
 - **Admin users**: invite/manage staff logins (Owner role can manage; Staff role cannot access
   Settings).
-- **WhatsApp**: connection status to the Meta Cloud API (phone number, verified business name),
-  template message preview/edit (subject to Meta's template approval process — see
-  [05-notifications-whatsapp.md](./05-notifications-whatsapp.md)), reminder timing (e.g., "N days
-  after month start").
-- **Business profile**: studio name, default due-date-of-month, timezone.
+- **WhatsApp**: Phone Number ID / Business Account ID / Access Token, stored encrypted
+  (`StudioSettings`, see [01-architecture-and-tech-stack.md](./01-architecture-and-tech-stack.md)) —
+  connection status and template message preview/edit are still pending actual Cloud API send
+  integration (subject to Meta's template approval process — see
+  [05-notifications-whatsapp.md](./05-notifications-whatsapp.md)); fee notices/reminders today go
+  out over email + a manual `wa.me` link.
+- **Business profile**: studio name.

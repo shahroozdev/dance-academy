@@ -51,11 +51,14 @@ docs/
 
 ## 1.4 Environments & config
 
-- `.env`: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `WHATSAPP_ACCESS_TOKEN`,
-  `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_BUSINESS_ACCOUNT_ID`, `CRON_SECRET`,
-  `DISCOUNT_MULTI_CLASS_PCT` (default `0.05`), `DISCOUNT_SIBLING_PCT` (default `0.05`).
-- Discount percentages are env/config-driven (also editable in `/admin/settings`), not hard-coded,
-  since the doc treats 5%/5% as the current policy, not necessarily permanent.
+- `.env`: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `CRON_SECRET`, `BLOB_READ_WRITE_TOKEN`,
+  `SETTINGS_ENCRYPTION_KEY` (encrypts `StudioSettings.smtpPassword`/`whatsappAccessToken` at rest —
+  see `src/lib/crypto.ts`; losing/rotating it makes stored secrets undecryptable).
+- Discount percentages, due date/reminder timing, SMTP (outbound email), and WhatsApp Cloud API
+  credentials live in the `StudioSettings` table, not env vars — the studio owner manages them at
+  `/admin/settings`, so a policy or credential change takes effect immediately without a redeploy.
+- Scheduled jobs are configured in `vercel.json` (`crons`) and secured by `CRON_SECRET` — see
+  `src/lib/cron-auth.ts` and `src/app/api/cron/*`.
 
 ## 1.5 Cost model (for the required "disclose recurring costs" deliverable)
 

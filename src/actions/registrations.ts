@@ -1,9 +1,9 @@
 "use server";
 
+import { sendStudioEmail } from "@/actions/email";
 import type { RegistrationRequestCreateInput } from "@/actions/registrations.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
 import { buildEnrollmentConfirmedEmail, buildRegistrationReceivedEmail } from "@/lib/email-templates";
 
 // ---------- Queries ----------
@@ -74,7 +74,7 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
     include: { requestedClass: { select: { name: true } } },
   });
 
-  // Best-effort — sendEmail never throws, so a slow/misconfigured mail server can't fail the
+  // Best-effort — sendStudioEmail never throws, so a slow/misconfigured mail server can't fail the
   // registration itself. Awaited (not fire-and-forget) so it actually completes before this
   // server action returns, since a serverless runtime can suspend right after the response.
   if (request.parentEmail && request.requestedClass) {
@@ -83,7 +83,7 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
       studentFullName: request.studentFullName,
       className: request.requestedClass.name,
     });
-    await sendEmail({ to: request.parentEmail, subject, text });
+    await sendStudioEmail({ to: request.parentEmail, subject, text });
   }
 
   return request;
@@ -184,7 +184,7 @@ export async function approveRegistrationRequest(id: string) {
         studentFullName,
         className: requestedClass.name,
       });
-      await sendEmail({ to: familyEmail, subject, text });
+      await sendStudioEmail({ to: familyEmail, subject, text });
     }
   }
 

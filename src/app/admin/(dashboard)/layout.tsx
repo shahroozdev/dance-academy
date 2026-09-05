@@ -13,7 +13,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
 
   return (
     <SessionProvider session={session}>
-      <ThemeInjector settings={settings} />
+      <ThemeInjector initialSettings={settings} />
       <SidebarProvider>
         <AppSidebar logoSrc={settings.logoUrl} />
         <SidebarInset>

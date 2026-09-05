@@ -194,6 +194,9 @@ model MonthlyStudentBilling {
   status             BillingStatus             @default(DRAFT)
   notificationStatus NotificationStatus        @default(NOT_SENT)
   notificationSentAt DateTime?
+  // Set once a payment-reminder cron run (§5.4) has sent a reminder for this bill — a bill only
+  // ever gets one automated reminder, not a fresh one every day it stays overdue.
+  reminderSentAt     DateTime?
   lineItems          MonthlyBillingLineItem[]
   payments           Payment[]
   createdAt          DateTime                  @default(now())
@@ -349,8 +352,31 @@ model StudioSettings {
   fontSize       FontSize  @default(MEDIUM)
   logoUrl        String?
   studioName     String?   @default("Malhaar Dance Company")
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+
+  // Discount policy (§4.4) — was env-only (DISCOUNT_MULTI_CLASS_PCT/DISCOUNT_SIBLING_PCT), now admin-editable
+  multiClassDiscountPct Decimal @default(0.05) @db.Decimal(5, 4)
+  siblingDiscountPct    Decimal @default(0.05) @db.Decimal(5, 4)
+
+  // Billing due date + payment reminder timing (§5.4, §3.14) — day-of-month a bill is considered
+  // due, and how many days past that a bill must sit UNPAID/PARTIAL before the reminder cron nudges it
+  dueDayOfMonth                Int @default(5)
+  paymentReminderDaysAfterDue  Int @default(7)
+
+  // SMTP / email (was env-only SMTP_*/EMAIL_FROM) — smtpPassword is a secret, never returned to the client as-is
+  smtpHost     String?
+  smtpPort     Int?     @default(587)
+  smtpSecure   Boolean  @default(false)
+  smtpUser     String?
+  smtpPassword String?
+  emailFrom    String?
+
+  // WhatsApp Cloud API / Meta (was env-only WHATSAPP_*) — whatsappAccessToken is a secret, never returned to the client as-is
+  whatsappAccessToken       String?
+  whatsappPhoneNumberId     String?
+  whatsappBusinessAccountId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ---------- Notification Log ----------

@@ -1,9 +1,9 @@
 "use server";
 
+import { sendStudioEmail } from "@/actions/email";
 import type { Prisma } from "@/generated/prisma/client";
 import { normalizeMonth, round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
 import { buildFamilyMessage, buildWhatsAppLink } from "@/lib/notifications";
 
 export type FamilyNotificationPreview = {
@@ -127,7 +127,7 @@ export async function sendFamilyNotificationEmail(
 
   const preview = await getFamilyNotificationPreview(familyId, monthInput);
   const monthLabel = month.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
-  const result = await sendEmail({
+  const result = await sendStudioEmail({
     to: family.email,
     subject: `${monthLabel} Dance Fees — Malhaar Dance Company`,
     text: preview.message,
