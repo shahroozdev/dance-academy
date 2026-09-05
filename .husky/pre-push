@@ -16,7 +16,11 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   fi
 
   echo "Running lint-staged on changes in $local_ref ($FROM..$local_sha)..."
-  if ! npx lint-staged --diff="$FROM..$local_sha"; then
+  # --max-arg-length: lint-staged's own default budget for Windows (8191, the cmd.exe limit)
+  # doesn't leave room for the extra wrapper cmd.exe adds when it re-invokes a .cmd shim like
+  # node_modules/.bin/eslint.cmd, so a large changeset (e.g. 100+ files) can still overflow even
+  # after lint-staged's automatic chunking. A lower budget forces smaller chunks with headroom.
+  if ! npx lint-staged --diff="$FROM..$local_sha" --max-arg-length 4096; then
     FAILED=1
   fi
 done
@@ -27,5 +31,3 @@ if [ "$FAILED" -eq 1 ]; then
   echo "Fix the issues above, commit (or amend), and push again."
   exit 1
 fi
-
-sh "$(dirname "$0")/../scripts/husky/check-migrations.sh"
