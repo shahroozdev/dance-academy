@@ -1,6 +1,6 @@
 "use client";
 
-import { Paintbrush, Wallet, Plug, FileText } from "lucide-react";
+import { BellRing, FileText, Paintbrush, Plug, Wallet } from "lucide-react";
 
 import type { EmailTemplateData } from "@/actions/email-templates";
 import type { StudioSettingsData } from "@/actions/settings";
@@ -9,9 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@/hooks/useQuery";
 
 import { AppearanceForm, BrandingForm } from "./settings-appearance";
-import { BillingAlertForm, DiscountForm, ReminderForm } from "./settings-billing";
+import { DiscountForm, ReminderForm } from "./settings-billing";
 import { EmailTemplatesTab } from "./settings-email-templates";
 import { SmtpForm } from "./settings-integrations";
+import { NotificationSettingsForm } from "./settings-notifications";
 
 export function SettingsClient({
   initialSettings,
@@ -30,7 +31,7 @@ export function SettingsClient({
     <div className="flex flex-col gap-6">
       <PageHeader title="Settings" subtitle="Customize the look and feel of your studio app." />
       <Tabs defaultValue="appearance">
-        <TabsList>
+        <TabsList className="max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="appearance">
             <Paintbrush className="h-4 w-4" />
             Appearance
@@ -38,6 +39,10 @@ export function SettingsClient({
           <TabsTrigger value="billing">
             <Wallet className="h-4 w-4" />
             Billing
+          </TabsTrigger>
+          <TabsTrigger value="notifications">
+            <BellRing className="h-4 w-4" />
+            Notifications
           </TabsTrigger>
           <TabsTrigger value="integrations">
             <Plug className="h-4 w-4" />
@@ -55,7 +60,9 @@ export function SettingsClient({
         <TabsContent value="billing" className="flex flex-col gap-6 pt-4">
           <DiscountForm settings={settings} />
           <ReminderForm settings={settings} />
-          <BillingAlertForm settings={settings} />
+        </TabsContent>
+        <TabsContent value="notifications" className="pt-4">
+          <NotificationSettingsForm settings={settings} />
         </TabsContent>
         <TabsContent value="integrations" className="flex flex-col gap-6 pt-4">
           <SmtpForm settings={settings} />

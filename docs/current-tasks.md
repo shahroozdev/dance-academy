@@ -30,6 +30,11 @@ _Nothing currently in progress._
 ## Done
 
 ### 2026-09-08
+- **Separated notification settings from billing.** Settings now has a responsive Notifications
+  tab with staff alerts grouped into registration, billing and payments, parent communications,
+  and system alerts. Billing now contains only discounts, due dates, and reminder timing.
+- **Made the Billing Alert save action sticky.** The save bar now remains visible while the owner
+  scrolls through the notification switches and keeps the existing disabled/saving states.
 - **Added complete owner-controlled admin alerts.** Billing Settings now has separate enabled-by-
   default switches for new registrations, recorded payments, credits/overpayments, automatic
   billing failures, failed parent fee notices, failed payment reminders, and class fees still
