@@ -10,6 +10,9 @@ export const classCreateSchema = z.object({
   endTime: z.string().or(z.literal("")).optional(),
   durationMins: z.coerce.number().int().positive().optional(),
   standardRate: z.coerce.number().positive("Rate must be positive"),
+  // Soft cap only — enrolling past it is still allowed, just shows a warning. Optional since the
+  // requirements doc never specifies a max class size.
+  capacity: z.coerce.number().int().positive("Capacity must be a positive whole number").optional(),
   pricingType: z.enum(["REGULAR", "SEASONAL"]).default("REGULAR"),
   discountEligible: z.boolean().default(true),
   isActive: z.boolean().default(true),

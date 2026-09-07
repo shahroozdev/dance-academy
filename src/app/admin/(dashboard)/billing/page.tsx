@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight, MessageCircle, Receipt, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, MessageCircle, Receipt, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { AdjustmentModal } from "@/app/admin/(dashboard)/billing/adjustment-modal";
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { downloadCsv, toCsv } from "@/lib/csv";
 
 const STATUS_OPTIONS = ["UNPAID", "PARTIAL", "PAID", "OVERPAID"] as const;
 type StatusValue = (typeof STATUS_OPTIONS)[number];
@@ -115,6 +116,25 @@ export default function BillingPage() {
     });
   };
 
+  const exportCsv = () => {
+    // Exports exactly what's on screen — respects the current status filters and search.
+    const csv = toCsv(filtered, [
+      { label: "Student", value: (b) => b.studentName },
+      { label: "Family", value: (b) => b.familyName },
+      { label: "Month", value: () => formatMonthLabel(month) },
+      { label: "Classes", value: (b) => b.classNames.join("; ") },
+      { label: "Base Tuition", value: (b) => b.baseTuition },
+      { label: "Multi-Class Discount", value: (b) => b.multiClassDiscount },
+      { label: "Sibling Discount", value: (b) => b.siblingDiscount },
+      { label: "Adjustment", value: (b) => b.adjustment },
+      { label: "Final Amount Due", value: (b) => b.finalAmountDue },
+      { label: "Amount Paid", value: (b) => b.amountPaid },
+      { label: "Balance", value: (b) => b.balance },
+      { label: "Status", value: (b) => b.status },
+    ]);
+    downloadCsv(`billing-${month}.csv`, csv);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -139,6 +159,10 @@ export default function BillingPage() {
             >
               <RefreshCw className={isGenerating ? "size-4 animate-spin" : "size-4"} />
               {isGenerating ? "Generating..." : `Generate Bills for ${formatMonthLabel(month)}`}
+            </Button>
+            <Button variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
+              <Download className="size-4" />
+              Export CSV
             </Button>
           </div>
         }

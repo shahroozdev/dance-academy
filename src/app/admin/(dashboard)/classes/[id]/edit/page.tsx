@@ -93,6 +93,7 @@ export default function EditClassPage() {
             endTime: cls.endTime ?? "",
             durationMins: cls.durationMins ?? undefined,
             standardRate: Number(cls.standardRate),
+            capacity: cls.capacity ?? undefined,
             pricingType: cls.pricingType,
             discountEligible: cls.discountEligible,
             isActive: cls.isActive,
@@ -132,6 +133,12 @@ export default function EditClassPage() {
                 <FormFeilds name="standardRate" label="Standard Rate ($)" type="number" />
                 <FormFeilds name="pricingType" label="Pricing Type" type="select" options={PRICING_OPTIONS} />
               </div>
+              <FormFeilds
+                name="capacity"
+                label="Capacity"
+                type="number"
+                placeholder="Optional — leave blank for unlimited"
+              />
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" type="button" asChild>
                   <Link href={`/admin/classes/${id}`}>Cancel</Link>

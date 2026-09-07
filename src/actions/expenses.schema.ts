@@ -21,6 +21,8 @@ export const expenseCreateSchema = z.object({
   amount: z.coerce.number().positive("Amount must be greater than 0"),
   paymentMethod: z.enum(["ZELLE", "CASH", "CHECK", "OTHER"]),
   notes: z.string().or(z.literal("")).optional(),
+  receiptUrl: z.string().or(z.literal("")).optional(),
+  teacherId: z.string().or(z.literal("")).optional(),
 });
 
 export const expenseUpdateSchema = expenseCreateSchema.partial();

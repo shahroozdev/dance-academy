@@ -21,6 +21,7 @@ export type ClassListItem = {
   pricingType: string;
   isActive: boolean;
   discountEligible: boolean;
+  capacity: number | null;
   enrollmentCount: number;
   createdAt: Date;
 };
@@ -74,6 +75,7 @@ export async function getClasses(params?: {
       pricingType: c.pricingType,
       isActive: c.isActive,
       discountEligible: c.discountEligible,
+      capacity: c.capacity,
       enrollmentCount: c.enrollments.length,
       createdAt: c.createdAt,
     })),
@@ -131,6 +133,7 @@ export async function createClass(data: ClassCreateInput) {
       endTime: data.endTime || null,
       durationMins: data.durationMins ?? null,
       standardRate: data.standardRate,
+      capacity: data.capacity ?? null,
       pricingType: data.pricingType,
       discountEligible: data.discountEligible,
       isActive: data.isActive,
@@ -151,6 +154,7 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
       ...(data.endTime !== undefined && { endTime: data.endTime || null }),
       ...(data.durationMins !== undefined && { durationMins: data.durationMins ?? null }),
       ...(data.standardRate !== undefined && { standardRate: data.standardRate }),
+      ...(data.capacity !== undefined && { capacity: data.capacity ?? null }),
       ...(data.pricingType !== undefined && { pricingType: data.pricingType }),
       ...(data.discountEligible !== undefined && { discountEligible: data.discountEligible }),
       ...(data.isActive !== undefined && { isActive: data.isActive }),

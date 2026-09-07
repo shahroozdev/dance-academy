@@ -169,6 +169,9 @@ function EnrollmentsCreateModal({
   const studentOptions = studentsData?.data.map((s) => ({ label: `${s.fullName} (${s.familyName})`, value: s.id })) ?? [];
   const classOptions = classesData?.data.map((c) => ({ label: `${c.name} — ${c.danceStyle}`, value: c.id })) ?? [];
 
+  const selectedClass = classesData?.data.find((c) => c.id === classId);
+  const isAtCapacity = selectedClass?.capacity != null && selectedClass.enrollmentCount >= selectedClass.capacity;
+
   return (
     <Modal open={open} onOpenChange={onOpenChange} className="max-w-md">
       <div className="space-y-4">
@@ -199,6 +202,12 @@ function EnrollmentsCreateModal({
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
+            {isAtCapacity && (
+              <p className="mt-1 text-sm text-destructive">
+                {selectedClass!.name} is at capacity ({selectedClass!.enrollmentCount}/{selectedClass!.capacity}).
+                You can still add this enrollment if the studio wants to go over.
+              </p>
+            )}
           </div>
         </div>
         <div className="flex justify-end gap-2">

@@ -41,6 +41,23 @@ _Nothing currently in progress._
   --noEmit`, `eslint`, `npm test` (52 tests), and `npm run build` all pass.
   Deliberately **not** linked `Expense.teacherId` in this pass (kept out to keep the diff scoped
   per AGENTS.md Rule 8) — flagged as a natural fast-follow for instructor-pay reporting.
+- **Closed out the four lower-priority items flagged in `docs/09-status-report-and-gap-analysis.md`
+  §9.4** (class capacity, refunds, data export — signed consent capture left open, still just a
+  boolean-record limitation worth knowing about) plus the `Expense.teacherId` fast-follow flagged
+  above. Owner picked the scope for each via a clarifying question first (soft cap, no waitlist;
+  document-the-policy over new refund UI; add CSV export over just documenting the answer):
+  - `Class.capacity` (optional): enrolled/capacity shown on the classes list, class detail page,
+    and the "Add Enrollment" modal, which warns (not blocks) once a class is full. No waitlist.
+  - `Expense.teacherId` (optional, any category): Expense form gained a Teacher select; the Teacher
+    detail page now has a "Payments to This Teacher" card with a running total.
+  - Refund policy documented as "negative adjustment with a note" — and `setBillingAdjustment`'s
+    block on `status = PAID` bills was removed, since that was the one case a refund actually
+    happens; it now correctly recomputes to `OVERPAID`. The Adjustment modal explains this inline.
+  - "Export CSV" buttons added to the Students and Billing pages (`src/lib/csv.ts`), generated
+    client-side from data the page already has — no new server endpoint.
+  Migration `20260907082608_add_class_capacity_and_expense_teacher`. Re-ran the Playwright
+  acceptance suite (`npm run test:e2e`) and `npm test` (52 tests) after — both pass; `tsc --noEmit`
+  and `eslint` clean.
 
 ### 2026-09-05
 - Discount policy, SMTP, and WhatsApp credentials moved from `.env` into admin-editable

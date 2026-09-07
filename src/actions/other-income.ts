@@ -72,3 +72,7 @@ export async function updateOtherIncome(id: string, data: OtherIncomeUpdateInput
     },
   });
 }
+
+export async function deleteOtherIncome(id: string) {
+  await db.otherIncome.delete({ where: { id } });
+}

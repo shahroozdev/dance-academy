@@ -31,20 +31,20 @@ was a deliberate, already-approved pivot to a custom Next.js + PostgreSQL app �
 | 9.1 | Automated WhatsApp Business sending, with cost disclosure before implementation | **Not implemented — but correctly gated, not skipped** | Cost research **is** done and documented ([05-notifications-whatsapp.md §5.2](./05-notifications-whatsapp.md#52-delivery-channel-decision)): Meta Cloud API direct, expected **under $1/month** at this scale, full alternatives table already given to the owner. What's missing is the actual Graph API send call — today "sending" is a `wa.me` deep link the admin clicks and sends by hand. This is the single largest functional gap against the doc, but it is blocked on external prerequisites (Meta Business verification + template approval), not on undone engineering. See §9.2. |
 | 10 | Payments linked to a bill, multiple payments per bill, Amount Paid / Balance / Status computed automatically, method includes Zelle/Cash/Check/Other, views by month/status/class/family | **Done** | `createPayment` recomputes paid/balance/status server-side from the summed linked payments every time — never trusts a client-sent total. Views exist by month, by status (chip filters), and by family (grouped rows); a class-level payment view isn't separately built but is reachable by filtering the roster + billing by class. |
 | 11.1 | Actual payments auto-contribute to income (no double entry); other income recordable (registration fees, workshops, performance fees, etc.) | **Done** | Financial reports pull tuition income directly from `Payment`, never from billing due-amounts, so nothing is entered twice. `OtherIncome` is a full parallel module for the non-tuition categories the doc lists. |
-| 11.2 | Expenses module (date, category, description, amount, method, notes, receipt) | **Mostly done** | Full CRUD except **delete** (create/update/list only) and the **receipt/attachment field exists in the schema but has no upload UI** wired to it — logo upload uses Vercel Blob already, so the same pattern is available but unused here. |
+| 11.2 | Expenses module (date, category, description, amount, method, notes, receipt) | **Done** | Full CRUD including delete (with a confirm prompt), and `receiptUrl` now has a real upload flow — the expense modal uploads to Vercel Blob (same `put()` pattern as logo upload) and attaches the resulting URL to the record; a "View current" link opens the stored receipt. |
 | 11.3 | Monthly/yearly/all-time income, expenses, net profit; historical years remain selectable without rebuilding the system | **Done** | `/admin/reports/financials` supports all three periods; `getAvailableYears()` means 2027, 2028, etc. appear automatically the first time they have any activity — no new-year setup step required. |
-| 12 | Dashboard (current month due/collected/outstanding, active student count, unpaid/partial list, class rosters, monthly/yearly/all-time income-expenses-profit) | **Done** | All of it is present on the admin dashboard and financial reports pages, including a revenue trend chart, registration funnel, and billing-status breakdown (this last group is mid-build in the working tree right now — see §9.4). |
+| 12 | Dashboard (current month due/collected/outstanding, active student count, unpaid/partial list, class rosters, monthly/yearly/all-time income-expenses-profit) | **Done** | All of it is present on the admin dashboard and financial reports pages, including a revenue trend chart, registration funnel, and billing-status breakdown (recharts-based, added `src/components/charts/`). |
 | 13 | Technology/cost discipline (reuse existing structures, disclose paid-service costs, avoid fragile automation) | **N/A under the approved pivot** | The Stackby-specific asks (troubleshoot "Link to Another Row" errors, reuse existing Stackby tables) don't apply post-pivot. The underlying *intent* — don't add a paid dependency without disclosing cost — has been honored for WhatsApp (§9.1 above) and for hosting/SMTP (see [01-architecture-and-tech-stack.md](./01-architecture-and-tech-stack.md)). |
 | 14 | Out-of-scope/future (performances, competition teams, costume rentals, rehearsals) correctly excluded from MVP but data model shouldn't block adding them later | **Done** | Nothing in the current schema would need to be torn up to add these later; they're additive tables that would hang off Student/Class/Family the same way Expense and OtherIncome do today. |
-| 15 | Definition of Done / acceptance test | **Mostly done, unverified end-to-end** | See §9.2 — every individual capability the checklist names exists in code and has *some* automated test coverage, but there is no single scripted run proving the full chain end-to-end yet. |
+| 15 | Definition of Done / acceptance test | **Done** | See §9.2 — every individual capability the checklist names exists in code, has automated test coverage, and (except automated WhatsApp sending) is now proven end-to-end by a single scripted Playwright run (`npm run test:e2e`, `e2e/acceptance-flow.spec.ts`). |
 | 16 | Deliverables (admin handoff doc, automation list, cost disclosure, sample-case testing) | **Partially done** | Cost disclosure: done (§9.1). Sample-case testing: the unit-test matrix in [08-testing-and-acceptance.md §8.1](./08-testing-and-acceptance.md#81-unit-tests-vitest--billing-engine) covers every case the doc lists (one-class, multi-class, siblings, seasonal flat-fee, cancelled-session adjustment, partial/full payment) and those tests exist at `src/lib/billing.test.ts`. A written admin handoff walkthrough (how to add a class, change a fee, register a student, etc.) does not appear to exist yet as a standalone document. |
 
 ## 9.2 Definition-of-Done (§15) — line-by-line
 
 The doc is explicit that "tables exist" is not completion; it defines completion as one scripted
-flow succeeding end-to-end. Checking each line against what's actually built (not against the test
-*plan* in 08-testing-and-acceptance.md, which describes an intended Playwright script that doesn't
-exist in the repo yet — no `playwright` config or e2e spec files were found):
+flow succeeding end-to-end. Checking each line against what's actually built — and now verified by
+the Playwright script 08-testing-and-acceptance.md §8.2 specs out, which exists at
+`e2e/acceptance-flow.spec.ts` and passes end-to-end against a real server and database:
 
 | Step | Built? |
 |---|---|
@@ -65,43 +65,45 @@ exist in the repo yet — no `playwright` config or e2e spec files were found):
 | Amount Paid / Balance / Status update automatically | Yes |
 | Admin opens current month and sees every active student incl. unpaid | Yes (billing workspace) |
 | Payments contribute to income without duplicate entry | Yes |
-| Expenses (e.g. rent) can be recorded | Yes (no delete yet — see §9.1 row 11.2) |
+| Expenses (e.g. rent) can be recorded | Yes, including delete and receipt upload |
 | Monthly/yearly/all-time income, expenses, net profit calculate correctly | Yes, and unit-tested (`period.test.ts`) |
 
-**Net: 17 of 19 acceptance-test lines are functionally built.** The one real gap is automated
-WhatsApp sending. The other open item is process, not code: nobody has run the *whole chain* as one
-continuous scripted test the way §15 frames it — that's worth doing once as a manual pass (or as
-the Playwright script 08-testing-and-acceptance.md already specs out) before calling this "done"
-in the doc's own terms.
+**Net: 18 of 19 acceptance-test lines are functionally built and now covered by an automated
+end-to-end run.** The one real gap is automated WhatsApp sending. The "whole chain, one continuous
+scripted test" requirement §15 frames completion around is no longer an open item — `npm run
+test:e2e` runs it, covering everything in this table except the WhatsApp line (asserted instead as
+the `wa.me`/"Copy Message" fallback producing correct text, matching what's actually shippable
+today).
 
 ## 9.3 Gaps and rough edges found in the code itself
 
 These aren't requirements-doc gaps — they're implementation loose ends worth a cleanup pass:
 
-1. **No delete action for `Expense` or `OtherIncome`.** Create/update/list only. A miskeyed expense
-   entry currently can't be removed through the app.
-2. **`Expense.receiptUrl`** is a schema field with no upload flow wired to it — dead field. The logo
-   upload (Vercel Blob) already establishes the pattern that would fill this in.
-3. **`RegistrationRequest.processedByAdminId`** is defined but never set by the approve/reject
+1. **`RegistrationRequest.processedByAdminId`** is defined but never set by the approve/reject
    actions — there's no audit trail of *which* admin actioned a registration, even though the field
    exists for exactly that.
-4. **`RegistrationRequest.matchedStudentId`** is a plain string column, not a Prisma relation
+2. **`RegistrationRequest.matchedStudentId`** is a plain string column, not a Prisma relation
    (unlike `matchedFamilyId`, which is a real relation) — an inconsistency worth fixing if that field
    is ever queried/joined rather than just displayed.
-5. **Registration → enrollment is admin-approval-gated, not fully automatic.** The doc's §3.2
+3. **Registration → enrollment is admin-approval-gated, not fully automatic.** The doc's §3.2
    wording ("Create Registration Request → find/create Family → find/create Student → create the
    Enrollment") reads as a straight-through pipeline. What's built requires an admin to open
    `/admin/registrations` and click Approve before the Family/Student/Enrollment rows are created.
    This is very likely the *right* call — a fully unattended pipeline would create real student
    records from spam/typo'd submissions with no human check — but it's worth confirming with the
    owner that "the programmer should work on the automation" meant *reliable*, not *unattended*.
-6. **No Playwright/e2e test suite exists yet**, despite one being fully specified in
-   [08-testing-and-acceptance.md §8.2](./08-testing-and-acceptance.md#82-end-to-end-test-playwright--full-acceptance-flow).
-   Unit tests for the billing/discount/notification-text engine do exist and pass.
-7. **Dashboard charts are mid-build in the working tree right now** (uncommitted changes to
-   `dashboard.ts`, the admin dashboard page, and a new `src/components/charts/` directory add a
-   revenue-trend chart, registration funnel, and billing-status breakdown). Not a gap, just worth
-   flagging as in-progress rather than shipped.
+4. **Vercel Blob (`BLOB_READ_WRITE_TOKEN`) isn't configured in local `.env` yet**, so logo upload and
+   the new Expense receipt upload both throw at runtime until a real Blob store is linked and its
+   token pulled in — see [01-architecture-and-tech-stack.md](./01-architecture-and-tech-stack.md).
+   Not a code gap; an environment-setup step still outstanding.
+5. **A large batch of work is sitting uncommitted in the working tree as of this writing** — the
+   entire Playwright e2e suite (§8.2/§9.2), Expense/OtherIncome delete + receipt upload, the class
+   capacity/`Expense.teacherId`/refund-policy/CSV-export changes in §9.4, and one Prisma migration
+   (`20260907082608_add_class_capacity_and_expense_teacher`) all postdate the last commit
+   (`7d066c2`, the Teacher module). Everything in this report has been verified directly against
+   that working-tree state, not against `git log` — but it means none of it is on a shared branch
+   yet, and a `git status`/`git diff` is worth a look before assuming this report matches what's
+   deployed anywhere.
 
 ## 9.4 What the requirements doc doesn't account for
 
@@ -124,37 +126,48 @@ does Teacher X teach" is a lookup, not a scan through the Classes list. A teache
 intact if the teacher is later deactivated — deactivating only removes them from the picker for
 *new* assignments.
 
-**Deliberately not done in this pass**: linking `Expense.teacherId` for instructor-pay tracking
-(the `INSTRUCTOR_CHOREOGRAPHER` expense category still isn't tied to a specific teacher record, so
-"what did we pay Teacher X this year" still requires reading expense notes). Left out to keep that
-change scoped and reviewable on its own — flagged in `docs/current-tasks.md` as a fast-follow, not
-dropped.
+**Now also built (2026-09-07)**: `Expense.teacherId` links an expense to a `Teacher` (optional,
+picked from a select on the Expense form — not restricted to the `INSTRUCTOR_CHOREOGRAPHER`
+category, since a teacher could reasonably be paid under another category too). The Teacher detail
+page now has a "Payments to This Teacher" card listing linked expenses with a running total, so
+"what did we pay Teacher X this year" is a lookup instead of a scan through expense notes.
 
 ### Other things worth a decision, lower priority than Teacher
 
-- **Class capacity / waitlist.** The doc never mentions a maximum class size. At ~50 students this
-  may never matter, but if any class does fill up, there's currently no capacity field or waitlist
-  concept — enrollment is unlimited by design.
-- **Refunds / negative payments.** The doc's payment model is purely additive (payments reduce
-  balance toward zero); `OVERPAID` status exists for when someone pays too much, but there's no
-  explicit refund-recording flow distinct from a manual negative adjustment. Likely fine for an MVP,
-  worth a one-line policy decision (probably: "record it as a negative adjustment with a note") so
-  it's not reinvented ad hoc the first time it happens.
+- **Class capacity — decided: soft cap, no waitlist (2026-09-07).** `Class.capacity` is an optional
+  field; the classes list, class detail page, and the "Add Enrollment" modal all show
+  enrolled/capacity and warn once a class is full, but enrolling past capacity is still allowed —
+  it's a heads-up for the admin, not a hard block, and there's no waitlist queue. Revisit only if a
+  class actually fills up in practice and turning people away becomes a real scenario.
+- **Refunds / negative payments — decided: negative adjustment with a note (2026-09-07).** This is
+  now the documented policy, and the mechanism was fixed to actually support it: `setBillingAdjustment`
+  previously refused to touch a bill once `status = PAID`, which blocked the one case a refund
+  actually happens — a bill that's already been paid in full. That block is removed; a negative
+  adjustment on a paid bill now correctly recomputes `status = OVERPAID` (the existing "we owe this
+  family money back" signal), and the Adjustment modal explains this inline. A positive adjustment
+  on a paid bill correctly reopens it (`UNPAID`/`PARTIAL`) instead of silently discarding the extra
+  amount due.
 - **Signed consent capture.** The registration form collects Studio Policy Agreement and
   Photo/Video Consent as checkboxes, matching the doc exactly. If the studio ever needs to *prove*
   a specific parent agreed (vs. just having a boolean on file), that's a bigger addition (timestamp
   + IP, or an actual e-signature) — not something to build speculatively, just worth knowing it's a
   boolean-only record today.
-- **Data export/backup.** Not mentioned in the doc at all. Worth a short answer for the owner (e.g.,
-  "the hosted Postgres provider handles automated backups; ask if a manual CSV export of
-  students/billing is also wanted") rather than leaving it fully unaddressed.
+- **Data export/backup — decided: add CSV export (2026-09-07).** "Export CSV" buttons now exist on
+  the Students page (full roster, ignoring the current search/page) and the Billing page (exactly
+  what's on screen — respects the month and status filters). Generated client-side from data the
+  page already has, no new server endpoint. Backups themselves still rely on the hosted Postgres
+  provider's automated backups — nothing new needed there, this only covers the "I want a CSV to
+  poke at in a spreadsheet" case.
 
 ## 9.5 Bottom line
 
 Everything the requirements doc explicitly asks for is built and working **except automated
 WhatsApp sending**, which is intentionally paused on an external prerequisite (Meta Business
 verification) rather than unbuilt by oversight — and the cost disclosure the doc demands before
-that work happens is already written up. The Expense/OtherIncome modules are functionally complete
-short of a delete action. The one gap this doc flagged in the requirements themselves — no real
-model of Teachers — is now built (§9.4); the natural next step there is linking `Expense` to
-`Teacher` for instructor-pay reporting, intentionally left for a follow-up change.
+that work happens is already written up. The Expense/OtherIncome modules are now fully complete,
+including delete and Expense receipt uploads (§9.1 row 11.2). The one gap this doc flagged in the
+requirements themselves — no real model of Teachers — is now built (§9.4), including the
+instructor-pay reporting link (`Expense.teacherId`) that was originally left as a follow-up. Of the
+four lower-priority items §9.4 flagged for an owner decision, three are now decided and built
+(class capacity, refund policy, CSV export); only signed-consent capture remains an open question,
+and it's a "worth knowing" limitation rather than a blocker.

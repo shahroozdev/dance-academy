@@ -104,7 +104,15 @@ export default function ClassesPage() {
                       <span className="text-muted-foreground text-xs ml-1">(flat)</span>
                     )}
                   </TableCell>
-                  <TableCell>{cls.enrollmentCount}</TableCell>
+                  <TableCell>
+                    {cls.capacity ? (
+                      <span className={cls.enrollmentCount >= cls.capacity ? "font-medium text-destructive" : undefined}>
+                        {cls.enrollmentCount} / {cls.capacity}
+                      </span>
+                    ) : (
+                      cls.enrollmentCount
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={cls.isActive ? "default" : "secondary"}>
                       {cls.isActive ? "Active" : "Inactive"}

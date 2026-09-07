@@ -31,17 +31,17 @@ model AdminUser {
 // ---------- Families & Students ----------
 
 model Family {
-  id                 String                 @id @default(cuid())
+  id                 String                @id @default(cuid())
   familyName         String
   parentGuardianName String
   email              String?
   phone              String
-  isActive           Boolean                @default(true)
+  isActive           Boolean               @default(true)
   notes              String?
   students           Student[]
   registrationReqs   RegistrationRequest[]
-  createdAt          DateTime               @default(now())
-  updatedAt          DateTime               @updatedAt
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
 
   @@index([phone])
   @@index([email])
@@ -55,23 +55,23 @@ enum Gender {
 }
 
 model Student {
-  id              String                  @id @default(cuid())
-  fullName        String
-  familyId        String
-  family          Family                  @relation(fields: [familyId], references: [id], onDelete: Restrict)
-  dob             DateTime?
-  gender          Gender?
-  joinDate        DateTime                @default(now())
-  isActive        Boolean                 @default(true)
-  medicalNotes    String?
-  generalNotes    String?
+  id                           String                  @id @default(cuid())
+  fullName                     String
+  familyId                     String
+  family                       Family                  @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  dob                          DateTime?
+  gender                       Gender?
+  joinDate                     DateTime                @default(now())
+  isActive                     Boolean                 @default(true)
+  medicalNotes                 String?
+  generalNotes                 String?
   emergencyContactName         String?
   emergencyContactRelationship String?
-  emergencyPhone                String?
-  enrollments     Enrollment[]
-  monthlyBillings MonthlyStudentBilling[]
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
+  emergencyPhone               String?
+  enrollments                  Enrollment[]
+  monthlyBillings              MonthlyStudentBilling[]
+  createdAt                    DateTime                @default(now())
+  updatedAt                    DateTime                @updatedAt
 
   @@index([familyId])
   @@index([isActive])
@@ -80,15 +80,16 @@ model Student {
 // ---------- Teachers ----------
 
 model Teacher {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
   email     String?
   phone     String?
   notes     String?
-  isActive  Boolean  @default(true)
+  isActive  Boolean   @default(true)
   classes   Class[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  expenses  Expense[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([isActive])
 }
@@ -111,25 +112,29 @@ enum DayOfWeek {
 }
 
 model Class {
-  id                    String                 @id @default(cuid())
-  name                  String
-  danceStyle            String
-  level                 String?
-  teacherId             String?
-  teacher               Teacher?               @relation(fields: [teacherId], references: [id])
-  dayOfWeek             DayOfWeek?
-  startTime             String?
-  endTime               String?
-  durationMins          Int?
-  standardRate          Decimal                @db.Decimal(10, 2)
-  pricingType           PricingType            @default(REGULAR)
-  discountEligible      Boolean                @default(true)
-  isActive              Boolean                @default(true)
-  enrollments           Enrollment[]
-  monthlyFees           ClassMonthlyFee[]
-  registrationRequests  RegistrationRequest[]
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
+  id                   String                @id @default(cuid())
+  name                 String
+  danceStyle           String
+  level                String?
+  teacherId            String?
+  teacher              Teacher?              @relation(fields: [teacherId], references: [id])
+  dayOfWeek            DayOfWeek?
+  startTime            String?
+  endTime              String?
+  durationMins         Int?
+  standardRate         Decimal               @db.Decimal(10, 2)
+  pricingType          PricingType           @default(REGULAR)
+  discountEligible     Boolean               @default(true)
+  // Soft cap only — enrollment.ts still allows enrolling past it, just with a UI warning. No
+  // waitlist concept; the doc never specifies a max class size and ~50 total students studio-wide
+  // makes an actual queue unlikely to be needed.
+  capacity             Int?
+  isActive             Boolean               @default(true)
+  enrollments          Enrollment[]
+  monthlyFees          ClassMonthlyFee[]
+  registrationRequests RegistrationRequest[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
 
   @@index([isActive])
   @@index([teacherId])
@@ -141,17 +146,17 @@ enum EnrollmentStatus {
 }
 
 model Enrollment {
-  id               String                    @id @default(cuid())
+  id               String                   @id @default(cuid())
   studentId        String
-  student          Student                   @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  student          Student                  @relation(fields: [studentId], references: [id], onDelete: Restrict)
   classId          String
-  class            Class                     @relation(fields: [classId], references: [id], onDelete: Restrict)
-  startDate        DateTime                  @default(now())
+  class            Class                    @relation(fields: [classId], references: [id], onDelete: Restrict)
+  startDate        DateTime                 @default(now())
   endDate          DateTime?
-  status           EnrollmentStatus          @default(ACTIVE)
+  status           EnrollmentStatus         @default(ACTIVE)
   billingLineItems MonthlyBillingLineItem[]
-  createdAt        DateTime                  @default(now())
-  updatedAt        DateTime                  @updatedAt
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
 
   @@unique([studentId, classId, startDate])
   @@index([studentId])
@@ -162,19 +167,19 @@ model Enrollment {
 // ---------- Class Monthly Fees (historical pricing snapshot) ----------
 
 model ClassMonthlyFee {
-  id               String                    @id @default(cuid())
+  id               String                   @id @default(cuid())
   classId          String
-  class            Class                     @relation(fields: [classId], references: [id], onDelete: Restrict)
+  class            Class                    @relation(fields: [classId], references: [id], onDelete: Restrict)
   month            DateTime
   billableSessions Int?
-  rate             Decimal?                  @db.Decimal(10, 2)
-  flatFee          Decimal?                  @db.Decimal(10, 2)
-  monthlyClassFee  Decimal                   @db.Decimal(10, 2)
-  isOverridden     Boolean                   @default(false)
+  rate             Decimal?                 @db.Decimal(10, 2)
+  flatFee          Decimal?                 @db.Decimal(10, 2)
+  monthlyClassFee  Decimal                  @db.Decimal(10, 2)
+  isOverridden     Boolean                  @default(false)
   notes            String?
   lineItems        MonthlyBillingLineItem[]
-  createdAt        DateTime                  @default(now())
-  updatedAt        DateTime                  @updatedAt
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
 
   @@unique([classId, month])
   @@index([month])
@@ -197,28 +202,28 @@ enum NotificationStatus {
 }
 
 model MonthlyStudentBilling {
-  id                 String                    @id @default(cuid())
+  id                 String                   @id @default(cuid())
   studentId          String
-  student            Student                   @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  student            Student                  @relation(fields: [studentId], references: [id], onDelete: Restrict)
   month              DateTime
-  baseTuition        Decimal                   @db.Decimal(10, 2)
-  multiClassDiscount Decimal                   @default(0) @db.Decimal(10, 2)
-  siblingDiscount    Decimal                   @default(0) @db.Decimal(10, 2)
-  adjustment         Decimal                   @default(0) @db.Decimal(10, 2)
+  baseTuition        Decimal                  @db.Decimal(10, 2)
+  multiClassDiscount Decimal                  @default(0) @db.Decimal(10, 2)
+  siblingDiscount    Decimal                  @default(0) @db.Decimal(10, 2)
+  adjustment         Decimal                  @default(0) @db.Decimal(10, 2)
   adjustmentNotes    String?
-  finalAmountDue     Decimal                   @db.Decimal(10, 2)
-  amountPaid         Decimal                   @default(0) @db.Decimal(10, 2)
-  balance            Decimal                   @db.Decimal(10, 2)
-  status             BillingStatus             @default(DRAFT)
-  notificationStatus NotificationStatus        @default(NOT_SENT)
+  finalAmountDue     Decimal                  @db.Decimal(10, 2)
+  amountPaid         Decimal                  @default(0) @db.Decimal(10, 2)
+  balance            Decimal                  @db.Decimal(10, 2)
+  status             BillingStatus            @default(DRAFT)
+  notificationStatus NotificationStatus       @default(NOT_SENT)
   notificationSentAt DateTime?
   // Set once a payment-reminder cron run (§5.4) has sent a reminder for this bill — a bill only
   // ever gets one automated reminder, not a fresh one every day it stays overdue.
   reminderSentAt     DateTime?
   lineItems          MonthlyBillingLineItem[]
   payments           Payment[]
-  createdAt          DateTime                  @default(now())
-  updatedAt          DateTime                  @updatedAt
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
 
   @@unique([studentId, month])
   @@index([month])
@@ -272,28 +277,28 @@ enum RegistrationStatus {
 }
 
 model RegistrationRequest {
-  id                            String              @id @default(cuid())
-  parentGuardianName            String
-  parentEmail                   String?
-  parentPhone                   String
-  studentFullName               String
-  dob                           DateTime?
-  gender                        Gender?
-  requestedClassId              String?
-  requestedClass                Class?              @relation(fields: [requestedClassId], references: [id])
-  previousDanceExperience       String?
-  emergencyContactName          String
-  emergencyContactRelationship  String
-  emergencyPhone                String
-  studioPolicyAgreement         Boolean             @default(false)
-  photoVideoConsent             Boolean             @default(false)
-  status                        RegistrationStatus  @default(PENDING)
-  matchedFamilyId               String?
-  matchedFamily                 Family?             @relation(fields: [matchedFamilyId], references: [id])
-  matchedStudentId               String?
-  processedByAdminId            String?
-  processedAt                   DateTime?
-  createdAt                     DateTime            @default(now())
+  id                           String             @id @default(cuid())
+  parentGuardianName           String
+  parentEmail                  String?
+  parentPhone                  String
+  studentFullName              String
+  dob                          DateTime?
+  gender                       Gender?
+  requestedClassId             String?
+  requestedClass               Class?             @relation(fields: [requestedClassId], references: [id])
+  previousDanceExperience      String?
+  emergencyContactName         String
+  emergencyContactRelationship String
+  emergencyPhone               String
+  studioPolicyAgreement        Boolean            @default(false)
+  photoVideoConsent            Boolean            @default(false)
+  status                       RegistrationStatus @default(PENDING)
+  matchedFamilyId              String?
+  matchedFamily                Family?            @relation(fields: [matchedFamilyId], references: [id])
+  matchedStudentId             String?
+  processedByAdminId           String?
+  processedAt                  DateTime?
+  createdAt                    DateTime           @default(now())
 
   @@index([status])
 }
@@ -323,11 +328,17 @@ model Expense {
   paymentMethod PaymentMethod
   notes         String?
   receiptUrl    String?
+  // Optional — mainly meaningful for INSTRUCTOR_CHOREOGRAPHER expenses, but not restricted to
+  // that category, since a teacher could reasonably be paid for e.g. a workshop under a different
+  // category too. Lets the Teacher detail page answer "what did we pay this person" directly.
+  teacherId     String?
+  teacher       Teacher?        @relation(fields: [teacherId], references: [id])
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
   @@index([date])
   @@index([category])
+  @@index([teacherId])
 }
 
 enum OtherIncomeCategory {
@@ -363,13 +374,13 @@ enum FontSize {
 }
 
 model StudioSettings {
-  id             String    @id @default("default")
-  primaryColor   String    @default("#9B1B5E")
-  secondaryColor String    @default("#F5D0E0")
-  accentColor    String    @default("#E8A0D0")
-  fontSize       FontSize  @default(MEDIUM)
+  id             String   @id @default("default")
+  primaryColor   String   @default("#9B1B5E")
+  secondaryColor String   @default("#F5D0E0")
+  accentColor    String   @default("#E8A0D0")
+  fontSize       FontSize @default(MEDIUM)
   logoUrl        String?
-  studioName     String?   @default("Malhaar Dance Company")
+  studioName     String?  @default("Malhaar Dance Company")
 
   // Discount policy (§4.4) — was env-only (DISCOUNT_MULTI_CLASS_PCT/DISCOUNT_SIBLING_PCT), now admin-editable
   multiClassDiscountPct Decimal @default(0.05) @db.Decimal(5, 4)
@@ -377,13 +388,13 @@ model StudioSettings {
 
   // Billing due date + payment reminder timing (§5.4, §3.14) — day-of-month a bill is considered
   // due, and how many days past that a bill must sit UNPAID/PARTIAL before the reminder cron nudges it
-  dueDayOfMonth                Int @default(5)
-  paymentReminderDaysAfterDue  Int @default(7)
+  dueDayOfMonth               Int @default(5)
+  paymentReminderDaysAfterDue Int @default(7)
 
   // SMTP / email (was env-only SMTP_*/EMAIL_FROM) — smtpPassword is a secret, never returned to the client as-is
   smtpHost     String?
-  smtpPort     Int?     @default(587)
-  smtpSecure   Boolean  @default(false)
+  smtpPort     Int?    @default(587)
+  smtpSecure   Boolean @default(false)
   smtpUser     String?
   smtpPassword String?
   emailFrom    String?

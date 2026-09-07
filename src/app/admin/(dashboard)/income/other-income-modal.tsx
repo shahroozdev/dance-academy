@@ -40,6 +40,10 @@ export function OtherIncomeModal({ id, onClose }: { id: string | "new"; onClose:
     invalidateKeys: ["getOtherIncome", "getOtherIncomeById"],
     onSuccess: onClose,
   });
+  const { mutate: remove, isLoading: isDeleting } = useMutate("deleteOtherIncome", {
+    invalidateKeys: ["getOtherIncome"],
+    onSuccess: onClose,
+  });
 
   const isSaving = isCreating || isUpdating;
   const error = createError ?? updateError;
@@ -81,13 +85,29 @@ export function OtherIncomeModal({ id, onClose }: { id: string | "new"; onClose:
                   </div>
                   <FormFeilds name="notes" label="Notes" type="textarea" />
                   {Boolean(error) && <p className="text-sm text-destructive">Could not save. Please try again.</p>}
-                  <div className="flex justify-end gap-2 pt-2">
-                    <Button type="button" variant="outline" onClick={close}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={isSaving || !form.formState.isValid}>
-                      {isSaving ? "Saving..." : "Save Income"}
-                    </Button>
+                  <div className="flex items-center justify-between gap-2 pt-2">
+                    {!isNew ? (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        disabled={isDeleting}
+                        onClick={() => {
+                          if (window.confirm("Delete this income entry? This can't be undone.")) remove(id);
+                        }}
+                      >
+                        {isDeleting ? "Deleting..." : "Delete"}
+                      </Button>
+                    ) : (
+                      <span />
+                    )}
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={close}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={isSaving || !form.formState.isValid}>
+                        {isSaving ? "Saving..." : "Save Income"}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}

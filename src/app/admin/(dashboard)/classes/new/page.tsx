@@ -61,6 +61,7 @@ export default function NewClassPage() {
             endTime: "",
             durationMins: undefined,
             standardRate: 0,
+            capacity: undefined,
             pricingType: "REGULAR",
             discountEligible: true,
             isActive: true,
@@ -100,6 +101,12 @@ export default function NewClassPage() {
                 <FormFeilds name="standardRate" label="Standard Rate ($)" type="number" />
                 <FormFeilds name="pricingType" label="Pricing Type" type="select" options={PRICING_OPTIONS} />
               </div>
+              <FormFeilds
+                name="capacity"
+                label="Capacity"
+                type="number"
+                placeholder="Optional — leave blank for unlimited"
+              />
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" type="button" asChild>
                   <Link href="/admin/classes">Cancel</Link>

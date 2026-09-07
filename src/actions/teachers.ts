@@ -2,6 +2,7 @@
 
 import type { TeacherCreateInput, TeacherUpdateInput } from "@/actions/teachers.schema";
 import type { Prisma } from "@/generated/prisma/client";
+import { round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
 
 // ---------- Queries ----------
@@ -65,17 +66,29 @@ export async function getTeachers(params?: {
 export type TeacherDetail = Awaited<ReturnType<typeof getTeacherById>>;
 
 export async function getTeacherById(id: string) {
-  return db.teacher.findUniqueOrThrow({
-    where: { id },
-    include: {
-      classes: {
-        include: {
-          enrollments: { where: { status: "ACTIVE" }, select: { id: true } },
+  const [teacher, paidAgg] = await Promise.all([
+    db.teacher.findUniqueOrThrow({
+      where: { id },
+      include: {
+        classes: {
+          include: {
+            enrollments: { where: { status: "ACTIVE" }, select: { id: true } },
+          },
+          orderBy: { name: "asc" },
         },
-        orderBy: { name: "asc" },
+        // Answers "what did we pay this teacher" directly instead of requiring a scan through
+        // expense notes — see docs/09-status-report-and-gap-analysis.md §9.4.
+        expenses: { orderBy: { date: "desc" }, take: 24 },
       },
-    },
-  });
+    }),
+    db.expense.aggregate({ where: { teacherId: id }, _sum: { amount: true } }),
+  ]);
+
+  return {
+    ...teacher,
+    expenses: teacher.expenses.map((e) => ({ ...e, amount: Number(e.amount) })),
+    totalPaid: round2(Number(paidAgg._sum.amount ?? 0)),
+  };
 }
 
 // ---------- Mutations ----------

@@ -295,11 +295,13 @@ export async function getMonthlyBillingById(id: string) {
 
 // ---------- Mutations ----------
 
+// Allowed on a PAID bill on purpose — a negative adjustment with a note is the studio's chosen
+// refund policy (docs/09-status-report-and-gap-analysis.md §9.4): it pushes finalAmountDue below
+// amountPaid, which computeBillingStatus below correctly reads as OVERPAID, the existing signal
+// for "we owe this family money back." A positive adjustment on a paid bill correctly reopens it
+// (UNPAID/PARTIAL) rather than silently discarding the extra amount due.
 export async function setBillingAdjustment(id: string, data: BillingAdjustmentInput) {
   const billing = await db.monthlyStudentBilling.findUniqueOrThrow({ where: { id } });
-  if (billing.status === "PAID") {
-    throw new Error("This bill is fully paid. Reopen it before changing the adjustment.");
-  }
 
   const baseTuition = Number(billing.baseTuition);
   const subtotalBeforeAdjustment = round2(

@@ -24,6 +24,18 @@ Directly implements the sample-case matrix required by §16 and derived in
 
 ## 8.2 End-to-end test (Playwright) — full acceptance flow
 
+**Implemented** at `e2e/acceptance-flow.spec.ts` (config: `playwright.config.ts`). Run with
+`npm run test:e2e` against a running dev server (`npm run dev`) and a real Postgres database —
+there is no mocked backend. The only direct-database work is one-time fixture setup (two classes)
+and final teardown, both via `e2e/fixtures/db-cli.ts` (run through `tsx`, not imported into the
+Playwright-loaded spec file directly — Prisma 7's generated client uses `import.meta`, which
+Playwright's own TS transform can't load in this project's CommonJS setup). Every other id the
+test needs — family, student, bill — is discovered by reading it off the actual rendered UI, the
+same way an admin would. Money math (discounts, adjustment) is hand-computed and asserted exactly
+as a second check on top of `src/lib/billing.test.ts`; financial-report totals (steps 14-16) are
+asserted as before/after deltas rather than exact figures, since the suite may run against a
+shared dev database that already holds other data.
+
 Mirrors the doc's §15 "Definition of Done" checklist as one continuous scripted flow:
 
 1. Submit `/register` as a parent for a new student in an existing class.

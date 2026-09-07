@@ -25,13 +25,6 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
         let body: React.ReactNode;
         if (isLoading || !billing) {
           body = <Skeleton className="h-32 w-full" />;
-        } else if (billing.status === "PAID") {
-          body = (
-            <p className="text-sm text-destructive">
-              This bill is fully paid. Record a payment adjustment first, then reopen it before
-              changing the manual adjustment.
-            </p>
-          );
         } else {
           body = (
             <FORM
@@ -48,8 +41,14 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
                     name="adjustmentNotes"
                     label="Note"
                     type="textarea"
-                    placeholder="e.g. class cancelled Sept 14"
+                    placeholder="e.g. class cancelled Sept 14, or refund for..."
                   />
+                  {billing.status === "PAID" && (
+                    <p className="text-sm text-muted-foreground">
+                      This bill is already paid in full. A negative adjustment records a refund —
+                      it will mark the bill Overpaid so the amount owed back is visible.
+                    </p>
+                  )}
                   {Boolean(error) && (
                     <p className="text-sm text-destructive">Could not save the adjustment. Please try again.</p>
                   )}
@@ -72,7 +71,8 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
             <div>
               <h3 className="text-lg font-medium">Adjustment</h3>
               <p className="text-sm text-muted-foreground">
-                A one-month change. It never touches the class rate or other months.
+                A one-month change. It never touches the class rate or other months. Use a
+                negative amount for a discount or refund, a positive amount to add a charge.
               </p>
             </div>
 

@@ -3,14 +3,14 @@ import { updateClassMonthlyFee } from "@/actions/class-fees";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
 import { updateEmailTemplate } from "@/actions/email-templates";
 import { createEnrollment, endEnrollment } from "@/actions/enrollments";
-import { createExpense, updateExpense } from "@/actions/expenses";
+import { createExpense, deleteExpense, updateExpense, uploadExpenseReceipt } from "@/actions/expenses";
 import {
   createFamily,
   updateFamily,
   toggleFamilyActive,
 } from "@/actions/families";
 import { markFamilyNotificationSent, sendFamilyNotificationEmail } from "@/actions/notifications";
-import { createOtherIncome, updateOtherIncome } from "@/actions/other-income";
+import { createOtherIncome, deleteOtherIncome, updateOtherIncome } from "@/actions/other-income";
 import { createPayment } from "@/actions/payments";
 import { approveRegistrationRequest, rejectRegistrationRequest } from "@/actions/registrations";
 import { updateStudioSettings, uploadLogo } from "@/actions/settings";
@@ -45,8 +45,11 @@ export const mutationRegistry = {
   createPayment,
   createExpense,
   updateExpense,
+  deleteExpense,
+  uploadExpenseReceipt,
   createOtherIncome,
   updateOtherIncome,
+  deleteOtherIncome,
   updateStudioSettings,
   uploadLogo,
   updateEmailTemplate,

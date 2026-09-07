@@ -1,8 +1,9 @@
 "use client";
 
-import { GraduationCap, Plus } from "lucide-react";
+import { Download, GraduationCap, Plus } from "lucide-react";
 import { useState } from "react";
 
+import { getStudents } from "@/actions/students";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
@@ -12,13 +13,35 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
+import { downloadCsv, toCsv } from "@/lib/csv";
 
 export default function StudentsPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data, isLoading } = useQuery("getStudents", [{ search: search || undefined, page, pageSize: 20 }]);
+
+  const exportCsv = async () => {
+    setIsExporting(true);
+    try {
+      // Ignores the current page/search — export is meant to be the full roster, not just what's
+      // currently on screen.
+      const all = await getStudents({ pageSize: 10000, sortBy: "fullName" });
+      const csv = toCsv(all.data, [
+        { label: "Name", value: (s) => s.fullName },
+        { label: "Family", value: (s) => s.familyName },
+        { label: "Date of Birth", value: (s) => (s.dob ? new Date(s.dob).toLocaleDateString() : "") },
+        { label: "Gender", value: (s) => s.gender ?? "" },
+        { label: "Status", value: (s) => (s.isActive ? "Active" : "Inactive") },
+        { label: "Active Classes", value: (s) => s.enrollments.map((e) => e.className).join("; ") },
+      ]);
+      downloadCsv(`students-${new Date().toISOString().split("T")[0]}.csv`, csv);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -26,12 +49,18 @@ export default function StudentsPage() {
         title="Students"
         subtitle="Track enrolled students, profiles, and class history."
         actions={
-          <Button asChild>
-            <Link href="/admin/students/new">
-              <Plus className="size-4" />
-              Add Student
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={exportCsv} disabled={isExporting}>
+              <Download className="size-4" />
+              {isExporting ? "Exporting..." : "Export CSV"}
+            </Button>
+            <Button asChild>
+              <Link href="/admin/students/new">
+                <Plus className="size-4" />
+                Add Student
+              </Link>
+            </Button>
+          </div>
         }
       />
       <Card

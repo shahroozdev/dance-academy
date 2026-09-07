@@ -119,6 +119,7 @@ export default function ExpensesPage() {
                 <TableHead>Date</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Teacher</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Method</TableHead>
                 <TableHead />
@@ -130,6 +131,7 @@ export default function ExpensesPage() {
                   <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
                   <TableCell>{CATEGORY_LABELS[expense.category] ?? expense.category}</TableCell>
                   <TableCell className="font-medium">{expense.description}</TableCell>
+                  <TableCell>{expense.teacherName ?? "—"}</TableCell>
                   <TableCell>{formatCurrency(expense.amount)}</TableCell>
                   <TableCell>{expense.paymentMethod}</TableCell>
                   <TableCell>

@@ -150,14 +150,22 @@ export default function ClassDetailPage() {
             <p className="text-sm text-muted-foreground">Discount Eligible</p>
             <p className="font-medium">{cls.discountEligible ? "Yes" : "No"}</p>
           </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Capacity</p>
+            <p className="font-medium">{cls.capacity ?? "Unlimited"}</p>
+          </div>
         </div>
       </Card>
 
       <Card
         header={
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">
-              Currently Enrolled ({cls.enrollments.length})
+            <span className="flex items-center gap-2 text-sm font-medium">
+              Currently Enrolled ({cls.enrollments.length}
+              {cls.capacity ? ` / ${cls.capacity}` : ""})
+              {cls.capacity !== null && cls.enrollments.length >= cls.capacity && (
+                <Badge variant="destructive">At capacity</Badge>
+              )}
             </span>
             <Button variant="outline" size="sm" asChild>
               <Link href={`/admin/enrollments?classId=${id}`}>Manage</Link>

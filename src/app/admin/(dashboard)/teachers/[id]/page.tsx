@@ -13,6 +13,10 @@ import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
 
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+}
+
 export default function TeacherDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -160,6 +164,40 @@ export default function TeacherDetailPage() {
                     {cls.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card
+        header={
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Payments to This Teacher</span>
+            <span className="text-sm font-medium">{formatCurrency(teacher.totalPaid)} total</span>
+          </div>
+        }
+        headerClassName="border-b"
+      >
+        {teacher.expenses.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <p className="text-sm text-muted-foreground">No expenses linked to this teacher yet.</p>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {teacher.expenses.map((expense) => (
+              <div
+                key={expense.id}
+                className="flex items-center justify-between p-4 hover:bg-muted/50 cursor-pointer"
+                onClick={() => router.push(`/admin/expenses`)}
+              >
+                <div>
+                  <p className="font-medium">{expense.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(expense.date).toLocaleDateString()} · {expense.category.replace(/_/g, " ")}
+                  </p>
+                </div>
+                <p className="font-medium">{formatCurrency(expense.amount)}</p>
               </div>
             ))}
           </div>
