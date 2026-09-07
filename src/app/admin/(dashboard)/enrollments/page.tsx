@@ -1,6 +1,6 @@
 "use client";
 
-import { ListChecks, Plus } from "lucide-react";
+import { ExternalLink, ListChecks, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -33,10 +33,18 @@ export default function EnrollmentsPage() {
         title="Enrollments"
         subtitle="Manage student class enrollments."
         actions={
-          <Button onClick={() => setShowCreate(true)}>
-            <Plus className="size-4" />
-            Add Enrollment
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/register" target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="size-4" />
+                Enrollment Form
+              </Link>
+            </Button>
+            <Button onClick={() => setShowCreate(true)}>
+              <Plus className="size-4" />
+              Add Enrollment
+            </Button>
+          </div>
         }
       />
       <Card
