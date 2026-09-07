@@ -8,8 +8,8 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const db = new PrismaClient({ adapter });
 
 async function main() {
-  const email = process.env.SEED_OWNER_EMAIL ?? "owner@malhaardance.example";
-  const password = process.env.SEED_OWNER_PASSWORD ?? "changeme123";
+  const email = process.env.SEED_OWNER_EMAIL ?? "owner@malhaardance.co";
+  const password = process.env.SEED_OWNER_PASSWORD ?? "Admin@123";
 
   const owner = await db.adminUser.upsert({
     where: { email },

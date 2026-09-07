@@ -93,6 +93,7 @@ export async function getTeacherById(id: string) {
 
   return {
     ...teacher,
+    classes: teacher.classes.map((c) => ({ ...c, standardRate: Number(c.standardRate) })),
     expenses: teacher.expenses.map((e) => ({ ...e, amount: Number(e.amount) })),
     totalPaid: round2(Number(paidAgg._sum.amount ?? 0)),
   };

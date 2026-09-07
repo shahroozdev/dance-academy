@@ -131,7 +131,7 @@ export async function getClassById(id: string) {
 export async function createClass(data: ClassCreateInput) {
   await requireAdmin();
   data = classCreateSchema.parse(data);
-  return db.class.create({
+  const cls = await db.class.create({
     data: {
       name: data.name,
       danceStyle: data.danceStyle,
@@ -148,13 +148,14 @@ export async function createClass(data: ClassCreateInput) {
       isActive: data.isActive,
     },
   });
+  return { ...cls, standardRate: Number(cls.standardRate) };
 }
 
 export async function updateClass(id: string, data: ClassUpdateInput) {
   await requireAdmin();
   id = idSchema.parse(id);
   data = classUpdateSchema.parse(data);
-  return db.class.update({
+  const cls = await db.class.update({
     where: { id },
     data: {
       ...(data.name !== undefined && { name: data.name }),
@@ -172,13 +173,15 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
       ...(data.isActive !== undefined && { isActive: data.isActive }),
     },
   });
+  return { ...cls, standardRate: Number(cls.standardRate) };
 }
 
 export async function toggleClassActive(id: string, isActive: boolean) {
   await requireAdmin();
   id = idSchema.parse(id);
   isActive = booleanSchema.parse(isActive);
-  return db.class.update({ where: { id }, data: { isActive } });
+  const cls = await db.class.update({ where: { id }, data: { isActive } });
+  return { ...cls, standardRate: Number(cls.standardRate) };
 }
 
 // ---------- Roster ----------

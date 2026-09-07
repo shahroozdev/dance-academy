@@ -81,6 +81,7 @@ type FormFeildsProps<T extends FieldValues> = {
   className?: string;
   min?: string;
   max?: string;
+  required?: boolean;
 };
 
 export function FormFeilds<T extends FieldValues = FieldValues>({
@@ -93,6 +94,7 @@ export function FormFeilds<T extends FieldValues = FieldValues>({
   className,
   min,
   max,
+  required,
 }: FormFeildsProps<T>) {
   const { control } = useFormContext<T>();
 
@@ -102,7 +104,16 @@ export function FormFeilds<T extends FieldValues = FieldValues>({
       name={name}
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.error ? "true" : undefined}>
-          {label && <FieldLabel htmlFor={name}>{label}</FieldLabel>}
+          {label && (
+            <FieldLabel htmlFor={name}>
+              {label}
+              {required && (
+                <span className="text-destructive" aria-hidden="true">
+                  *
+                </span>
+              )}
+            </FieldLabel>
+          )}
           <Input
             id={name}
             type={type}

@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
@@ -35,17 +36,31 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
     return (
       <Card
         className="w-full max-w-2xl"
-        header={
-          <>
-            <Logo size={56} />
-            <CardTitle>Thank you!</CardTitle>
-            <CardDescription>
-              Your registration request has been received. We&apos;ll be in
-              touch shortly to confirm enrollment.
-            </CardDescription>
-          </>
-        }
-      />
+        contentClassName="flex flex-col items-center gap-5 py-10 text-center"
+      >
+        <div className="relative">
+          <Logo size={64} />
+          <CheckCircle2
+            className="absolute -right-1.5 -bottom-1.5 size-6 rounded-full bg-background text-primary"
+            strokeWidth={2.5}
+          />
+        </div>
+        <div className="space-y-2">
+          <CardTitle className="text-xl">
+            Thank you for registering!
+          </CardTitle>
+          <CardDescription className="mx-auto max-w-md text-balance">
+            We&apos;ve received your registration request for Malhaar Dance
+            Company. Our team will review the details and reach out to you by
+            email or phone within 1&ndash;2 business days to confirm
+            enrollment and next steps.
+          </CardDescription>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Didn&apos;t hear from us? Feel free to reach out to the studio
+          directly.
+        </p>
+      </Card>
     );
   }
 
@@ -96,7 +111,7 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
           }
         }}
       >
-        {(form) => (
+        {() => (
           <div className="space-y-4 p-4">
             <div className="space-y-3">
               <p className="text-sm font-medium text-foreground">
@@ -106,6 +121,7 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                 name="parentGuardianName"
                 label="Full Name"
                 placeholder="e.g. Anu Sharma"
+                required
               />
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds
@@ -119,6 +135,7 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                   label="Phone"
                   type="tel"
                   placeholder="e.g. (555) 123-4567"
+                  required
                 />
               </div>
             </div>
@@ -129,6 +146,7 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                 name="studentFullName"
                 label="Student Full Name"
                 placeholder="e.g. Nia Sharma"
+                required
               />
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="dob" label="Date of Birth" type="date" max={todayIsoDate()} />
@@ -151,6 +169,7 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                     : "No classes available yet"
                 }
                 disabled={classOptions.length === 0}
+                required
               />
               <FormFeilds
                 name="previousDanceExperience"
@@ -169,11 +188,13 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                   name="emergencyContactName"
                   label="Contact Name"
                   placeholder="e.g. Priya Sharma"
+                  required
                 />
                 <FormFeilds
                   name="emergencyContactRelationship"
                   label="Relationship"
                   placeholder="e.g. Grandmother"
+                  required
                 />
               </div>
               <FormFeilds
@@ -181,6 +202,7 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                 label="Emergency Phone"
                 type="tel"
                 placeholder="e.g. (555) 123-4567"
+                required
               />
             </div>
 
@@ -197,11 +219,7 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting || !form.formState.isValid}
-            >
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Submitting..." : "Submit Registration"}
             </Button>
           </div>

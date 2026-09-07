@@ -160,9 +160,11 @@ export function AppearanceForm({ settings }: { settings: StudioSettingsData }) {
   );
 }
 
+const DEFAULT_LOGO_SRC = "/images/malhaar_dance_logo.png";
+
 export function BrandingForm({ settings }: { settings: StudioSettingsData }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(settings.logoUrl);
+  const [preview, setPreview] = useState<string | null>(settings.logoUrl ?? DEFAULT_LOGO_SRC);
   const [uploading, setUploading] = useState(false);
 
   const { mutate: updateSettings, isLoading: isSavingName } = useMutate("updateStudioSettings", {

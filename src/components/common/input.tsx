@@ -44,6 +44,30 @@ type InputProps = {
 // land in the field, instead of only being caught by zod after the fact.
 const PHONE_DISALLOWED_CHARS = /[^\d+\s().-]/g;
 
+// Formats digits as the user types: US-style "(555) 123-4567" for local numbers, or
+// "+<country> XXX XXX XXX" grouping once a leading "+" signals an international number.
+// Digit counts are capped so the result always fits the 20-char limit in the phone schema.
+function formatPhoneNumber(raw: string): string {
+  const stripped = raw.replace(PHONE_DISALLOWED_CHARS, "");
+
+  if (stripped.trimStart().startsWith("+")) {
+    const digits = stripped.replace(/\D/g, "").slice(0, 15);
+    if (!digits) return "+";
+    const groups = digits.match(/.{1,3}/g) ?? [];
+    return `+${groups.join(" ")}`;
+  }
+
+  const digits = stripped.replace(/\D/g, "").slice(0, 10);
+  const area = digits.slice(0, 3);
+  const mid = digits.slice(3, 6);
+  const last = digits.slice(6, 10);
+
+  if (digits.length > 6) return `(${area}) ${mid}-${last}`;
+  if (digits.length > 3) return `(${area}) ${mid}`;
+  if (digits.length > 0) return `(${area}`;
+  return "";
+}
+
 export const Input = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   InputProps
@@ -109,7 +133,7 @@ export const Input = forwardRef<
       onBlur={props.onBlur}
       onChange={(event) => {
         const raw = event.target.value;
-        onChange?.(type === "tel" ? raw.replace(PHONE_DISALLOWED_CHARS, "") : raw);
+        onChange?.(type === "tel" ? formatPhoneNumber(raw) : raw);
       }}
     />
   );

@@ -38,7 +38,7 @@ export default function NewClassPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title="Add Class" subtitle="Create a new dance class." />
       <Card
-        className="max-w-2xl"
+        // className="max-w-2xl"
         header={
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Class Details</span>
