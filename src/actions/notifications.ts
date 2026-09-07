@@ -5,7 +5,6 @@ import { sendAdminOperationalAlert, sendParentNotificationConfirmation, sendTemp
 import * as notificationData from "@/actions/notification-data";
 import { sendPaymentReminders } from "@/actions/reminders";
 import { validateListQuery , idSchema } from "@/actions/validation.schema";
-import { sendMonthlyWhatsApp } from "@/actions/whatsapp-notifications";
 import type { Prisma } from "@/generated/prisma/client";
 import { normalizeMonth } from "@/lib/billing";
 import { db } from "@/lib/db";
@@ -55,11 +54,6 @@ export async function markFamilyNotificationSent(familyId: string, monthInput: s
   });
   await sendParentNotificationConfirmation({ familyName: preview.familyName, month, channel: "Manual" });
   return log;
-}
-
-export async function sendFamilyNotificationWhatsApp(familyId: string, monthInput: string) {
-  await requireAdmin();
-  return sendMonthlyWhatsApp(idSchema.parse(familyId), monthInput);
 }
 
 export async function sendFamilyPaymentReminder(familyId: string, monthInput: string) {

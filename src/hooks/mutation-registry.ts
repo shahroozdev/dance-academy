@@ -14,7 +14,7 @@ import {
   updateFamily,
   toggleFamilyActive,
 } from "@/actions/families";
-import { markFamilyNotificationSent, sendFamilyNotificationEmail, sendFamilyNotificationWhatsApp, sendFamilyPaymentReminder } from "@/actions/notifications";
+import { markFamilyNotificationSent, sendFamilyNotificationEmail, sendFamilyPaymentReminder } from "@/actions/notifications";
 import { createOtherIncome, deleteOtherIncome, updateOtherIncome } from "@/actions/other-income";
 import { createPayment, createRefund } from "@/actions/payments";
 import { approveRegistrationRequest, rejectRegistrationRequest } from "@/actions/registrations";
@@ -66,7 +66,6 @@ export const mutationRegistry = {
   updateEmailTemplate,
   markFamilyNotificationSent,
   sendFamilyNotificationEmail,
-  sendFamilyNotificationWhatsApp,
   sendFamilyPaymentReminder,
 } as const;
 

@@ -2,6 +2,7 @@
 
 ## 2026-09-08
 
+- The fee notification window no longer shows a direct WhatsApp send button while studio WhatsApp integration setup is unavailable. Staff can still open WhatsApp with the message prepared for manual sending.
 - Settings now has a dedicated Notifications tab, with staff alerts grouped into Registration, Billing & Payments, Parent Communication, and System alerts. Billing Settings now contains only billing rules and payment timing.
 - The Save Billing Alert button now stays visible while scrolling through the billing notification settings.
 - **Monthly billing-ready email** — Billing Settings now lets you choose which staff email receives an alert after the automatic monthly billing run. The alert is on by default, can be turned off, and reminds staff to review and finalize class fees before notifying parents.

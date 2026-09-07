@@ -33,10 +33,6 @@ export function NotificationModal({
     invalidateKeys: ["getMonthlyBillings", "getPendingNotifications", "getNotificationLogs"],
   });
   const [emailResult, setEmailResult] = useState<{ sent: boolean; error?: string } | null>(null);
-  const { mutate: sendWhatsApp, isLoading: isSendingWhatsApp, error: whatsappError } = useMutate("sendFamilyNotificationWhatsApp", {
-    invalidateKeys: ["getMonthlyBillings", "getPendingNotifications", "getNotificationLogs", "getAdminNotificationSummary"],
-  });
-  const [whatsappResult, setWhatsappResult] = useState<{ sent: boolean; error?: string } | null>(null);
   const { mutate: sendReminder, isLoading: isSendingReminder, error: reminderError } = useMutate("sendFamilyPaymentReminder", {
     invalidateKeys: ["getNotificationLogs", "getAdminNotificationSummary"],
   });
@@ -62,7 +58,7 @@ export function NotificationModal({
           <div>
             <h3 className="text-lg font-medium">Send Notification</h3>
             <p className="text-sm text-muted-foreground">
-              Send through the studio&apos;s WhatsApp account or email, or open WhatsApp to send manually.
+              Send by email or open WhatsApp to send the prepared message manually.
             </p>
           </div>
 
@@ -93,13 +89,6 @@ export function NotificationModal({
                   setReminderResult(null);
                   try { setReminderResult(await sendReminder(familyId, month)); } catch { /* The mutation error is displayed below. */ }
                 }}>{isSendingReminder ? "Sending..." : "Send Payment Reminder"}</Button>
-                <Button type="button" disabled={isSendingWhatsApp || !preview.finalized} onClick={async () => {
-                  setWhatsappResult(null);
-                  try { setWhatsappResult(await sendWhatsApp(familyId, month)); } catch { /* The mutation error is displayed below. */ }
-                }}>
-                  <MessageCircle className="size-4" />
-                  {isSendingWhatsApp ? "Sending..." : "Send WhatsApp"}
-                </Button>
                 <Button type="button" variant="outline" onClick={copyMessage}>
                   {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
                   {copied ? "Copied!" : "Copy Message"}
@@ -122,11 +111,6 @@ export function NotificationModal({
                 {reminderResult.sent ? "Payment reminder sent." : reminderResult.error}
               </p>}
               {!!reminderError && <p className="text-sm text-destructive">Could not send the payment reminder.</p>}
-
-              {whatsappResult && <p className={whatsappResult.sent ? "text-sm text-primary" : "text-sm text-destructive"}>
-                {whatsappResult.sent ? "WhatsApp accepted the message for delivery." : whatsappResult.error}
-              </p>}
-              {!!whatsappError && <p className="text-sm text-destructive">Could not send WhatsApp. Please try again.</p>}
 
               {emailResult && (
                 <p className={emailResult.sent ? "text-sm text-primary" : "text-sm text-destructive"}>

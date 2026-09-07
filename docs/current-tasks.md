@@ -30,6 +30,12 @@ _Nothing currently in progress._
 ## Done
 
 ### 2026-09-08
+- **Audited unavailable WhatsApp controls.** All visible admin screens now offer only manual
+  WhatsApp opening while API setup is unavailable. Removed the unused direct-send browser action
+  and corrected operating documentation that still described that button.
+- **Hid unavailable direct WhatsApp sending.** The fee notification window no longer offers a
+  direct API send while its configuration is unavailable; staff can still open WhatsApp with the
+  prepared message and send it manually.
 - **Separated notification settings from billing.** Settings now has a responsive Notifications
   tab with staff alerts grouped into registration, billing and payments, parent communications,
   and system alerts. Billing now contains only discounts, due dates, and reminder timing.
