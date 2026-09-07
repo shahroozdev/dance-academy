@@ -100,6 +100,22 @@ model Student {
   @@index([isActive])
 }
 
+// ---------- Teachers ----------
+
+model Teacher {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  notes     String?
+  isActive  Boolean  @default(true)
+  classes   Class[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+}
+
 // ---------- Classes & Enrollments ----------
 
 enum PricingType {
@@ -122,7 +138,8 @@ model Class {
   name          String
   danceStyle    String
   level         String?
-  teacher       String?
+  teacherId     String?
+  teacher       Teacher?     @relation(fields: [teacherId], references: [id])
   dayOfWeek     DayOfWeek?
   startTime     String?      // "16:30" - stored as string, display-only
   endTime       String?

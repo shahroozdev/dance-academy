@@ -45,3 +45,40 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     partialCount,
   };
 }
+
+export type RegistrationFunnelStage = { stage: string; count: number };
+
+// Submitted -> Reviewed (approved or rejected) -> Approved & Enrolled — each stage a subset of the
+// one before it, so the chart reads as a true funnel rather than a plain status breakdown.
+export async function getRegistrationFunnel(): Promise<RegistrationFunnelStage[]> {
+  const [submitted, processed, rejected] = await Promise.all([
+    db.registrationRequest.count(),
+    db.registrationRequest.count({ where: { status: "PROCESSED" } }),
+    db.registrationRequest.count({ where: { status: "REJECTED" } }),
+  ]);
+
+  return [
+    { stage: "Submitted", count: submitted },
+    { stage: "Reviewed", count: processed + rejected },
+    { stage: "Approved & Enrolled", count: processed },
+  ];
+}
+
+export type BillingStatusCount = { status: "UNPAID" | "PARTIAL" | "PAID" | "OVERPAID"; count: number };
+
+// Mirrors the billing list page's status set — DRAFT bills aren't shown there either, since
+// they're an internal pre-finalization state, not something admins act on.
+export async function getBillingStatusBreakdown(): Promise<BillingStatusCount[]> {
+  const monthValue = currentMonthValue();
+  const month = normalizeMonth(monthValue);
+  const statuses = ["UNPAID", "PARTIAL", "PAID", "OVERPAID"] as const;
+
+  const rows = await db.monthlyStudentBilling.groupBy({
+    by: ["status"],
+    where: { month, status: { in: [...statuses] } },
+    _count: { _all: true },
+  });
+  const countByStatus = new Map(rows.map((r) => [r.status, r._count?._all ?? 0]));
+
+  return statuses.map((status) => ({ status, count: countByStatus.get(status) ?? 0 }));
+}

@@ -19,6 +19,7 @@ import {
   updateStudent,
   toggleStudentActive,
 } from "@/actions/students";
+import { createTeacher, updateTeacher, toggleTeacherActive } from "@/actions/teachers";
 
 export const mutationRegistry = {
   createFamily,
@@ -30,6 +31,9 @@ export const mutationRegistry = {
   createClass,
   updateClass,
   toggleClassActive,
+  createTeacher,
+  updateTeacher,
+  toggleTeacherActive,
   createEnrollment,
   endEnrollment,
   approveRegistrationRequest,

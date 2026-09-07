@@ -36,13 +36,20 @@ async function main() {
     return;
   }
 
+  const [meeraIyer, rohanVerma, simranKaur, guestChoreographer] = await Promise.all([
+    db.teacher.create({ data: { name: "Meera Iyer" } }),
+    db.teacher.create({ data: { name: "Rohan Verma" } }),
+    db.teacher.create({ data: { name: "Simran Kaur" } }),
+    db.teacher.create({ data: { name: "Guest Choreographer" } }),
+  ]);
+
   const [bharatBeg, bharatInt, kathakBeg, kathakInt, bollywood, summerIntensive] = await Promise.all([
     db.class.create({
       data: {
         name: "Bharatanatyam Beginner",
         danceStyle: "Bharatanatyam",
         level: "Beginner",
-        teacher: "Meera Iyer",
+        teacherId: meeraIyer.id,
         dayOfWeek: "MONDAY",
         startTime: "16:00",
         endTime: "17:00",
@@ -56,7 +63,7 @@ async function main() {
         name: "Bharatanatyam Intermediate",
         danceStyle: "Bharatanatyam",
         level: "Intermediate",
-        teacher: "Meera Iyer",
+        teacherId: meeraIyer.id,
         dayOfWeek: "WEDNESDAY",
         startTime: "16:00",
         endTime: "17:00",
@@ -70,7 +77,7 @@ async function main() {
         name: "Kathak Beginner",
         danceStyle: "Kathak",
         level: "Beginner",
-        teacher: "Rohan Verma",
+        teacherId: rohanVerma.id,
         dayOfWeek: "TUESDAY",
         startTime: "17:00",
         endTime: "18:00",
@@ -84,7 +91,7 @@ async function main() {
         name: "Kathak Intermediate",
         danceStyle: "Kathak",
         level: "Intermediate",
-        teacher: "Rohan Verma",
+        teacherId: rohanVerma.id,
         dayOfWeek: "THURSDAY",
         startTime: "17:00",
         endTime: "18:15",
@@ -98,7 +105,7 @@ async function main() {
         name: "Bollywood Fusion",
         danceStyle: "Bollywood",
         level: "All Levels",
-        teacher: "Simran Kaur",
+        teacherId: simranKaur.id,
         dayOfWeek: "SATURDAY",
         startTime: "10:00",
         endTime: "10:45",
@@ -112,7 +119,7 @@ async function main() {
         name: "Summer Intensive Workshop",
         danceStyle: "Mixed",
         level: "All Levels",
-        teacher: "Guest Choreographer",
+        teacherId: guestChoreographer.id,
         standardRate: 150,
         pricingType: "SEASONAL",
       },

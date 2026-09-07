@@ -38,6 +38,13 @@ export default function EditClassPage() {
     invalidateKeys: ["getClasses", "getClassById"],
     onSuccess: () => router.push(`/admin/classes/${id}`),
   });
+  const { data: teachers } = useQuery("getTeachers", [{ isActive: true, pageSize: 100, sortBy: "name" }]);
+  const teacherOptions = teachers?.data.map((t) => ({ label: t.name, value: t.id })) ?? [];
+  // Keep the currently-assigned teacher selectable even if they've since been deactivated —
+  // otherwise saving the form with no other changes would silently unassign them.
+  if (cls?.teacher && !teacherOptions.some((o) => o.value === cls.teacher!.id)) {
+    teacherOptions.push({ label: `${cls.teacher.name} (inactive)`, value: cls.teacher.id });
+  }
 
   if (isLoading) {
     return (
@@ -80,7 +87,7 @@ export default function EditClassPage() {
             name: cls.name,
             danceStyle: cls.danceStyle,
             level: cls.level ?? "",
-            teacher: cls.teacher ?? "",
+            teacherId: cls.teacher?.id ?? "",
             dayOfWeek: cls.dayOfWeek ?? undefined,
             startTime: cls.startTime ?? "",
             endTime: cls.endTime ?? "",
@@ -102,7 +109,18 @@ export default function EditClassPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="level" label="Level" placeholder="e.g. Beginner" />
-                <FormFeilds name="teacher" label="Teacher" placeholder="e.g. Guru Smitha" />
+                <div className="space-y-1">
+                  <FormFeilds
+                    name="teacherId"
+                    label="Teacher"
+                    type="select"
+                    options={teacherOptions}
+                    placeholder={teacherOptions.length ? "Select a teacher..." : "No teachers yet"}
+                  />
+                  <Link href="/admin/teachers/new" className="text-xs text-muted-foreground hover:underline">
+                    + Add a new teacher
+                  </Link>
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <FormFeilds name="dayOfWeek" label="Day" type="select" options={DAY_OPTIONS} placeholder="Select day..." />

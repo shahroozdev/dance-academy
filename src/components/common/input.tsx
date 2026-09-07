@@ -36,7 +36,13 @@ type InputProps = {
   onChange?: (value: string) => void;
   onBlur?: () => void;
   "aria-invalid"?: boolean;
+  min?: string;
+  max?: string;
 };
+
+// Matches the phone regex in registrations.schema.ts — stripped live so a letter can never even
+// land in the field, instead of only being caught by zod after the fact.
+const PHONE_DISALLOWED_CHARS = /[^\d+\s().-]/g;
 
 export const Input = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
@@ -98,8 +104,13 @@ export const Input = forwardRef<
       disabled={props.disabled}
       className={props.className}
       aria-invalid={props["aria-invalid"]}
+      min={props.min}
+      max={props.max}
       onBlur={props.onBlur}
-      onChange={(event) => onChange?.(event.target.value)}
+      onChange={(event) => {
+        const raw = event.target.value;
+        onChange?.(type === "tel" ? raw.replace(PHONE_DISALLOWED_CHARS, "") : raw);
+      }}
     />
   );
 });

@@ -7,6 +7,7 @@ import { FORM, FormFeilds } from "@/components/common/form";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { useMutate } from "@/hooks/useMutate";
+import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
 
 const DAY_OPTIONS = [
@@ -30,6 +31,8 @@ export default function NewClassPage() {
     invalidateKeys: ["getClasses"],
     onSuccess: (cls) => router.push(`/admin/classes/${cls.id}`),
   });
+  const { data: teachers } = useQuery("getTeachers", [{ isActive: true, pageSize: 100, sortBy: "name" }]);
+  const teacherOptions = teachers?.data.map((t) => ({ label: t.name, value: t.id })) ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,7 +55,7 @@ export default function NewClassPage() {
             name: "",
             danceStyle: "",
             level: "",
-            teacher: "",
+            teacherId: "",
             dayOfWeek: undefined,
             startTime: "",
             endTime: "",
@@ -74,7 +77,18 @@ export default function NewClassPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="level" label="Level" placeholder="e.g. Beginner" />
-                <FormFeilds name="teacher" label="Teacher" placeholder="e.g. Guru Smitha" />
+                <div className="space-y-1">
+                  <FormFeilds
+                    name="teacherId"
+                    label="Teacher"
+                    type="select"
+                    options={teacherOptions}
+                    placeholder={teacherOptions.length ? "Select a teacher..." : "No teachers yet"}
+                  />
+                  <Link href="/admin/teachers/new" className="text-xs text-muted-foreground hover:underline">
+                    + Add a new teacher
+                  </Link>
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <FormFeilds name="dayOfWeek" label="Day" type="select" options={DAY_OPTIONS} placeholder="Select day..." />

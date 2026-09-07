@@ -12,7 +12,8 @@ export type ClassListItem = {
   name: string;
   danceStyle: string;
   level: string | null;
-  teacher: string | null;
+  teacherId: string | null;
+  teacherName: string | null;
   dayOfWeek: string | null;
   startTime: string | null;
   endTime: string | null;
@@ -39,7 +40,7 @@ export async function getClasses(params?: {
     where.OR = [
       { name: { contains: search, mode: "insensitive" } },
       { danceStyle: { contains: search, mode: "insensitive" } },
-      { teacher: { contains: search, mode: "insensitive" } },
+      { teacher: { name: { contains: search, mode: "insensitive" } } },
     ];
   }
   if (isActive !== undefined) where.isActive = isActive;
@@ -49,6 +50,7 @@ export async function getClasses(params?: {
       where,
       include: {
         enrollments: { where: { status: "ACTIVE" }, select: { id: true } },
+        teacher: { select: { id: true, name: true } },
       },
       orderBy: { [sortBy]: sortOrder },
       skip: (page - 1) * pageSize,
@@ -63,7 +65,8 @@ export async function getClasses(params?: {
       name: c.name,
       danceStyle: c.danceStyle,
       level: c.level,
-      teacher: c.teacher,
+      teacherId: c.teacher?.id ?? null,
+      teacherName: c.teacher?.name ?? null,
       dayOfWeek: c.dayOfWeek,
       startTime: c.startTime,
       endTime: c.endTime,
@@ -85,6 +88,7 @@ export async function getClassById(id: string) {
   const cls = await db.class.findUniqueOrThrow({
     where: { id },
     include: {
+      teacher: { select: { id: true, name: true } },
       enrollments: {
         where: { status: "ACTIVE" },
         include: {
@@ -121,7 +125,7 @@ export async function createClass(data: ClassCreateInput) {
       name: data.name,
       danceStyle: data.danceStyle,
       level: data.level || null,
-      teacher: data.teacher || null,
+      teacherId: data.teacherId || null,
       dayOfWeek: data.dayOfWeek ?? null,
       startTime: data.startTime || null,
       endTime: data.endTime || null,
@@ -141,7 +145,7 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
       ...(data.name !== undefined && { name: data.name }),
       ...(data.danceStyle !== undefined && { danceStyle: data.danceStyle }),
       ...(data.level !== undefined && { level: data.level || null }),
-      ...(data.teacher !== undefined && { teacher: data.teacher || null }),
+      ...(data.teacherId !== undefined && { teacherId: data.teacherId || null }),
       ...(data.dayOfWeek !== undefined && { dayOfWeek: data.dayOfWeek ?? null }),
       ...(data.startTime !== undefined && { startTime: data.startTime || null }),
       ...(data.endTime !== undefined && { endTime: data.endTime || null }),

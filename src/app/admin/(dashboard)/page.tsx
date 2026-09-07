@@ -1,5 +1,9 @@
-import { getDashboardSummary } from "@/actions/dashboard";
-import { Card, CardContent, CardTitle } from "@/components/common/card";
+import { getBillingStatusBreakdown, getDashboardSummary, getRegistrationFunnel } from "@/actions/dashboard";
+import { getMonthlyTrend } from "@/actions/financial-reports";
+import { BillingStatusChart } from "@/components/charts/billing-status-chart";
+import { RegistrationFunnelChart } from "@/components/charts/registration-funnel-chart";
+import { RevenueTrendChart } from "@/components/charts/revenue-trend-chart";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/common/card";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 
@@ -17,8 +21,13 @@ function formatMonthLabel(value: string): string {
 }
 
 export default async function AdminDashboardPage() {
-  const summary = await getDashboardSummary();
   const currentYear = new Date().getUTCFullYear();
+  const [summary, funnel, billingStatus, trend] = await Promise.all([
+    getDashboardSummary(),
+    getRegistrationFunnel(),
+    getBillingStatusBreakdown(),
+    getMonthlyTrend(currentYear),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -34,6 +43,44 @@ export default async function AdminDashboardPage() {
           value={String(summary.unpaidCount + summary.partialCount)}
           href="/admin/billing"
         />
+      </div>
+
+      <Card
+        header={
+          <>
+            <CardTitle>Revenue Trend</CardTitle>
+            <CardDescription>Income vs. expenses by month, {currentYear}.</CardDescription>
+          </>
+        }
+        headerClassName="border-b"
+      >
+        <RevenueTrendChart data={trend} />
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card
+          header={
+            <>
+              <CardTitle>Registration Funnel</CardTitle>
+              <CardDescription>All-time registration requests, submitted through enrolled.</CardDescription>
+            </>
+          }
+          headerClassName="border-b"
+        >
+          <RegistrationFunnelChart data={funnel} />
+        </Card>
+
+        <Card
+          header={
+            <>
+              <CardTitle>Billing Status</CardTitle>
+              <CardDescription>{formatMonthLabel(summary.month)} bills by status.</CardDescription>
+            </>
+          }
+          headerClassName="border-b"
+        >
+          <BillingStatusChart data={billingStatus} />
+        </Card>
       </div>
 
       <Card

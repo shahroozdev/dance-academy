@@ -79,6 +79,8 @@ type FormFeildsProps<T extends FieldValues> = {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  min?: string;
+  max?: string;
 };
 
 export function FormFeilds<T extends FieldValues = FieldValues>({
@@ -89,6 +91,8 @@ export function FormFeilds<T extends FieldValues = FieldValues>({
   placeholder,
   disabled,
   className,
+  min,
+  max,
 }: FormFeildsProps<T>) {
   const { control } = useFormContext<T>();
 
@@ -106,6 +110,8 @@ export function FormFeilds<T extends FieldValues = FieldValues>({
             placeholder={placeholder}
             disabled={disabled}
             className={className}
+            min={min}
+            max={max}
             value={(field.value as string | undefined) ?? ""}
             name={field.name}
             onChange={field.onChange}

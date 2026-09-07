@@ -117,7 +117,13 @@ export default function ClassDetailPage() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Teacher</p>
-            <p className="font-medium">{cls.teacher ?? "—"}</p>
+            {cls.teacher ? (
+              <Link href={`/admin/teachers/${cls.teacher.id}`} className="font-medium hover:underline">
+                {cls.teacher.name}
+              </Link>
+            ) : (
+              <p className="font-medium">—</p>
+            )}
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Schedule</p>

@@ -22,6 +22,7 @@ import {
 } from "@/actions/registrations";
 import { getStudioSettings } from "@/actions/settings";
 import { getStudents, getStudentById } from "@/actions/students";
+import { getTeachers, getTeacherById } from "@/actions/teachers";
 
 export const queryRegistry = {
   getFamilies,
@@ -31,6 +32,8 @@ export const queryRegistry = {
   getClasses,
   getClassById,
   getClassRoster,
+  getTeachers,
+  getTeacherById,
   getEnrollments,
   getRegistrationRequests,
   getRegistrationRequestById,

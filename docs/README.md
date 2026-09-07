@@ -18,6 +18,7 @@ the user's request.
 6. [06-financial-reporting.md](./06-financial-reporting.md) — income/expense/profit dashboard logic
 7. [07-implementation-roadmap.md](./07-implementation-roadmap.md) — phased delivery plan
 8. [08-testing-and-acceptance.md](./08-testing-and-acceptance.md) — acceptance test suite mapped to the requirements doc
+9. [09-status-report-and-gap-analysis.md](./09-status-report-and-gap-analysis.md) — current build status vs. the requirements doc, section by section, plus what the doc itself doesn't account for (e.g. Teacher management)
 
 ## One-paragraph summary
 

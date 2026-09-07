@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
+import { todayIsoDate } from "@/lib/utils";
 
 export default function EditStudentPage() {
   const params = useParams();
@@ -97,7 +98,7 @@ export default function EditStudentPage() {
                 />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormFeilds name="dob" label="Date of Birth" type="date" />
+                <FormFeilds name="dob" label="Date of Birth" type="date" max={todayIsoDate()} />
                 <FormFeilds
                   name="gender"
                   label="Gender"

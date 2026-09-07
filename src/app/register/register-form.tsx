@@ -11,7 +11,9 @@ import {
 import { Button } from "@/components/common/button";
 import { Card, CardDescription, CardTitle } from "@/components/common/card";
 import { FORM, FormFeilds } from "@/components/common/form";
+import { Logo } from "@/components/layout/logo";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { todayIsoDate } from "@/lib/utils";
 
 const GENDER_OPTIONS = [
   { label: "Male", value: "MALE" },
@@ -32,13 +34,14 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
   if (submitted) {
     return (
       <Card
-        className="w-full max-w-lg"
+        className="w-full max-w-2xl"
         header={
           <>
+            <Logo size={56} />
             <CardTitle>Thank you!</CardTitle>
             <CardDescription>
-              Your registration request has been received. We&apos;ll be in touch shortly to confirm
-              enrollment.
+              Your registration request has been received. We&apos;ll be in
+              touch shortly to confirm enrollment.
             </CardDescription>
           </>
         }
@@ -48,12 +51,17 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
 
   return (
     <Card
-      className="w-full max-w-lg"
+      className="w-full max-w-2xl"
       header={
-        <>
-          <CardTitle>Malhaar Dance Company Registration</CardTitle>
-          <CardDescription>Tell us about your dancer and we&apos;ll get them enrolled.</CardDescription>
-        </>
+        <div className="flex  gap-3 items-center">
+          <Logo size={56} />
+          <div>
+            <CardTitle>Malhaar Dance Company Registration</CardTitle>
+            <CardDescription>
+              Tell us about your dancer and we&apos;ll get them enrolled.
+            </CardDescription>
+          </div>
+        </div>
       }
     >
       <FORM
@@ -80,7 +88,9 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
             await createRegistrationRequest(data);
             setSubmitted(true);
           } catch {
-            setError("Something went wrong submitting your registration. Please try again.");
+            setError(
+              "Something went wrong submitting your registration. Please try again.",
+            );
           } finally {
             setIsSubmitting(false);
           }
@@ -89,19 +99,39 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
         {(form) => (
           <div className="space-y-4 p-4">
             <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground">Parent / Guardian</p>
-              <FormFeilds name="parentGuardianName" label="Full Name" placeholder="e.g. Anu Sharma" />
+              <p className="text-sm font-medium text-foreground">
+                Parent / Guardian
+              </p>
+              <FormFeilds
+                name="parentGuardianName"
+                label="Full Name"
+                placeholder="e.g. Anu Sharma"
+              />
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormFeilds name="parentEmail" label="Email" type="email" placeholder="anu@example.com" />
-                <FormFeilds name="parentPhone" label="Phone" type="tel" placeholder="e.g. (555) 123-4567" />
+                <FormFeilds
+                  name="parentEmail"
+                  label="Email"
+                  type="email"
+                  placeholder="anu@example.com"
+                />
+                <FormFeilds
+                  name="parentPhone"
+                  label="Phone"
+                  type="tel"
+                  placeholder="e.g. (555) 123-4567"
+                />
               </div>
             </div>
 
             <div className="space-y-3 border-t pt-4">
               <p className="text-sm font-medium text-foreground">Student</p>
-              <FormFeilds name="studentFullName" label="Student Full Name" placeholder="e.g. Nia Sharma" />
+              <FormFeilds
+                name="studentFullName"
+                label="Student Full Name"
+                placeholder="e.g. Nia Sharma"
+              />
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormFeilds name="dob" label="Date of Birth" type="date" />
+                <FormFeilds name="dob" label="Date of Birth" type="date" max={todayIsoDate()} />
                 <FormFeilds
                   name="gender"
                   label="Gender"
@@ -115,7 +145,11 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                 label="Requested Class"
                 type="select"
                 options={classOptions}
-                placeholder={classOptions.length ? "Select a class..." : "No classes available yet"}
+                placeholder={
+                  classOptions.length
+                    ? "Select a class..."
+                    : "No classes available yet"
+                }
                 disabled={classOptions.length === 0}
               />
               <FormFeilds
@@ -127,16 +161,27 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
             </div>
 
             <div className="space-y-3 border-t pt-4">
-              <p className="text-sm font-medium text-foreground">Emergency Contact</p>
+              <p className="text-sm font-medium text-foreground">
+                Emergency Contact
+              </p>
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormFeilds name="emergencyContactName" label="Contact Name" placeholder="e.g. Priya Sharma" />
+                <FormFeilds
+                  name="emergencyContactName"
+                  label="Contact Name"
+                  placeholder="e.g. Priya Sharma"
+                />
                 <FormFeilds
                   name="emergencyContactRelationship"
                   label="Relationship"
                   placeholder="e.g. Grandmother"
                 />
               </div>
-              <FormFeilds name="emergencyPhone" label="Emergency Phone" type="tel" placeholder="e.g. (555) 123-4567" />
+              <FormFeilds
+                name="emergencyPhone"
+                label="Emergency Phone"
+                type="tel"
+                placeholder="e.g. (555) 123-4567"
+              />
             </div>
 
             <div className="space-y-3 border-t pt-4">
@@ -152,7 +197,11 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting || !form.formState.isValid}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting || !form.formState.isValid}
+            >
               {isSubmitting ? "Submitting..." : "Submit Registration"}
             </Button>
           </div>
@@ -177,7 +226,10 @@ function ConsentField({
       name={name}
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.error ? "true" : undefined}>
-          <FieldLabel htmlFor={name} className="flex-row items-start gap-2 font-normal">
+          <FieldLabel
+            htmlFor={name}
+            className="flex-row items-start gap-2 font-normal"
+          >
             <input
               id={name}
               type="checkbox"

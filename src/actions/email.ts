@@ -27,9 +27,13 @@ export async function sendTemplatedEmail(
   const meta = EMAIL_TEMPLATES[key];
   const template = templateRow ?? { subject: meta.defaultSubject, body: meta.defaultBody };
   const { subject, text } = renderEmailTemplate(template, { ...vars, studioName });
+  // Falls back to the app's own logo (as an absolute URL — email clients can't resolve relative
+  // paths) whenever a studio hasn't uploaded a custom one, so the header never shows bare text.
+  const appUrl = (process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/$/, "");
+  const logoUrl = settings?.logoUrl ?? `${appUrl}/images/malhaar_dance_logo.png`;
   const html = wrapEmailHtml({
     studioName,
-    logoUrl: settings?.logoUrl ?? null,
+    logoUrl,
     primaryColor: settings?.primaryColor || "#9B1B5E",
     bodyText: text,
   });

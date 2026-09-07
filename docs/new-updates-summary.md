@@ -1,5 +1,9 @@
 # Updates Summary
 
+## 2026-09-07
+
+- **New Teachers section** — Added a Teachers page to the admin sidebar. You can now keep a proper list of instructors with their contact info, and each teacher's page shows every class they teach and how many students are currently enrolled in each. Adding or editing a class now lets you pick the teacher from a dropdown instead of typing their name — this keeps one teacher's name consistent everywhere instead of it being typed slightly differently on different classes.
+
 ## 2026-09-05
 
 - **Studio settings expanded** — The Settings page now lets you manage discount percentages, outbound email setup, and WhatsApp connection details yourself, without needing a developer to change any files.

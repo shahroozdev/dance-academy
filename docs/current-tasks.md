@@ -28,6 +28,20 @@ _Nothing currently in progress._
 
 ## Done
 
+### 2026-09-07
+- **Added a Teacher module.** Requirements doc only gave `Class` a free-text `teacher` string,
+  flagged as the doc's clearest blind spot in `docs/09-status-report-and-gap-analysis.md` §9.4.
+  Added a `Teacher` table with full CRUD at `/admin/teachers` (list/detail/new/edit, mirroring the
+  Families module), and turned `Class.teacher` into a real `teacherId` relation — the Class
+  create/edit forms now use a Teacher picker (with an inline "add a new teacher" shortcut) instead
+  of free text, and the Classes list/detail pages show/link the linked teacher. Migration
+  (`20260907065905_add_teacher_module`) backfilled one `Teacher` row per distinct existing
+  free-text name and relinked all classes before dropping the old column — verified against the
+  live data first (4 distinct names, 6 classes, all correctly relinked, nothing lost). `npx tsc
+  --noEmit`, `eslint`, `npm test` (52 tests), and `npm run build` all pass.
+  Deliberately **not** linked `Expense.teacherId` in this pass (kept out to keep the diff scoped
+  per AGENTS.md Rule 8) — flagged as a natural fast-follow for instructor-pay reporting.
+
 ### 2026-09-05
 - Discount policy, SMTP, and WhatsApp credentials moved from `.env` into admin-editable
   `StudioSettings` (encrypted at rest for the SMTP password / WhatsApp access token).

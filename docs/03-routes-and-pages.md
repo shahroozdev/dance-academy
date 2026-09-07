@@ -22,6 +22,10 @@ middleware that checks for a valid session and redirects to `/admin/login` other
 | `/admin/students/new` | Admin | Create student manually |
 | `/admin/students/[id]` | Admin | Student detail: profile, active enrollments, billing history, notes |
 | `/admin/students/[id]/edit` | Admin | Edit student |
+| `/admin/teachers` | Admin | Teacher list, search (not in the original requirements doc — see §3.6a) |
+| `/admin/teachers/new` | Admin | Add teacher |
+| `/admin/teachers/[id]` | Admin | Teacher detail: contact info, classes taught |
+| `/admin/teachers/[id]/edit` | Admin | Edit teacher |
 | `/admin/classes` | Admin | Class list |
 | `/admin/classes/new` | Admin | Create class |
 | `/admin/classes/[id]` | Admin | Class detail: schedule, pricing, monthly fee history |
@@ -170,12 +174,31 @@ and Status, linking to `/admin/billing/[id]`.
 
 ---
 
+## 3.6a Teachers — `/admin/teachers*`
+
+Not named as a module in the requirements doc (§4.3 only gives `Class` a free-text `teacher`
+field) — added because a real teacher list, deduped and linkable to pay records, is table stakes
+for day-to-day admin use. See `docs/09-status-report-and-gap-analysis.md` §9.4 for the rationale.
+
+**List**: search (name/email/phone), Active/Inactive filter. Columns: Name, Email, Phone, Active
+Classes (count), Status.
+
+**Create/Edit**: Name, Email, Phone, Notes, Active/Inactive.
+
+**Detail** (`/admin/teachers/[id]`): contact info panel; **Classes Taught** panel — every `Class`
+row with this teacher assigned, each showing dance style, day/time, current enrolled count, and its
+own Active/Inactive state, linking to `/admin/classes/[id]`. Deactivating a teacher only removes
+them from the picker on the Class form — it does not touch classes already assigned to them.
+
+---
+
 ## 3.7 Classes — `/admin/classes*`
 
-**List**: Name, Dance Style, Level, Teacher, Day/Time, Standard Rate, Pricing Type, Active/Inactive,
+**List**: Name, Dance Style, Teacher, Day/Time, Standard Rate, Pricing Type, Active/Inactive,
 current enrolled count.
 
-**Create/Edit**: all §4.3 fields — Class Name, Dance Style, Level, Teacher, Day, Start/End Time,
+**Create/Edit**: all §4.3 fields — Class Name, Dance Style, Level, Teacher (a picker over active
+`Teacher` rows, with a shortcut to add a new one inline), Day, Start/End Time,
 Duration, Standard Rate, Pricing Type (Regular/Seasonal), Active/Inactive, plus
 `discountEligible` (defaults on; turned off for one-off seasonal programs like "Onam Dance 2026"
 that shouldn't count toward the multi-class discount). Editing the standard rate here **never**
