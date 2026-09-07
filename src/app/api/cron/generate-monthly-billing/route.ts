@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { generateMonthlyBilling } from "@/actions/billing";
+import { generateMonthlyBilling } from "@/actions/billing-service";
+import { sendPendingWhatsAppNotifications } from "@/actions/whatsapp-notifications";
 import { normalizeMonth } from "@/lib/billing";
 import { isCronAuthorized } from "@/lib/cron-auth";
 
@@ -17,9 +18,10 @@ async function handle(request: Request) {
 
   try {
     const summary = await generateMonthlyBilling(month);
+    const notifications = await sendPendingWhatsAppNotifications(month);
     // Logged, not emailed (§4.5) — the admin reviews results in /admin/billing, not an inbox.
     console.warn("[cron] generate-monthly-billing:", summary);
-    return NextResponse.json({ ok: true, summary });
+    return NextResponse.json({ ok: true, summary, notifications });
   } catch (error) {
     console.error("[cron] generate-monthly-billing failed:", error);
     return NextResponse.json(

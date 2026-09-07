@@ -1,6 +1,9 @@
 "use server";
 
+import { requireAdmin } from "@/actions/access";
+import { familyCreateSchema, familyUpdateSchema } from "@/actions/families.schema";
 import type { FamilyCreateInput, FamilyUpdateInput } from "@/actions/families.schema";
+import { idSchema, booleanSchema , validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 
@@ -26,6 +29,8 @@ export async function getFamilies(params?: {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }): Promise<{ data: FamilyListItem[]; total: number; pages: number }> {
+  await requireAdmin();
+  validateListQuery(params, ["familyName","parentGuardianName","email","phone","isActive","createdAt"]);
   const { search, isActive, page = 1, pageSize = 20, sortBy = "createdAt", sortOrder = "desc" } = params ?? {};
 
   const where: Prisma.FamilyWhereInput = {};
@@ -69,6 +74,8 @@ export async function getFamilies(params?: {
 export type FamilyDetail = Awaited<ReturnType<typeof getFamilyById>>;
 
 export async function getFamilyById(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
   return db.family.findUniqueOrThrow({
     where: { id },
     include: {
@@ -88,6 +95,8 @@ export async function getFamilyById(id: string) {
 // ---------- Mutations ----------
 
 export async function createFamily(data: FamilyCreateInput) {
+  await requireAdmin();
+  data = familyCreateSchema.parse(data);
   return db.family.create({
     data: {
       familyName: data.familyName,
@@ -100,6 +109,9 @@ export async function createFamily(data: FamilyCreateInput) {
 }
 
 export async function updateFamily(id: string, data: FamilyUpdateInput) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  data = familyUpdateSchema.parse(data);
   return db.family.update({
     where: { id },
     data: {
@@ -113,5 +125,8 @@ export async function updateFamily(id: string, data: FamilyUpdateInput) {
 }
 
 export async function toggleFamilyActive(id: string, isActive: boolean) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  isActive = booleanSchema.parse(isActive);
   return db.family.update({ where: { id }, data: { isActive } });
 }

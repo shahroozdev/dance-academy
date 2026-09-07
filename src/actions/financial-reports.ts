@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/actions/access";
+import { periodSchema, yearSchema } from "@/actions/validation.schema";
 import { round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
 import { periodDateFilter, type Period } from "@/lib/period";
@@ -21,7 +23,8 @@ export type FinancialSummary = {
 // SUM(Payment.amount) grouped by paymentDate — never MonthlyStudentBilling.finalAmountDue, so a
 // payment received in October against September's bill counts as October income, as required.
 export async function getFinancialSummary(period: Period): Promise<FinancialSummary> {
-  const dateFilter = periodDateFilter(period);
+  await requireAdmin();
+  const dateFilter = periodDateFilter(periodSchema.parse(period));
 
   const [paymentsAgg, otherIncomeRows, expenseRows] = await Promise.all([
     db.payment.aggregate({ where: { paymentDate: dateFilter }, _sum: { amount: true } }),
@@ -66,6 +69,8 @@ export type MonthlyTrendPoint = { month: string; income: number; expenses: numbe
 
 // Powers the Yearly view's income-vs-expenses bar chart.
 export async function getMonthlyTrend(year: number): Promise<MonthlyTrendPoint[]> {
+  await requireAdmin();
+  year = yearSchema.parse(year);
   const points: MonthlyTrendPoint[] = [];
   for (let month = 0; month < 12; month++) {
     const start = new Date(Date.UTC(year, month, 1));
@@ -87,6 +92,7 @@ export async function getMonthlyTrend(year: number): Promise<MonthlyTrendPoint[]
 // Distinct years spanned by any financial activity, unioned with the current year, so a brand-new
 // year with zero transactions is still selectable (§6.5) without any per-year setup.
 export async function getAvailableYears(): Promise<number[]> {
+  await requireAdmin();
   const [paymentAgg, expenseAgg, incomeAgg] = await Promise.all([
     db.payment.aggregate({ _min: { paymentDate: true }, _max: { paymentDate: true } }),
     db.expense.aggregate({ _min: { date: true }, _max: { date: true } }),

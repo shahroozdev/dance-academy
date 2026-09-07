@@ -3,7 +3,7 @@ import { z } from "zod";
 export const enrollmentCreateSchema = z.object({
   studentId: z.string().min(1, "Student is required"),
   classId: z.string().min(1, "Class is required"),
-  startDate: z.string().optional(),
+  startDate: z.iso.date().or(z.literal("")).optional(),
 });
 
 export const enrollmentUpdateSchema = z.object({

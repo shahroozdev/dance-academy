@@ -5,13 +5,13 @@ import { useState } from "react";
 
 import { AdjustmentModal } from "@/app/admin/(dashboard)/billing/adjustment-modal";
 import { PaymentModal } from "@/app/admin/(dashboard)/billing/payment-modal";
+import { Badge } from "@/components/common/badge";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
+import { Skeleton } from "@/components/common/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 
@@ -69,7 +69,7 @@ export default function BillingDetailPage() {
             <Button variant="outline" onClick={() => setIsAdjusting(true)}>
               Adjust
             </Button>
-            {billing.status !== "PAID" && <Button onClick={() => setIsPaying(true)}>Record Payment</Button>}
+            {billing.status !== "PAID" && <Button onClick={() => setIsPaying(true)}>{billing.status === "OVERPAID" ? "Record Refund" : "Record Payment"}</Button>}
             <Button
               variant="outline"
               disabled={hasPayments || isRecalculating}

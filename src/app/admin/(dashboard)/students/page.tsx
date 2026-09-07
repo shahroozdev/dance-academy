@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, GraduationCap, Plus } from "lucide-react";
+import { Download, GraduationCap, Plus, Upload } from "lucide-react";
 import { useState } from "react";
 
 import { getStudents } from "@/actions/students";
@@ -15,11 +15,14 @@ import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
 import { downloadCsv, toCsv } from "@/lib/csv";
 
+import { ImportStudentsModal } from "./import-students-modal";
+
 export default function StudentsPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const { data, isLoading } = useQuery("getStudents", [{ search: search || undefined, page, pageSize: 20 }]);
 
@@ -50,6 +53,10 @@ export default function StudentsPage() {
         subtitle="Track enrolled students, profiles, and class history."
         actions={
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsImportOpen(true)}>
+              <Upload className="size-4" />
+              Import CSV
+            </Button>
             <Button variant="outline" onClick={exportCsv} disabled={isExporting}>
               <Download className="size-4" />
               {isExporting ? "Exporting..." : "Export CSV"}
@@ -63,6 +70,7 @@ export default function StudentsPage() {
           </div>
         }
       />
+      {isImportOpen && <ImportStudentsModal onClose={() => setIsImportOpen(false)} />}
       <Card
         header={
           <div className="flex items-center gap-2">

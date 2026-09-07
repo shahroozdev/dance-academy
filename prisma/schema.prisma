@@ -176,6 +176,11 @@ model ClassMonthlyFee {
   flatFee          Decimal?                 @db.Decimal(10, 2)
   monthlyClassFee  Decimal                  @db.Decimal(10, 2)
   isOverridden     Boolean                  @default(false)
+  // Staff confirmation that this class's billable session count for the month is correct.
+  // Fee notifications for any bill referencing this row are blocked until it's finalized —
+  // see docs/04-business-logic-billing-discounts.md §4.7.
+  isFinalized      Boolean                  @default(false)
+  finalizedAt      DateTime?
   notes            String?
   lineItems        MonthlyBillingLineItem[]
   createdAt        DateTime                 @default(now())

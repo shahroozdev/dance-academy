@@ -1,9 +1,14 @@
 "use server";
 
+import { requireAdmin } from "@/actions/access";
 import { sendTemplatedEmail } from "@/actions/email";
+import { registrationRequestCreateSchema } from "@/actions/registrations.schema";
 import type { RegistrationRequestCreateInput } from "@/actions/registrations.schema";
+import { serializableTransaction } from "@/actions/transaction";
+import { idSchema , validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { matchRegistrationFamily } from "@/lib/family-matching";
 import { firstName } from "@/lib/notifications";
 
 // ---------- Queries ----------
@@ -13,6 +18,8 @@ export async function getRegistrationRequests(params?: {
   page?: number;
   pageSize?: number;
 }) {
+  await requireAdmin();
+  validateListQuery(params, []);
   const { status, page = 1, pageSize = 20 } = params ?? {};
 
   const where: Prisma.RegistrationRequestWhereInput = {};
@@ -35,6 +42,8 @@ export async function getRegistrationRequests(params?: {
 export type RegistrationRequestDetail = Awaited<ReturnType<typeof getRegistrationRequestById>>;
 
 export async function getRegistrationRequestById(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
   return db.registrationRequest.findUniqueOrThrow({
     where: { id },
     // requestedClass is select-only (never `true`) — Class.standardRate is a Decimal, which
@@ -51,6 +60,8 @@ export type RegistrationMatchPlan = {
 
 // Read-only preview of what approval would do, so the admin can review before committing.
 export async function previewRegistrationApproval(id: string): Promise<RegistrationMatchPlan> {
+  await requireAdmin();
+  id = idSchema.parse(id);
   const request = await db.registrationRequest.findUniqueOrThrow({ where: { id } });
   return resolveMatchPlan(db, request);
 }
@@ -58,6 +69,9 @@ export async function previewRegistrationApproval(id: string): Promise<Registrat
 // ---------- Mutations ----------
 
 export async function createRegistrationRequest(data: RegistrationRequestCreateInput) {
+  data = registrationRequestCreateSchema.parse(data);
+  const requestedClass = await db.class.findUnique({ where: { id: data.requestedClassId, isActive: true }, select: { id: true } });
+  if (!requestedClass) throw new Error("This class is no longer accepting registration.");
   const request = await db.registrationRequest.create({
     data: {
       parentGuardianName: data.parentGuardianName,
@@ -96,14 +110,18 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
 }
 
 export async function rejectRegistrationRequest(id: string) {
+  const admin = await requireAdmin();
+  id = idSchema.parse(id);
   return db.registrationRequest.update({
-    where: { id },
-    data: { status: "REJECTED", processedAt: new Date() },
+    where: { id, status: "PENDING" },
+    data: { status: "REJECTED", processedAt: new Date(), processedByAdminId: admin.id },
   });
 }
 
 export async function approveRegistrationRequest(id: string) {
-  const { processedRequest, familyEmail, studentFullName, classId } = await db.$transaction(async (tx) => {
+  const admin = await requireAdmin();
+  id = idSchema.parse(id);
+  const { processedRequest, familyEmail, studentFullName, classId } = await serializableTransaction(async (tx) => {
     const request = await tx.registrationRequest.findUniqueOrThrow({ where: { id } });
     if (request.status !== "PENDING") {
       throw new Error("This registration request has already been processed.");
@@ -112,6 +130,8 @@ export async function approveRegistrationRequest(id: string) {
       throw new Error("This registration request has no requested class.");
     }
 
+    const requestedClass = await tx.class.findUniqueOrThrow({ where: { id: request.requestedClassId } });
+    if (!requestedClass.isActive) throw new Error("This class is inactive. Update the registration before approving it.");
     const plan = await resolveMatchPlan(tx, request);
 
     const family =
@@ -154,6 +174,8 @@ export async function approveRegistrationRequest(id: string) {
       });
     }
 
+    if (!family.isActive || !student.isActive) throw new Error("Reactivate the matched family and student before approving this registration.");
+
     const existingEnrollment = await tx.enrollment.findFirst({
       where: { studentId: student.id, classId: request.requestedClassId, status: "ACTIVE" },
     });
@@ -167,6 +189,7 @@ export async function approveRegistrationRequest(id: string) {
       where: { id },
       data: {
         status: "PROCESSED",
+        processedByAdminId: admin.id,
         processedAt: new Date(),
         matchedFamilyId: family.id,
         matchedStudentId: student.id,
@@ -210,14 +233,8 @@ async function resolveMatchPlan(
   client: Prisma.TransactionClient,
   request: { parentGuardianName: string; parentPhone: string; parentEmail: string | null; studentFullName: string },
 ): Promise<RegistrationMatchPlan> {
-  const existingFamily = await client.family.findFirst({
-    where: {
-      OR: [
-        { phone: request.parentPhone },
-        ...(request.parentEmail ? [{ email: request.parentEmail }] : []),
-      ],
-    },
-  });
+  const families = await client.family.findMany({ select: { id: true, phone: true, email: true, familyName: true } });
+  const existingFamily = matchRegistrationFamily(families, request.parentPhone, request.parentEmail);
 
   if (!existingFamily) {
     return {
@@ -227,7 +244,7 @@ async function resolveMatchPlan(
   }
 
   const existingStudent = await client.student.findFirst({
-    where: { familyId: existingFamily.id, fullName: { equals: request.studentFullName, mode: "insensitive" } },
+    where: { familyId: existingFamily.id, fullName: { equals: request.studentFullName.trim(), mode: "insensitive" } },
   });
 
   return {

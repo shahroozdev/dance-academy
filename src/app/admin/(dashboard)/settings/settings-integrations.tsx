@@ -11,8 +11,8 @@ import {
 } from "@/actions/settings.schema";
 import { Button } from "@/components/common/button";
 import { Card, CardTitle } from "@/components/common/card";
+import { Field, FieldDescription, FieldLabel } from "@/components/common/field";
 import { FORM, FormFeilds } from "@/components/common/form";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { useMutate } from "@/hooks/useMutate";
 
@@ -135,9 +135,8 @@ export function WhatsappForm({ settings }: { settings: StudioSettingsData }) {
               />
             </div>
             <FieldDescription>
-              From the Meta developer console (see docs/05-notifications-whatsapp.md). Fee
-              reminders currently use a wa.me link and don&apos;t require these — they&apos;re
-              here for future automated sending.
+              Use your studio&apos;s Meta account credentials. Sending requires approved monthly fee
+              and payment reminder templates. Manual WhatsApp links remain available while setup is pending.
             </FieldDescription>
             <div className="flex justify-end">
               <Button type="submit" disabled={isLoading || !form.formState.isDirty}>

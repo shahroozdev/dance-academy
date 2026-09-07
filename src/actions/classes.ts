@@ -1,6 +1,9 @@
 "use server";
 
+import { requireAdmin } from "@/actions/access";
+import { classCreateSchema, classUpdateSchema } from "@/actions/classes.schema";
 import type { ClassCreateInput, ClassUpdateInput } from "@/actions/classes.schema";
+import { idSchema, booleanSchema , validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 
@@ -34,6 +37,8 @@ export async function getClasses(params?: {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }): Promise<{ data: ClassListItem[]; total: number; pages: number }> {
+  await requireAdmin();
+  validateListQuery(params, ["name","danceStyle","level","standardRate","pricingType","isActive","createdAt","dayOfWeek","startTime"]);
   const { search, isActive, page = 1, pageSize = 20, sortBy = "name", sortOrder = "asc" } = params ?? {};
 
   const where: Prisma.ClassWhereInput = {};
@@ -87,6 +92,8 @@ export async function getClasses(params?: {
 export type ClassDetail = Awaited<ReturnType<typeof getClassById>>;
 
 export async function getClassById(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
   const cls = await db.class.findUniqueOrThrow({
     where: { id },
     include: {
@@ -122,6 +129,8 @@ export async function getClassById(id: string) {
 // ---------- Mutations ----------
 
 export async function createClass(data: ClassCreateInput) {
+  await requireAdmin();
+  data = classCreateSchema.parse(data);
   return db.class.create({
     data: {
       name: data.name,
@@ -142,6 +151,9 @@ export async function createClass(data: ClassCreateInput) {
 }
 
 export async function updateClass(id: string, data: ClassUpdateInput) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  data = classUpdateSchema.parse(data);
   return db.class.update({
     where: { id },
     data: {
@@ -163,12 +175,17 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
 }
 
 export async function toggleClassActive(id: string, isActive: boolean) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  isActive = booleanSchema.parse(isActive);
   return db.class.update({ where: { id }, data: { isActive } });
 }
 
 // ---------- Roster ----------
 
 export async function getClassRoster(classId: string) {
+  await requireAdmin();
+  classId = idSchema.parse(classId);
   return db.enrollment.findMany({
     where: { classId, status: "ACTIVE" },
     include: {
@@ -180,4 +197,8 @@ export async function getClassRoster(classId: string) {
     },
     orderBy: { student: { fullName: "asc" } },
   });
+}
+
+export async function getRegistrationClasses() {
+  return db.class.findMany({ where: { isActive: true }, select: { id: true, name: true, danceStyle: true }, orderBy: { name: "asc" } });
 }

@@ -1,11 +1,11 @@
-import { getStudioSettings } from "@/actions/settings";
+import { getBillingDiscountSettings } from "@/actions/settings-service";
 
 export async function getMultiClassDiscountPct(): Promise<number> {
-  const settings = await getStudioSettings();
+  const settings = await getBillingDiscountSettings();
   return settings.multiClassDiscountPct;
 }
 
 export async function getSiblingDiscountPct(): Promise<number> {
-  const settings = await getStudioSettings();
+  const settings = await getBillingDiscountSettings();
   return settings.siblingDiscountPct;
 }

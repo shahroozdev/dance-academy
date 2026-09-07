@@ -12,10 +12,10 @@ const dobSchema = z
   .optional();
 
 export const registrationRequestCreateSchema = z.object({
-  parentGuardianName: z.string().min(1, "Parent/guardian name is required"),
+  parentGuardianName: z.string().trim().min(1, "Parent/guardian name is required").max(200),
   parentEmail: z.email("Enter a valid email").or(z.literal("")).optional(),
   parentPhone: phoneSchema,
-  studentFullName: z.string().min(1, "Student name is required"),
+  studentFullName: z.string().trim().min(1, "Student name is required").max(200),
   dob: dobSchema,
   gender: z.enum(["MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"]).optional(),
   requestedClassId: z.string().min(1, "Please select a class"),

@@ -1,97 +1,40 @@
 "use server";
-
+import { requireAdmin } from "@/actions/access";
+import { assertFinalizedForNotification } from "@/actions/billing-service";
 import { sendTemplatedEmail } from "@/actions/email";
+import * as notificationData from "@/actions/notification-data";
+import { sendPaymentReminders } from "@/actions/reminders";
+import { validateListQuery , idSchema } from "@/actions/validation.schema";
+import { sendMonthlyWhatsApp } from "@/actions/whatsapp-notifications";
 import type { Prisma } from "@/generated/prisma/client";
-import { normalizeMonth, round2 } from "@/lib/billing";
+import { normalizeMonth } from "@/lib/billing";
 import { db } from "@/lib/db";
-import { buildFamilyMessage, buildFeeSummary, buildWhatsAppLink, firstName } from "@/lib/notifications";
+import { buildFeeSummary, firstName } from "@/lib/notifications";
 
-export type FamilyNotificationPreview = {
-  familyId: string;
-  familyName: string;
-  parentGuardianName: string;
-  phone: string;
-  email: string | null;
-  month: string;
-  students: { billingId: string; name: string; finalAmountDue: number }[];
-  total: number;
-  message: string;
-  waLink: string;
-  alreadySent: boolean;
-};
 
-export async function getFamilyNotificationPreview(
-  familyId: string,
-  monthInput: string,
-): Promise<FamilyNotificationPreview> {
-  const month = normalizeMonth(monthInput);
-  const family = await db.family.findUniqueOrThrow({ where: { id: familyId } });
-  const billings = await db.monthlyStudentBilling.findMany({
-    where: { month, student: { familyId } },
-    include: { student: true },
-    orderBy: { student: { fullName: "asc" } },
-  });
-  if (billings.length === 0) {
-    throw new Error("No bills found for this family in this month.");
-  }
 
-  const students = billings.map((b) => ({
-    billingId: b.id,
-    name: b.student.fullName,
-    finalAmountDue: Number(b.finalAmountDue),
-  }));
-  const total = round2(students.reduce((sum, s) => sum + s.finalAmountDue, 0));
-  const monthLabel = month.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
-
-  const message = buildFamilyMessage({ parentGuardianName: family.parentGuardianName, monthLabel, students });
-
-  return {
-    familyId,
-    familyName: family.familyName,
-    parentGuardianName: family.parentGuardianName,
-    phone: family.phone,
-    email: family.email,
-    month: month.toISOString(),
-    students,
-    total,
-    message,
-    waLink: buildWhatsAppLink(family.phone, message),
-    alreadySent: billings.every((b) => b.notificationStatus === "SENT"),
-  };
+export async function getFamilyNotificationPreview(familyId: string, monthInput: string) {
+  await requireAdmin();
+  return notificationData.getFamilyNotificationPreview(familyId, monthInput);
 }
 
-export type PendingFamilyNotification = {
-  familyId: string;
-  familyName: string;
-  studentCount: number;
-  total: number;
-};
+
 
 // Families with at least one bill this month whose notification hasn't gone out yet — the
 // zero-cost-fallback equivalent of the doc's "Send Notifications for all Unsent" bulk action.
-export async function getPendingNotifications(monthInput: string): Promise<PendingFamilyNotification[]> {
-  const month = normalizeMonth(monthInput);
-  const billings = await db.monthlyStudentBilling.findMany({
-    where: { month, notificationStatus: { not: "SENT" } },
-    include: { student: { include: { family: true } } },
-  });
-
-  const byFamily = new Map<string, { familyName: string; total: number; count: number }>();
-  for (const b of billings) {
-    const key = b.student.familyId;
-    const entry = byFamily.get(key) ?? { familyName: b.student.family.familyName, total: 0, count: 0 };
-    entry.total = round2(entry.total + Number(b.finalAmountDue));
-    entry.count += 1;
-    byFamily.set(key, entry);
-  }
-
-  return [...byFamily.entries()]
-    .map(([familyId, v]) => ({ familyId, familyName: v.familyName, studentCount: v.count, total: v.total }))
-    .sort((a, b) => a.familyName.localeCompare(b.familyName));
+export async function getPendingNotifications(monthInput: string) {
+  await requireAdmin();
+  return notificationData.getPendingNotifications(monthInput);
 }
 
 export async function markFamilyNotificationSent(familyId: string, monthInput: string, messageContent: string) {
+  await requireAdmin();
+  familyId = idSchema.parse(familyId);
   const month = normalizeMonth(monthInput);
+  const billings = await db.monthlyStudentBilling.findMany({ where: { month, student: { familyId } }, select: { id: true } });
+  await assertFinalizedForNotification(billings.map((b) => b.id));
+  // Persist server-built billing text rather than accepting arbitrary log contents from the browser.
+  messageContent = (await notificationData.getFamilyNotificationPreview(familyId, monthInput)).message;
   return db.$transaction(async (tx) => {
     const log = await tx.notificationLog.create({
       data: {
@@ -111,6 +54,18 @@ export async function markFamilyNotificationSent(familyId: string, monthInput: s
   });
 }
 
+export async function sendFamilyNotificationWhatsApp(familyId: string, monthInput: string) {
+  await requireAdmin();
+  return sendMonthlyWhatsApp(idSchema.parse(familyId), monthInput);
+}
+
+export async function sendFamilyPaymentReminder(familyId: string, monthInput: string) {
+  await requireAdmin();
+  const summary = await sendPaymentReminders({ familyId: idSchema.parse(familyId), month: normalizeMonth(monthInput) });
+  if (summary.familiesReminded > 0) return { sent: true };
+  return { sent: false, error: summary.families[0]?.error ?? "No overdue unpaid bills are eligible for a reminder yet." };
+}
+
 export type SendFamilyNotificationEmailResult = { sent: boolean; error?: string };
 
 // The one actually-automated send path — email requires no per-message cost or Meta approval,
@@ -119,11 +74,15 @@ export async function sendFamilyNotificationEmail(
   familyId: string,
   monthInput: string,
 ): Promise<SendFamilyNotificationEmailResult> {
+  await requireAdmin();
+  familyId = idSchema.parse(familyId);
   const month = normalizeMonth(monthInput);
   const family = await db.family.findUniqueOrThrow({ where: { id: familyId } });
   if (!family.email) {
     throw new Error("This family has no email on file.");
   }
+  const billings = await db.monthlyStudentBilling.findMany({ where: { month, student: { familyId } }, select: { id: true } });
+  await assertFinalizedForNotification(billings.map((b) => b.id));
 
   const preview = await getFamilyNotificationPreview(familyId, monthInput);
   const monthLabel = month.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -175,6 +134,7 @@ const FAILED_NOTIFICATION_WINDOW_DAYS = 30;
 // sends are windowed to the last 30 days so an old, already-handled failure doesn't sit in the
 // count forever with no way to clear it.
 export async function getAdminNotificationSummary(): Promise<AdminNotificationSummary> {
+  await requireAdmin();
   const failedSince = new Date();
   failedSince.setDate(failedSince.getDate() - FAILED_NOTIFICATION_WINDOW_DAYS);
 
@@ -200,6 +160,8 @@ export async function getNotificationLogs(params?: {
   page?: number;
   pageSize?: number;
 }) {
+  await requireAdmin();
+  validateListQuery(params, []);
   const { familyId, month, page = 1, pageSize = 50 } = params ?? {};
 
   const where: Prisma.NotificationLogWhereInput = {};

@@ -1,8 +1,13 @@
 "use server";
 
-import type { StudentCreateInput, StudentUpdateInput } from "@/actions/students.schema";
+import { requireAdmin } from "@/actions/access";
+import { studentCreateSchema, studentImportSchema, studentUpdateSchema } from "@/actions/students.schema";
+import type { StudentCreateInput, StudentImportRow, StudentUpdateInput } from "@/actions/students.schema";
+import { serializableTransaction } from "@/actions/transaction";
+import { idSchema, booleanSchema , validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { matchRegistrationFamily } from "@/lib/family-matching";
 
 
 // ---------- Queries ----------
@@ -29,6 +34,8 @@ export async function getStudents(params?: {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }): Promise<{ data: StudentListItem[]; total: number; pages: number }> {
+  await requireAdmin();
+  validateListQuery(params, ["fullName","dob","gender","isActive","createdAt"]);
   const {
     search,
     isActive,
@@ -90,6 +97,8 @@ export async function getStudents(params?: {
 export type StudentDetail = Awaited<ReturnType<typeof getStudentById>>;
 
 export async function getStudentById(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
   const student = await db.student.findUniqueOrThrow({
     where: { id },
     include: {
@@ -127,6 +136,8 @@ export async function getStudentById(id: string) {
 // ---------- Mutations ----------
 
 export async function createStudent(data: StudentCreateInput) {
+  await requireAdmin();
+  data = studentCreateSchema.parse(data);
   return db.student.create({
     data: {
       fullName: data.fullName,
@@ -143,6 +154,9 @@ export async function createStudent(data: StudentCreateInput) {
 }
 
 export async function updateStudent(id: string, data: StudentUpdateInput) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  data = studentUpdateSchema.parse(data);
   return db.student.update({
     where: { id },
     data: {
@@ -164,5 +178,108 @@ export async function updateStudent(id: string, data: StudentUpdateInput) {
 }
 
 export async function toggleStudentActive(id: string, isActive: boolean) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  isActive = booleanSchema.parse(isActive);
   return db.student.update({ where: { id }, data: { isActive } });
+}
+
+// ---------- CSV import ----------
+
+export type StudentImportResult = {
+  row: number;
+  studentName: string;
+  status: "created" | "skipped" | "error";
+  message?: string;
+};
+
+const IMPORT_GENDER_MAP: Record<string, "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY"> = {
+  male: "MALE",
+  female: "FEMALE",
+  other: "OTHER",
+  "prefer not to say": "PREFER_NOT_TO_SAY",
+};
+
+function parseImportGender(value: string | undefined) {
+  if (!value?.trim()) return null;
+  return IMPORT_GENDER_MAP[value.trim().toLowerCase()] ?? null;
+}
+
+function parseImportDob(value: string | undefined): Date | null {
+  if (!value?.trim()) return null;
+  const trimmed = value.trim();
+  // An explicit ISO date is trusted as-is so "01/02/2020" isn't silently misread as the wrong
+  // month/day; anything else falls back to whatever the runtime's Date parser can make of it.
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? new Date(`${trimmed}T00:00:00`) : new Date(trimmed);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+// Imports rows one at a time (not Promise.all) — a later row for the same household, matched by
+// phone/email, must see the family an earlier row in this same batch just created. Each row is its
+// own transaction so one bad row can't roll back rows already imported.
+export async function importStudents(rows: StudentImportRow[]): Promise<StudentImportResult[]> {
+  await requireAdmin();
+  rows = studentImportSchema.parse(rows);
+
+  const results: StudentImportResult[] = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowNumber = i + 2; // +1 for 1-indexing, +1 for the header row
+    const studentName = row.studentName.trim();
+
+    try {
+      if (!studentName) throw new Error("Student name is required");
+
+      const phone = row.parentPhone?.trim() || undefined;
+      const email = row.parentEmail?.trim() || undefined;
+
+      const outcome = await serializableTransaction(async (tx) => {
+        const candidates = await tx.family.findMany({ select: { id: true, phone: true, email: true, familyName: true } });
+        let family = phone || email ? matchRegistrationFamily(candidates, phone ?? "", email ?? null) : null;
+
+        if (!family) {
+          const familyName = row.familyName?.trim();
+          const parentGuardianName = row.parentGuardianName?.trim();
+          if (!familyName || !parentGuardianName || !phone) {
+            throw new Error(
+              "No existing family matched Parent Phone/Email — Family Name, Parent/Guardian Name, and Parent Phone are required to create a new family",
+            );
+          }
+          family = await tx.family.create({
+            data: { familyName, parentGuardianName, phone, email: email ?? null },
+          });
+        }
+
+        const existingStudent = await tx.student.findFirst({
+          where: { familyId: family.id, fullName: { equals: studentName, mode: "insensitive" } },
+        });
+        if (existingStudent) {
+          return { status: "skipped" as const, message: `Already exists in ${family.familyName}` };
+        }
+
+        await tx.student.create({
+          data: {
+            fullName: studentName,
+            familyId: family.id,
+            dob: parseImportDob(row.dob),
+            gender: parseImportGender(row.gender),
+            isActive: row.isActive ?? true,
+          },
+        });
+        return { status: "created" as const, message: undefined };
+      });
+
+      results.push({ row: rowNumber, studentName, status: outcome.status, message: outcome.message });
+    } catch (error) {
+      results.push({
+        row: rowNumber,
+        studentName,
+        status: "error",
+        message: error instanceof Error ? error.message : "Could not import this row",
+      });
+    }
+  }
+
+  return results;
 }

@@ -2,9 +2,9 @@
 
 import { put } from "@vercel/blob";
 
+import { requireAdmin, requireOwner } from "@/actions/access";
 import type { StudioSettingsUpdateInput } from "@/actions/settings.schema";
 import { studioSettingsUpdateSchema } from "@/actions/settings.schema";
-import { auth } from "@/auth";
 import type { StudioSettings } from "@/generated/prisma/client";
 import { encryptSecret } from "@/lib/crypto";
 import { db } from "@/lib/db";
@@ -39,16 +39,6 @@ export type StudioSettingsData = {
   whatsappBusinessAccountId: string | null;
   whatsappAccessTokenSet: boolean;
 };
-
-// ---------- Helpers ----------
-
-async function requireOwner() {
-  const session = await auth();
-  if (!session?.user || session.user.role !== "OWNER") {
-    throw new Error("Only the studio owner can manage settings.");
-  }
-  return session;
-}
 
 const DEFAULT_SETTINGS = {
   id: "default",
@@ -89,6 +79,7 @@ function prepareSecretsForStorage(data: StudioSettingsUpdateInput): StudioSettin
 // ---------- Queries ----------
 
 export async function getStudioSettings(): Promise<StudioSettingsData> {
+  await requireAdmin();
   const existing = await db.studioSettings.findUnique({ where: { id: "default" } });
   if (existing) return toClientSettings(existing);
 

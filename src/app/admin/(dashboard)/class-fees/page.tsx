@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 
 import { ClassFeeEditModal } from "./class-fee-edit-modal";
@@ -37,6 +38,15 @@ export default function ClassFeesPage() {
 
   const { data: classesData } = useQuery("getClasses", [{ pageSize: 100, sortBy: "name" }]);
   const { data, isLoading } = useQuery("getClassMonthlyFees", [{ month, pageSize: 200 }]);
+  const { mutate: finalizeFee, isLoading: isFinalizingOne } = useMutate("finalizeClassMonthlyFee", {
+    invalidateKeys: ["getClassMonthlyFees"],
+  });
+  const { mutate: unfinalizeFee, isLoading: isUnfinalizingOne } = useMutate("unfinalizeClassMonthlyFee", {
+    invalidateKeys: ["getClassMonthlyFees"],
+  });
+  const { mutate: finalizeAll, isLoading: isFinalizingAll } = useMutate("finalizeAllClassMonthlyFeesForMonth", {
+    invalidateKeys: ["getClassMonthlyFees"],
+  });
 
   const classOptions = useMemo(() => classesData?.data.map((c) => ({ label: c.name, value: c.id })) ?? [], [classesData]);
 
@@ -82,6 +92,15 @@ export default function ClassFeesPage() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            size="sm"
+            variant="outline"
+            className="ml-auto"
+            disabled={isFinalizingAll || !data || data.data.every((f) => f.isFinalized)}
+            onClick={() => finalizeAll(month)}
+          >
+            {isFinalizingAll ? "Finalizing..." : `Finalize All for ${month}`}
+          </Button>
         </div>
 
         {isLoading && (
@@ -110,6 +129,7 @@ export default function ClassFeesPage() {
                 <TableHead>Flat Fee</TableHead>
                 <TableHead>Monthly Class Fee</TableHead>
                 <TableHead>Overridden</TableHead>
+                <TableHead>Finalized</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -125,9 +145,23 @@ export default function ClassFeesPage() {
                     {fee.isOverridden && <Badge variant="secondary">Overridden</Badge>}
                   </TableCell>
                   <TableCell>
-                    <Button size="sm" variant="outline" onClick={() => setEditingId(fee.id)}>
-                      Edit
-                    </Button>
+                    {fee.isFinalized ? <Badge>Finalized</Badge> : <Badge variant="outline">Not finalized</Badge>}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setEditingId(fee.id)}>
+                        Edit
+                      </Button>
+                      {fee.isFinalized ? (
+                        <Button size="sm" variant="outline" disabled={isUnfinalizingOne} onClick={() => unfinalizeFee(fee.id)}>
+                          Un-finalize
+                        </Button>
+                      ) : (
+                        <Button size="sm" disabled={isFinalizingOne} onClick={() => finalizeFee(fee.id)}>
+                          Finalize
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

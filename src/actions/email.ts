@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import { decryptSecret } from "@/lib/crypto";
 import { db } from "@/lib/db";
@@ -44,6 +44,12 @@ export async function sendTemplatedEmail(
   }
 
   const port = settings.smtpPort ?? 587;
+  let password: string;
+  try {
+    password = decryptSecret(settings.smtpPassword);
+  } catch {
+    return { sent: false, error: "Email credentials could not be read. Re-save the SMTP password in Settings.", subject, text };
+  }
   const result = await sendEmail({
     to,
     subject,
@@ -54,7 +60,7 @@ export async function sendTemplatedEmail(
       port,
       secure: settings.smtpSecure || port === 465,
       user: settings.smtpUser,
-      password: decryptSecret(settings.smtpPassword),
+      password,
       from: settings.emailFrom || "Malhaar Dance Company <no-reply@malhaardance.example>",
     },
   });

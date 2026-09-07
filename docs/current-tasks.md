@@ -16,11 +16,12 @@ _Nothing currently in progress._
   destructive-capable command that Prisma's own safety guard requires explicit owner consent for
   before an agent can run it — blocked pending that confirmation. Once approved: run the push, then
   seed it (`tsx prisma/seed.ts` with `DATABASE_URL` pointed at the local DB).
-- **WhatsApp Cloud API sending not implemented.** `StudioSettings` already stores the Phone Number
-  ID / Business Account ID / Access Token (encrypted), but nothing sends through Meta's API yet —
-  the only WhatsApp channel today is the manual `wa.me` deep link / "Copy Message" button. Needs
-  Meta Business verification + template approval (`monthly_fee_notice`, `payment_reminder`) before
-  this can be built — see docs/05-notifications-whatsapp.md §5.2, §5.5.
+- **WhatsApp activation and live verification pending.** Template sending is implemented, including
+  the explicit family send action, optional scheduled monthly notices/reminders, provider reference
+  logging, and failures. Next: verify Meta credentials and the two approved templates, configure
+  `WHATSAPP_GRAPH_API_VERSION` and template language, and enable `WHATSAPP_AUTOMATION_ENABLED`
+  when ready. See `docs/10-admin-flow-and-operations.md` for exact parameters and behavior. No live
+  parent messages were sent during development checks. Delivery/read webhooks remain unimplemented.
 - **No automated check for schema/migration drift.** The pre-push migration-diff check was removed
   at the owner's request (it needed a shadow database that was never configured, so it always
   silently skipped). If this safety net is wanted back, it needs a real shadow database wired into
@@ -29,6 +30,42 @@ _Nothing currently in progress._
 ## Done
 
 ### 2026-09-07
+- **Closed the remaining Varsha/Malhaar billing audit items.** Mid-month enrollments are now
+  prorated to sessions actually falling within the enrolled range (`computeProratedLineItemAmount`,
+  `src/lib/billing.ts`), not the full month. Seasonal/special-program charges bill exactly once per
+  enrollment — `buildLineItemInputs` now skips re-billing a `SEASONAL` enrollment already charged in
+  an earlier month. Seasonal/non-discount-eligible line items are excluded from *and* unaffected by
+  both the multi-class and sibling discount (previously only excluded from the multi-class count;
+  the sibling discount was still taken from a subtotal that included them), enforced in
+  `computeStudentBilling` itself rather than only via the admin-set `Class.discountEligible` flag —
+  a `SEASONAL` class is now always treated as non-discount-eligible in the billing logic regardless
+  of that flag. Added a billing finalization gate: `ClassMonthlyFee.isFinalized`/`finalizedAt`
+  (migration `20260907111531_add_class_monthly_fee_finalization`) records staff sign-off on a
+  class's billable session count per month (Finalize/Un-finalize/Finalize-All on
+  `/admin/class-fees`, cleared automatically on any fee edit); every notification/reminder send path
+  (`sendFamilyNotificationEmail`, `sendMonthlyWhatsApp`, `markFamilyNotificationSent`,
+  `sendPaymentReminders`/`sendFamilyPaymentReminder`) now checks it first — manual sends throw
+  naming the unfinalized classes, bulk/cron sends silently skip and retry next run. Partial-payment
+  reminders were already correct (use `balance`, not `finalAmountDue` — verified, no change needed).
+  Updated `docs/04-business-logic-billing-discounts.md` (§4.1-4.3 corrected, new §4.7) and
+  `docs/10-admin-flow-and-operations.md` (finalization step, seasonal/regular pricing section); the
+  admin handoff walkthrough itself already existed there, correcting `docs/09`'s stale claim that it
+  didn't. Added coverage in `src/lib/billing.test.ts` and `src/actions/flow.test.ts`. `npx tsc
+  --noEmit`, `npm run lint`, and `npm test` (157 tests) all pass; `npm run build` and the Playwright
+  e2e suite were not rerun.
+- **Resolved app flow review issues.** Added active-admin authorization and runtime validation to
+  browser actions, owner-only settings enforcement, a minimal public class query, and server-only
+  job/mail services so protected cron routes keep working without a browser session. Historical
+  billing now includes ended enrollments overlapping the billed month and charges each class once;
+  serializable transactions with conflict retries protect enrollment/registration/payment writes.
+  Added overpayment refund recording as negative payment ledger entries (no schema change), remaining-
+  balance reminders, automatic retry eligibility after failures, and an explicit family reminder
+  action for older failures. Registration family matching normalizes phone/email, rejects ambiguous
+  matches, and records the approving/rejecting admin. Implemented configured WhatsApp template
+  sending; activation remains listed above. Added the operating guide and corrected the status report.
+  Validation: 140 tests pass, `npx tsc --noEmit`, `npm run lint`, and `npm run build` pass. The browser
+  acceptance suite and live messaging were not rerun. Existing separate CSV edits were preserved.
+- **Completed source-based app flow review.** Traced registration approval, family/student matching, enrollment, monthly fees/discounts, notifications, payments, and financial reports. All 52 unit tests pass. Browser acceptance suite and live integrations were not rerun; findings above remain open. No functionality changed.
 - **Added a Teacher module.** Requirements doc only gave `Class` a free-text `teacher` string,
   flagged as the doc's clearest blind spot in `docs/09-status-report-and-gap-analysis.md` §9.4.
   Added a `Teacher` table with full CRUD at `/admin/teachers` (list/detail/new/edit, mirroring the
@@ -58,6 +95,18 @@ _Nothing currently in progress._
   Migration `20260907082608_add_class_capacity_and_expense_teacher`. Re-ran the Playwright
   acceptance suite (`npm run test:e2e`) and `npm test` (52 tests) after — both pass; `tsc --noEmit`
   and `eslint` clean.
+- **Added "Import CSV" for Students**, the counterpart to the export button above — client asked
+  for a way to bulk-load students instead of adding them one at a time. New `importStudents` action
+  (`src/actions/students.ts`) matches each row to an existing `Family` by Parent Phone/Email
+  (mirroring the find-or-create logic `approveRegistrationRequest` already uses for registrations),
+  creating a new family only when no match is found and the row supplies enough info to make one;
+  a student already present in the matched family (by name, case-insensitive) is reported as
+  skipped rather than duplicated. Rows are processed one at a time, each in its own transaction, so
+  siblings sharing a phone number in the same file correctly land in one family, and a bad row
+  doesn't roll back rows already imported. `ImportStudentsModal` (`import-students-modal.tsx`) adds
+  a small client-side CSV parser (`parseCsv`/`csvRowsToObjects` in `src/lib/csv.ts`) with a
+  downloadable template, a pre-flight validity preview, and a per-row created/skipped/error result
+  list after submit. `tsc --noEmit`, `eslint`, and `npm test` (140 tests) all pass.
 
 ### 2026-09-05
 - Discount policy, SMTP, and WhatsApp credentials moved from `.env` into admin-editable

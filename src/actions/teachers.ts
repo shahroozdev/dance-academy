@@ -1,6 +1,9 @@
 "use server";
 
+import { requireAdmin } from "@/actions/access";
+import { teacherCreateSchema, teacherUpdateSchema } from "@/actions/teachers.schema";
 import type { TeacherCreateInput, TeacherUpdateInput } from "@/actions/teachers.schema";
+import { idSchema, booleanSchema , validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
@@ -25,6 +28,8 @@ export async function getTeachers(params?: {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }): Promise<{ data: TeacherListItem[]; total: number; pages: number }> {
+  await requireAdmin();
+  validateListQuery(params, ["name","email","phone","isActive","createdAt"]);
   const { search, isActive, page = 1, pageSize = 20, sortBy = "name", sortOrder = "asc" } = params ?? {};
 
   const where: Prisma.TeacherWhereInput = {};
@@ -66,6 +71,8 @@ export async function getTeachers(params?: {
 export type TeacherDetail = Awaited<ReturnType<typeof getTeacherById>>;
 
 export async function getTeacherById(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
   const [teacher, paidAgg] = await Promise.all([
     db.teacher.findUniqueOrThrow({
       where: { id },
@@ -94,6 +101,8 @@ export async function getTeacherById(id: string) {
 // ---------- Mutations ----------
 
 export async function createTeacher(data: TeacherCreateInput) {
+  await requireAdmin();
+  data = teacherCreateSchema.parse(data);
   return db.teacher.create({
     data: {
       name: data.name,
@@ -106,6 +115,9 @@ export async function createTeacher(data: TeacherCreateInput) {
 }
 
 export async function updateTeacher(id: string, data: TeacherUpdateInput) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  data = teacherUpdateSchema.parse(data);
   return db.teacher.update({
     where: { id },
     data: {
@@ -119,5 +131,8 @@ export async function updateTeacher(id: string, data: TeacherUpdateInput) {
 }
 
 export async function toggleTeacherActive(id: string, isActive: boolean) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  isActive = booleanSchema.parse(isActive);
   return db.teacher.update({ where: { id }, data: { isActive } });
 }

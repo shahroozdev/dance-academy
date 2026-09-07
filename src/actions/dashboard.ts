@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdmin } from "@/actions/access";
 import { normalizeMonth, round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
 import { periodDateFilter } from "@/lib/period";
@@ -20,6 +21,7 @@ function currentMonthValue(): string {
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
+  await requireAdmin();
   const monthValue = currentMonthValue();
   const month = normalizeMonth(monthValue);
   const paymentDateFilter = periodDateFilter({ type: "MONTH", month: monthValue });
@@ -51,6 +53,7 @@ export type RegistrationFunnelStage = { stage: string; count: number };
 // Submitted -> Reviewed (approved or rejected) -> Approved & Enrolled — each stage a subset of the
 // one before it, so the chart reads as a true funnel rather than a plain status breakdown.
 export async function getRegistrationFunnel(): Promise<RegistrationFunnelStage[]> {
+  await requireAdmin();
   const [submitted, processed, rejected] = await Promise.all([
     db.registrationRequest.count(),
     db.registrationRequest.count({ where: { status: "PROCESSED" } }),
@@ -69,6 +72,7 @@ export type BillingStatusCount = { status: "UNPAID" | "PARTIAL" | "PAID" | "OVER
 // Mirrors the billing list page's status set — DRAFT bills aren't shown there either, since
 // they're an internal pre-finalization state, not something admins act on.
 export async function getBillingStatusBreakdown(): Promise<BillingStatusCount[]> {
+  await requireAdmin();
   const monthValue = currentMonthValue();
   const month = normalizeMonth(monthValue);
   const statuses = ["UNPAID", "PARTIAL", "PAID", "OVERPAID"] as const;

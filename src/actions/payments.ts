@@ -1,8 +1,11 @@
 "use server";
 
-import type { PaymentCreateInput } from "@/actions/payments.schema";
+import { requireAdmin } from "@/actions/access";
+import { recordBillTransaction } from "@/actions/payment-service";
+import { paymentCreateSchema, refundCreateSchema } from "@/actions/payments.schema";
+import type { PaymentCreateInput, RefundCreateInput } from "@/actions/payments.schema";
+import { validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
-import { computeBillingStatus, round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
 
 export async function getPayments(params?: {
@@ -16,6 +19,8 @@ export async function getPayments(params?: {
   page?: number;
   pageSize?: number;
 }) {
+  await requireAdmin();
+  validateListQuery(params, []);
   const { billingId, studentId, familyId, method, dateFrom, dateTo, search, page = 1, pageSize = 50 } = params ?? {};
 
   const where: Prisma.PaymentWhereInput = {};
@@ -84,32 +89,12 @@ export async function getPayments(params?: {
 // Recomputes amountPaid/balance/status server-side from the sum of linked Payments — never
 // trusts a client-sent balance (§10).
 export async function createPayment(data: PaymentCreateInput) {
-  return db.$transaction(async (tx) => {
-    const billing = await tx.monthlyStudentBilling.findUniqueOrThrow({ where: { id: data.billingId } });
+  await requireAdmin();
+  data = paymentCreateSchema.parse(data);
+  return recordBillTransaction(data, false);
+}
 
-    await tx.payment.create({
-      data: {
-        billingId: data.billingId,
-        paymentDate: new Date(data.paymentDate),
-        amount: data.amount,
-        method: data.method,
-        reference: data.reference || null,
-        notes: data.notes || null,
-      },
-    });
-
-    const aggregate = await tx.payment.aggregate({
-      where: { billingId: data.billingId },
-      _sum: { amount: true },
-    });
-    const amountPaid = round2(Number(aggregate._sum.amount ?? 0));
-    const finalAmountDue = Number(billing.finalAmountDue);
-    const balance = round2(finalAmountDue - amountPaid);
-    const status = computeBillingStatus(finalAmountDue, amountPaid);
-
-    return tx.monthlyStudentBilling.update({
-      where: { id: data.billingId },
-      data: { amountPaid, balance, status },
-    });
-  });
+export async function createRefund(data: RefundCreateInput) {
+  await requireAdmin();
+  return recordBillTransaction(refundCreateSchema.parse(data), true);
 }

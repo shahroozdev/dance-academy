@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   computeBillingStatus,
   computeDueDate,
+  computeProratedLineItemAmount,
   computeStudentBilling,
   countWeekdayOccurrencesInMonth,
+  countWeekdayOccurrencesInRange,
   enrollmentOverlapsMonth,
   isPaymentReminderDue,
   normalizeMonth,
@@ -97,6 +99,37 @@ describe("computeStudentBilling", () => {
     expect(result.finalAmountDue).toBe(125);
   });
 
+  it("a seasonal/ineligible charge is excluded from and unaffected by the sibling discount", () => {
+    const result = computeStudentBilling({
+      lineItems: [
+        { enrollmentId: "e1", classMonthlyFeeId: "f1", amount: 80, discountEligible: true },
+        { enrollmentId: "e2", classMonthlyFeeId: "f2", amount: 45, discountEligible: false },
+      ],
+      hasSiblingDiscount: true,
+    });
+    expect(result.baseTuition).toBe(125);
+    // Sibling discount is 5% of the $80 regular-class subtotal only, not $125.
+    expect(result.siblingDiscount).toBe(4);
+    // 80 - 4 (sibling) + 45 (seasonal, untouched) = 121.
+    expect(result.finalAmountDue).toBe(121);
+  });
+
+  it("seasonal + 2 regular classes — multi-class discount computed only on the regular subtotal", () => {
+    const result = computeStudentBilling({
+      lineItems: [
+        { enrollmentId: "e1", classMonthlyFeeId: "f1", amount: 80, discountEligible: true },
+        { enrollmentId: "e2", classMonthlyFeeId: "f2", amount: 80, discountEligible: true },
+        { enrollmentId: "e3", classMonthlyFeeId: "f3", amount: 45, discountEligible: false },
+      ],
+      hasSiblingDiscount: true,
+    });
+    expect(result.baseTuition).toBe(205);
+    expect(result.multiClassDiscount).toBe(8); // 5% of 160, not 205
+    expect(result.siblingDiscount).toBe(7.6); // 5% of (160 - 8), matches the Nia example exactly
+    // 160 - 8 - 7.6 + 45 (seasonal, untouched) = 189.4
+    expect(result.finalAmountDue).toBe(189.4);
+  });
+
   it("adjustment applies last, after both discounts", () => {
     const result = computeStudentBilling({
       lineItems: [
@@ -175,6 +208,73 @@ describe("countWeekdayOccurrencesInMonth", () => {
 
   it("falls back to 4 when the class has no scheduled day", () => {
     expect(countWeekdayOccurrencesInMonth(normalizeMonth("2026-09-01"), "")).toBe(4);
+  });
+});
+
+describe("countWeekdayOccurrencesInRange", () => {
+  it("counts only the Tuesdays from the 10th onward in September 2026 (15th, 22nd, 29th)", () => {
+    expect(
+      countWeekdayOccurrencesInRange("TUESDAY", new Date("2026-09-10T00:00:00.000Z"), new Date("2026-09-30T23:59:59.999Z")),
+    ).toBe(3);
+  });
+
+  it("returns 0 when no weekday is set", () => {
+    expect(countWeekdayOccurrencesInRange("", new Date("2026-09-01"), new Date("2026-09-30"))).toBe(0);
+  });
+});
+
+describe("computeProratedLineItemAmount — mid-month enrollment billing (§4.7)", () => {
+  const september = normalizeMonth("2026-09-01");
+
+  it("charges only for sessions from the enrollment's start date onward when joining mid-month", () => {
+    const amount = computeProratedLineItemAmount({
+      month: september,
+      dayOfWeek: "TUESDAY",
+      fullMonthAmount: 400, // 5 Tuesdays * $80
+      perSessionRate: 80,
+      enrollmentStart: new Date("2026-09-10"),
+      enrollmentEnd: null,
+    });
+    // Only the 15th/22nd/29th fall on/after the 10th — 3 sessions, not 5.
+    expect(amount).toBe(240);
+  });
+
+  it("returns the full-month amount unchanged when the enrollment covers the whole month", () => {
+    const amount = computeProratedLineItemAmount({
+      month: september,
+      dayOfWeek: "TUESDAY",
+      fullMonthAmount: 400,
+      perSessionRate: 80,
+      enrollmentStart: new Date("2026-08-01"),
+      enrollmentEnd: null,
+    });
+    expect(amount).toBe(400);
+  });
+
+  it("prorates by calendar days when no per-session rate is available (fully flat-overridden fee)", () => {
+    const amount = computeProratedLineItemAmount({
+      month: september,
+      dayOfWeek: null,
+      fullMonthAmount: 100,
+      perSessionRate: null,
+      enrollmentStart: new Date("2026-09-16"),
+      enrollmentEnd: null,
+    });
+    // 15 of September's 30 days (16th-30th inclusive) — half the flat fee.
+    expect(amount).toBe(50);
+  });
+
+  it("also prorates for an enrollment that ends mid-month", () => {
+    const amount = computeProratedLineItemAmount({
+      month: september,
+      dayOfWeek: "TUESDAY",
+      fullMonthAmount: 400,
+      perSessionRate: 80,
+      enrollmentStart: new Date("2026-08-01"),
+      enrollmentEnd: new Date("2026-09-16"),
+    });
+    // The 1st, 8th, and 15th fall on/before the 16th — 3 sessions, not 5.
+    expect(amount).toBe(240);
   });
 });
 

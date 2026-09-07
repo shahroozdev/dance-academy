@@ -23,7 +23,9 @@ function endOfMonthUTC(date: Date): Date {
 }
 
 export function normalizeMonth(input: Date | string): Date {
-  return startOfMonthUTC(typeof input === "string" ? new Date(input) : input);
+  const date = typeof input === "string" ? new Date(input) : input;
+  if (!(date instanceof Date) || !Number.isFinite(date.getTime())) throw new Error("Enter a valid billing month.");
+  return startOfMonthUTC(date);
 }
 
 export function enrollmentOverlapsMonth(
@@ -53,14 +55,72 @@ const DAY_OF_WEEK_INDEX: Record<string, number> = {
 export function countWeekdayOccurrencesInMonth(month: Date, dayOfWeek: string): number {
   const targetIndex = DAY_OF_WEEK_INDEX[dayOfWeek];
   if (targetIndex === undefined) return 4; // no schedule set — a reasonable default, admin can override
+  return countWeekdayOccurrencesInRange(dayOfWeek, startOfMonthUTC(month), endOfMonthUTC(month));
+}
 
-  const start = startOfMonthUTC(month);
-  const end = endOfMonthUTC(month);
+// Same weekday-count as above, but over an arbitrary date range rather than a whole month —
+// used to prorate a mid-month enrollment's charge (§4.7). No "default to 4" fallback here:
+// that's a whole-month heuristic that isn't meaningful for a partial range.
+export function countWeekdayOccurrencesInRange(dayOfWeek: string, rangeStart: Date, rangeEnd: Date): number {
+  const targetIndex = DAY_OF_WEEK_INDEX[dayOfWeek];
+  if (targetIndex === undefined) return 0;
   let count = 0;
-  for (let t = start.getTime(); t <= end.getTime(); t += 24 * 60 * 60 * 1000) {
+  for (let t = rangeStart.getTime(); t <= rangeEnd.getTime(); t += 24 * 60 * 60 * 1000) {
     if (new Date(t).getUTCDay() === targetIndex) count++;
   }
   return count;
+}
+
+function daysInclusiveUTC(start: Date, end: Date): number {
+  // Truncate to the UTC calendar date first — end is typically end-of-day (23:59:59.999),
+  // which would otherwise make the raw millisecond diff round up to one day too many.
+  const startDay = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
+  const endDay = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
+  return Math.round((endDay - startDay) / (24 * 60 * 60 * 1000)) + 1;
+}
+
+// ---------- Mid-month enrollment proration (§4.7) ----------
+//
+// A student who joins (or leaves) partway through the month must only be charged for the
+// billable sessions that actually fall within their enrolled range that month — never the
+// full month's session count.
+
+export type ProratedLineItemInput = {
+  month: Date;
+  dayOfWeek: string | null;
+  fullMonthAmount: number;
+  perSessionRate: number | null;
+  enrollmentStart: Date;
+  enrollmentEnd: Date | null;
+};
+
+export function computeProratedLineItemAmount({
+  month,
+  dayOfWeek,
+  fullMonthAmount,
+  perSessionRate,
+  enrollmentStart,
+  enrollmentEnd,
+}: ProratedLineItemInput): number {
+  const monthStart = startOfMonthUTC(month);
+  const monthEnd = endOfMonthUTC(month);
+  const coversFullMonth =
+    !isAfter(enrollmentStart, monthStart) && (enrollmentEnd === null || !isBefore(enrollmentEnd, monthEnd));
+  if (coversFullMonth) return fullMonthAmount;
+
+  const effectiveStart = isAfter(enrollmentStart, monthStart) ? enrollmentStart : monthStart;
+  const effectiveEnd = enrollmentEnd !== null && isBefore(enrollmentEnd, monthEnd) ? enrollmentEnd : monthEnd;
+
+  if (dayOfWeek && perSessionRate !== null) {
+    const sessions = countWeekdayOccurrencesInRange(dayOfWeek, effectiveStart, effectiveEnd);
+    return round2(sessions * perSessionRate);
+  }
+
+  // No per-session rate to count against (e.g. a fully flat-overridden fee) — fall back to a
+  // calendar-day ratio of the full-month amount.
+  const totalDays = daysInclusiveUTC(monthStart, monthEnd);
+  const activeDays = daysInclusiveUTC(effectiveStart, effectiveEnd);
+  return round2((fullMonthAmount * activeDays) / totalDays);
 }
 
 // ---------- computeStudentBilling — the single code path for a Final Amount Due ----------
@@ -101,18 +161,23 @@ export function computeStudentBilling({
 }: ComputeStudentBillingInput): ComputeStudentBillingResult {
   const baseTuition = round2(lineItems.reduce((sum, li) => sum + li.amount, 0));
 
+  // Discount-ineligible line items (e.g. seasonal/special-program charges) must never
+  // contribute to, or receive, either discount — both discounts are computed purely over the
+  // eligible subtotal, and the ineligible amount is added back untouched afterward.
   const discountEligibleLineItems = lineItems.filter((li) => li.discountEligible);
   const discountEligibleSubtotal = round2(
     discountEligibleLineItems.reduce((sum, li) => sum + li.amount, 0),
   );
+  const discountIneligibleSubtotal = round2(baseTuition - discountEligibleSubtotal);
+
   const multiClassDiscount =
     discountEligibleLineItems.length >= 2 ? round2(discountEligibleSubtotal * multiClassDiscountPct) : 0;
 
-  const subtotalA = round2(baseTuition - multiClassDiscount);
+  const subtotalA = round2(discountEligibleSubtotal - multiClassDiscount);
   const siblingDiscount = hasSiblingDiscount ? round2(subtotalA * siblingDiscountPct) : 0;
   const subtotalB = round2(subtotalA - siblingDiscount);
 
-  const finalAmountDue = round2(subtotalB + adjustment);
+  const finalAmountDue = round2(subtotalB + discountIneligibleSubtotal + adjustment);
 
   return {
     baseTuition,

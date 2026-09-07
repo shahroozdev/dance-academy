@@ -10,7 +10,7 @@ export const otherIncomeCategorySchema = z.enum([
 ]);
 
 export const otherIncomeCreateSchema = z.object({
-  date: z.string().min(1, "Date is required"),
+  date: z.iso.date("Enter a valid date"),
   category: otherIncomeCategorySchema,
   description: z.string().min(1, "Description is required"),
   amount: z.coerce.number().positive("Amount must be greater than 0"),

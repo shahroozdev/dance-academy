@@ -34,18 +34,21 @@ FINAL AMOUNT DUE             = 56.00   ✅ matches doc exactly
 **Documented order (this is the one, consistent path):**
 
 ```
-1. Base Tuition        = sum of this month's ClassMonthlyFee amounts for the student's
-                          ACTIVE enrollments where Class.discountEligible = true
-                          (non-discount-eligible classes, e.g. flat seasonal programs,
-                          are added to Base Tuition but excluded from the multi-class
-                          discount calc — see 4.3)
-2. Multi-Class Discount = IF student has 2+ discount-eligible active enrollments this month:
-                          discountEligibleSubtotal * multiClassDiscountPct   (else 0)
-3. Subtotal A           = Base Tuition − Multi-Class Discount
-4. Sibling Discount     = IF family has 2+ active students this month:
-                          Subtotal A * siblingDiscountPct   (else 0)
-5. Subtotal B           = Subtotal A − Sibling Discount
-6. Final Amount Due     = Subtotal B + Adjustment   (adjustment is a signed value, e.g. +20 or -20)
+1. Base Tuition          = sum of this month's ClassMonthlyFee amounts for the student's
+                            ACTIVE enrollments (both discount-eligible and not)
+2. Eligible Subtotal      = sum of the amounts from discount-eligible enrollments only
+                            (non-discount-eligible classes — e.g. seasonal/special programs —
+                            are added to Base Tuition but never enter this subtotal, and so
+                            never contribute to or receive either discount — see 4.3)
+3. Multi-Class Discount  = IF student has 2+ discount-eligible active enrollments this month:
+                            Eligible Subtotal * multiClassDiscountPct   (else 0)
+4. Subtotal A            = Eligible Subtotal − Multi-Class Discount
+5. Sibling Discount      = IF family has 2+ active students this month:
+                            Subtotal A * siblingDiscountPct   (else 0)
+6. Subtotal B            = Subtotal A − Sibling Discount
+7. Final Amount Due      = Subtotal B + (Base Tuition − Eligible Subtotal) + Adjustment
+                            — the non-eligible amount is added back untouched, then the
+                            signed adjustment (e.g. +20 or -20) is applied last
 ```
 
 Both discount percentages default to 5% (`0.05`) but are read from `Settings`/env, never hard-coded,
@@ -60,10 +63,11 @@ per [01-architecture-and-tech-stack.md](./01-architecture-and-tech-stack.md).
   enrollment.
 - **Multi-class discount eligibility**: counts only enrollments whose `Class.discountEligible =
   true`. A student in two regular classes → discount applies. A student in one regular class + one
-  seasonal flat-fee program (e.g., "Onam Dance 2026," which the admin has flagged as
-  `discountEligible = false`) → discount does **not** apply, since that's not really "two classes"
-  in the pricing sense the doc intends. This is a configurable flag, not a hard-coded exclusion —
-  the admin can toggle it per class in `/admin/classes/[id]/edit`.
+  seasonal flat-fee program (e.g., "Onam Dance 2026") → discount does **not** apply, since that's
+  not really "two classes" in the pricing sense the doc intends. `discountEligible` is admin-
+  togglable per class in `/admin/classes/[id]/edit`, but a class with `pricingType = SEASONAL` is
+  **always** treated as non-discount-eligible in the billing logic itself, regardless of that flag
+  — see 4.3.
 - **Sibling discount eligibility**: family has 2+ students where `Student.isActive = true` **and**
   that student has at least one active enrollment in the billing month (a sibling who has fully
   withdrawn shouldn't make an otherwise-only-child eligible for a discount they no longer share
@@ -71,6 +75,11 @@ per [01-architecture-and-tech-stack.md](./01-architecture-and-tech-stack.md).
   not based on family total.
 - **Both discounts can apply to the same student** (confirmed by the Nia example) and are always
   computed in the fixed order above.
+- **Neither discount ever touches a seasonal/special-program charge**: as of §4.1 step 2/7, a
+  non-discount-eligible line item is excluded from Eligible Subtotal entirely, so it can't inflate
+  the base either discount percentage is taken from, and it's added back after both discounts are
+  subtracted. This is enforced in `computeStudentBilling` itself
+  ([src/lib/billing.ts](../src/lib/billing.ts)), not only via the admin-set flag.
 
 ## 4.3 Base Tuition composition (Regular vs. Seasonal pricing)
 
@@ -85,7 +94,12 @@ For each active enrollment in the billing month:
      that overrides must be possible.
    - **SEASONAL**: `monthlyClassFee = flatFee` (admin sets `flatFee` directly on the Class or on
      the specific month's fee row — there is no session-count math for flat-fee programs).
-3. Create a `MonthlyBillingLineItem` linking this enrollment + this `ClassMonthlyFee` + the amount
+3. **Per-student proration** (REGULAR only, §4.7): if the enrollment doesn't cover the full month
+   — joined or left partway through — the student's line item charges only the sessions actually
+   falling within their enrolled range that month, not the class's full-month
+   `monthlyClassFee`. A SEASONAL charge is never prorated by date; instead it's billed exactly
+   once, ever, per §4.7.
+4. Create a `MonthlyBillingLineItem` linking this enrollment + this `ClassMonthlyFee` + the amount
    contributed, so every dollar in Base Tuition is traceable back to a specific class-month fee
    (this is what powers the bill-detail audit view in
    [03-routes-and-pages.md §3.9](./03-routes-and-pages.md#39-monthly-student-billing-adminbilling-the-critical-page-6)).
@@ -134,3 +148,33 @@ These become the actual Vitest unit test cases for `computeStudentBilling`:
 | Partial payment | bill with `finalAmountDue = 100`, one `Payment` of `40` | `amountPaid=40`, `balance=60`, `status=PARTIAL` |
 | Full payment | bill with `finalAmountDue = 100`, payments summing to `100` | `status=PAID`, `balance=0` |
 | Overpayment | payments summing to `> finalAmountDue` | `status=OVERPAID`, `balance` negative, flagged for admin review |
+| Mid-month enrollment | 1 enrollment starting the 3rd Tuesday of a 5-Tuesday month | charged for 3 sessions, not 5 |
+| Seasonal + sibling discount | seasonal $45 line item, sibling of an only-eligible-class $80 student | seasonal $45 excluded from and unaffected by the sibling discount |
+
+## 4.7 Mid-month proration, seasonal charge-once, and the finalization gate
+
+Three rules that round out the calculation, each enforced in the single shared code path
+(`computeStudentBilling` / `buildLineItemInputs` in `src/lib/billing.ts` and
+`src/actions/billing-service.ts`) so every caller — the monthly generation job, manual
+"Regenerate," and the cron job — gets them automatically:
+
+- **Mid-month enrollment proration**: a REGULAR-class enrollment that starts or ends partway
+  through the billing month is charged only for the billable sessions actually falling within its
+  enrolled range, computed by literally counting the class's scheduled weekday occurrences in that
+  range and multiplying by the fee's per-session rate (`computeProratedLineItemAmount`). If the fee
+  has been fully flat-overridden (no per-session rate on file), it falls back to a calendar-day
+  ratio of the full-month amount. An enrollment covering the whole month is unaffected. SEASONAL
+  classes are never prorated by date — see the next point instead.
+- **Seasonal/special-program charge-once**: a SEASONAL enrollment is billed exactly once, on the
+  first month it overlaps — not recreated on every later run just because the enrollment (which
+  has no natural end date) still overlaps subsequent months. `buildLineItemInputs` checks whether a
+  `MonthlyBillingLineItem` already links this enrollment to this class from *any other month*
+  before billing it again.
+- **Finalization gate**: `ClassMonthlyFee.isFinalized` / `finalizedAt` record staff sign-off on a
+  class's billable session count for the month (via `/admin/class-fees`' per-row Finalize button or
+  "Finalize All"). Editing an already-finalized fee clears the flag automatically. Every
+  notification/reminder send path (`sendFamilyNotificationEmail`, `sendMonthlyWhatsApp`,
+  `markFamilyNotificationSent`, `sendPaymentReminders`/`sendFamilyPaymentReminder`) checks
+  `getUnfinalizedClasses`/`getUnfinalizedBillingIds` first: manual single-family sends throw a
+  clear error naming the unfinalized classes, and the two bulk/cron paths silently skip
+  not-yet-finalized bills, leaving them eligible for the next run.

@@ -1,5 +1,10 @@
 import { generateMonthlyBilling, recalculateBilling, setBillingAdjustment } from "@/actions/billing";
-import { updateClassMonthlyFee } from "@/actions/class-fees";
+import {
+  finalizeAllClassMonthlyFeesForMonth,
+  finalizeClassMonthlyFee,
+  unfinalizeClassMonthlyFee,
+  updateClassMonthlyFee,
+} from "@/actions/class-fees";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
 import { updateEmailTemplate } from "@/actions/email-templates";
 import { createEnrollment, endEnrollment } from "@/actions/enrollments";
@@ -9,15 +14,16 @@ import {
   updateFamily,
   toggleFamilyActive,
 } from "@/actions/families";
-import { markFamilyNotificationSent, sendFamilyNotificationEmail } from "@/actions/notifications";
+import { markFamilyNotificationSent, sendFamilyNotificationEmail, sendFamilyNotificationWhatsApp, sendFamilyPaymentReminder } from "@/actions/notifications";
 import { createOtherIncome, deleteOtherIncome, updateOtherIncome } from "@/actions/other-income";
-import { createPayment } from "@/actions/payments";
+import { createPayment, createRefund } from "@/actions/payments";
 import { approveRegistrationRequest, rejectRegistrationRequest } from "@/actions/registrations";
 import { updateStudioSettings, uploadLogo } from "@/actions/settings";
 import {
   createStudent,
   updateStudent,
   toggleStudentActive,
+  importStudents,
 } from "@/actions/students";
 import { createTeacher, updateTeacher, toggleTeacherActive } from "@/actions/teachers";
 
@@ -28,6 +34,7 @@ export const mutationRegistry = {
   createStudent,
   updateStudent,
   toggleStudentActive,
+  importStudents,
   createClass,
   updateClass,
   toggleClassActive,
@@ -42,7 +49,11 @@ export const mutationRegistry = {
   setBillingAdjustment,
   recalculateBilling,
   updateClassMonthlyFee,
+  finalizeClassMonthlyFee,
+  unfinalizeClassMonthlyFee,
+  finalizeAllClassMonthlyFeesForMonth,
   createPayment,
+  createRefund,
   createExpense,
   updateExpense,
   deleteExpense,
@@ -55,6 +66,8 @@ export const mutationRegistry = {
   updateEmailTemplate,
   markFamilyNotificationSent,
   sendFamilyNotificationEmail,
+  sendFamilyNotificationWhatsApp,
+  sendFamilyPaymentReminder,
 } as const;
 
 export type MutationRegistry = typeof mutationRegistry;

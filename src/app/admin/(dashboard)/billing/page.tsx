@@ -6,13 +6,13 @@ import { useMemo, useState } from "react";
 import { AdjustmentModal } from "@/app/admin/(dashboard)/billing/adjustment-modal";
 import { NotificationModal } from "@/app/admin/(dashboard)/billing/notification-modal";
 import { PaymentModal } from "@/app/admin/(dashboard)/billing/payment-modal";
+import { Badge } from "@/components/common/badge";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
+import { Skeleton } from "@/components/common/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { downloadCsv, toCsv } from "@/lib/csv";
@@ -306,7 +306,7 @@ export default function BillingPage() {
                                 </Button>
                                 {bill.status !== "PAID" && (
                                   <Button size="sm" onClick={() => setPayingBillingId(bill.id)}>
-                                    Record Payment
+                                    {bill.status === "OVERPAID" ? "Record Refund" : "Record Payment"}
                                   </Button>
                                 )}
                               </div>

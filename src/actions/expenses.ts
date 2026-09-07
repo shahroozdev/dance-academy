@@ -1,8 +1,10 @@
 "use server";
-
 import { put } from "@vercel/blob";
 
+import { requireAdmin } from "@/actions/access";
+import { expenseCreateSchema, expenseUpdateSchema } from "@/actions/expenses.schema";
 import type { ExpenseCreateInput, ExpenseUpdateInput } from "@/actions/expenses.schema";
+import { validateListQuery , idSchema } from "@/actions/validation.schema";
 import type { ExpenseCategory, Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 
@@ -13,6 +15,8 @@ export async function getExpenses(params?: {
   page?: number;
   pageSize?: number;
 }) {
+  await requireAdmin();
+  validateListQuery(params, []);
   const { category, dateFrom, dateTo, page = 1, pageSize = 50 } = params ?? {};
 
   const where: Prisma.ExpenseWhereInput = {};
@@ -45,6 +49,8 @@ export async function getExpenses(params?: {
 export type ExpenseDetail = Awaited<ReturnType<typeof getExpenseById>>;
 
 export async function getExpenseById(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
   const expense = await db.expense.findUniqueOrThrow({
     where: { id },
     include: { teacher: { select: { id: true, name: true } } },
@@ -53,6 +59,8 @@ export async function getExpenseById(id: string) {
 }
 
 export async function createExpense(data: ExpenseCreateInput) {
+  await requireAdmin();
+  data = expenseCreateSchema.parse(data);
   return db.expense.create({
     data: {
       date: new Date(data.date),
@@ -68,6 +76,9 @@ export async function createExpense(data: ExpenseCreateInput) {
 }
 
 export async function updateExpense(id: string, data: ExpenseUpdateInput) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  data = expenseUpdateSchema.parse(data);
   return db.expense.update({
     where: { id },
     data: {
@@ -84,6 +95,8 @@ export async function updateExpense(id: string, data: ExpenseUpdateInput) {
 }
 
 export async function deleteExpense(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
   await db.expense.delete({ where: { id } });
 }
 
@@ -91,6 +104,7 @@ export async function deleteExpense(id: string) {
 // same call works whether the expense already exists or is still being drafted in the create
 // form; the caller folds the URL into the create/update payload like any other field.
 export async function uploadExpenseReceipt(formData: FormData): Promise<{ url: string }> {
+  await requireAdmin();
   const file = formData.get("receipt") as File | null;
   if (!file || file.size === 0) {
     throw new Error("No file provided.");

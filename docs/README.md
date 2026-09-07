@@ -22,6 +22,8 @@ the user's request.
 
 ## One-paragraph summary
 
+For the current operating flow, sibling identification, refunds, reminders, and WhatsApp setup, see [10-admin-flow-and-operations.md](./10-admin-flow-and-operations.md).
+
 The system automates: **Registration → Family/Student → Enrollment → Class Monthly Fee →
 Student Monthly Bill → Discounts/Adjustments → Parent Notification → Payment → Balance/Status →
 Financial Dashboard.** ~50 students at peak, one admin user (studio owner), one public-facing

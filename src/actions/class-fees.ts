@@ -1,6 +1,9 @@
 "use server";
 
+import { requireAdmin } from "@/actions/access";
+import { classMonthlyFeeUpdateSchema } from "@/actions/class-fees.schema";
 import type { ClassMonthlyFeeUpdateInput } from "@/actions/class-fees.schema";
+import { idSchema , validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { normalizeMonth } from "@/lib/billing";
 import { db } from "@/lib/db";
@@ -11,6 +14,8 @@ export async function getClassMonthlyFees(params?: {
   page?: number;
   pageSize?: number;
 }) {
+  await requireAdmin();
+  validateListQuery(params, []);
   const { month, classId, page = 1, pageSize = 50 } = params ?? {};
 
   const where: Prisma.ClassMonthlyFeeWhereInput = {};
@@ -43,6 +48,8 @@ export async function getClassMonthlyFees(params?: {
 export type ClassMonthlyFeeDetail = Awaited<ReturnType<typeof getClassMonthlyFeeById>>;
 
 export async function getClassMonthlyFeeById(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
   const fee = await db.classMonthlyFee.findUniqueOrThrow({ where: { id }, include: { class: true } });
   return {
     ...fee,
@@ -54,6 +61,9 @@ export async function getClassMonthlyFeeById(id: string) {
 }
 
 export async function updateClassMonthlyFee(id: string, data: ClassMonthlyFeeUpdateInput) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  data = classMonthlyFeeUpdateSchema.parse(data);
   return db.classMonthlyFee.update({
     where: { id },
     data: {
@@ -63,6 +73,42 @@ export async function updateClassMonthlyFee(id: string, data: ClassMonthlyFeeUpd
       monthlyClassFee: data.monthlyClassFee,
       notes: data.notes || null,
       isOverridden: true,
+      // A session-count/fee change invalidates any prior sign-off — staff must re-confirm
+      // before notifications for bills referencing this row can go out again.
+      isFinalized: false,
+      finalizedAt: null,
     },
   });
+}
+
+// ---------- Finalization (§4.7) — staff confirmation of a class's billable session count for
+// the month, required before fee notifications referencing it can be sent (see billing-service's
+// getUnfinalizedClasses, which every notification/reminder send path checks first). ----------
+
+export async function finalizeClassMonthlyFee(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  return db.classMonthlyFee.update({
+    where: { id },
+    data: { isFinalized: true, finalizedAt: new Date() },
+  });
+}
+
+export async function unfinalizeClassMonthlyFee(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  return db.classMonthlyFee.update({
+    where: { id },
+    data: { isFinalized: false, finalizedAt: null },
+  });
+}
+
+export async function finalizeAllClassMonthlyFeesForMonth(monthInput: string) {
+  await requireAdmin();
+  const month = normalizeMonth(monthInput);
+  const { count } = await db.classMonthlyFee.updateMany({
+    where: { month, isFinalized: false },
+    data: { isFinalized: true, finalizedAt: new Date() },
+  });
+  return { finalized: count };
 }

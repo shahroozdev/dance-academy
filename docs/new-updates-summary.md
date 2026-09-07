@@ -2,6 +2,14 @@
 
 ## 2026-09-07
 
+- Admin operations now check that the user is signed in and still has access, and reject invalid submitted values.
+- Recalculating an older bill keeps classes that the student attended during that month, even if the enrollment has since ended.
+- Adding a student to the same active class twice is blocked, and monthly bills charge each class only once.
+- Payment reminders show the remaining balance after partial payments; failed reminders can retry, with a manual reminder button for older failures.
+- Overpaid bills now offer Record Refund to track money returned and update collected income on the refund date.
+- Family matching now handles phone formatting and email capitalization, and flags conflicting family matches for review.
+- Family notifications can now send through the studio's WhatsApp account once its credentials and approved templates are ready; scheduled sending can be enabled after setup.
+
 - **New Teachers section** — Added a Teachers page to the admin sidebar. You can now keep a proper list of instructors with their contact info, and each teacher's page shows every class they teach and how many students are currently enrolled in each. Adding or editing a class now lets you pick the teacher from a dropdown instead of typing their name — this keeps one teacher's name consistent everywhere instead of it being typed slightly differently on different classes.
 
 ## 2026-09-05

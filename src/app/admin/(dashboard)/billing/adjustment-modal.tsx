@@ -4,7 +4,7 @@ import { billingAdjustmentSchema, type BillingAdjustmentInput } from "@/actions/
 import { Button } from "@/components/common/button";
 import { FORM, FormFeilds } from "@/components/common/form";
 import { Modal } from "@/components/common/modal";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/common/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 
@@ -45,8 +45,8 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
                   />
                   {billing.status === "PAID" && (
                     <p className="text-sm text-muted-foreground">
-                      This bill is already paid in full. A negative adjustment records a refund —
-                      it will mark the bill Overpaid so the amount owed back is visible.
+                      A negative adjustment reduces the fee and shows the credit as Overpaid.
+                      After returning the money, use Record Refund to record the amount and date.
                     </p>
                   )}
                   {Boolean(error) && (

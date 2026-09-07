@@ -26,3 +26,51 @@ export function downloadCsv(filename: string, csv: string): void {
   link.remove();
   URL.revokeObjectURL(url);
 }
+
+// RFC 4180 parser (quoted fields, escaped `""`, CRLF/LF) — the inverse of toCsv above, tolerant of
+// whatever a spreadsheet app re-saves the file as.
+export function parseCsv(text: string): string[][] {
+  const input = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+    if (inQuotes) {
+      if (char === '"') {
+        if (input[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += char;
+      }
+      continue;
+    }
+
+    if (char === '"') inQuotes = true;
+    else if (char === ",") { row.push(field); field = ""; }
+    else if (char === "\r") { /* swallowed; \n (if present) ends the row */ }
+    else if (char === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+    else field += char;
+  }
+  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+
+  return rows.filter((r) => !(r.length === 1 && r[0].trim() === ""));
+}
+
+// Maps parsed rows to objects keyed by (trimmed) header, for a CSV whose first row is a header.
+export function csvRowsToObjects(rows: string[][]): Record<string, string>[] {
+  const [header, ...body] = rows;
+  if (!header) return [];
+  const keys = header.map((h) => h.trim());
+  return body.map((row) => {
+    const obj: Record<string, string> = {};
+    keys.forEach((key, i) => { obj[key] = (row[i] ?? "").trim(); });
+    return obj;
+  });
+}
