@@ -49,7 +49,7 @@ export default function NewTeacherPage() {
               <FormFeilds name="name" label="Full Name" placeholder="e.g. Meera Iyer" />
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="email" label="Email" type="email" placeholder="meera@example.com" />
-                <FormFeilds name="phone" label="Phone" type="tel" placeholder="e.g. (555) 123-4567" />
+                <FormFeilds name="phone" label="Phone" type="tel" />
               </div>
               <FormFeilds name="notes" label="Notes" type="textarea" placeholder="Any additional notes..." />
               <div className="flex justify-end gap-2 pt-4">

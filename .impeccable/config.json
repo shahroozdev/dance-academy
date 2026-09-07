@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "arial",
+        "files": [
+          "src/lib/email-html.ts"
+        ],
+        "createdAt": "2026-09-07T12:53:33.240Z",
+        "reason": "email template: Arial/Helvetica is the standard safe font stack for HTML emails since clients like Outlook don't reliably support custom web fonts"
+      }
+    ]
+  }
+}

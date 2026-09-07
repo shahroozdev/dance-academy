@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { phoneSchema } from "@/actions/validation.schema";
+
 export const studentCreateSchema = z.object({
   fullName: z.string().min(1, "Student name is required"),
   familyId: z.string().min(1, "Family is required"),
@@ -9,7 +11,7 @@ export const studentCreateSchema = z.object({
   generalNotes: z.string().or(z.literal("")).optional(),
   emergencyContactName: z.string().or(z.literal("")).optional(),
   emergencyContactRelationship: z.string().or(z.literal("")).optional(),
-  emergencyPhone: z.string().or(z.literal("")).optional(),
+  emergencyPhone: phoneSchema.or(z.literal("")).optional(),
 });
 
 export const studentUpdateSchema = studentCreateSchema.partial();

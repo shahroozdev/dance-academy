@@ -1,9 +1,11 @@
 import { z } from "zod";
 
+import { phoneSchema } from "@/actions/validation.schema";
+
 export const teacherCreateSchema = z.object({
   name: z.string().min(1, "Teacher name is required"),
-  email: z.string().email("Invalid email").or(z.literal("")).optional(),
-  phone: z.string().or(z.literal("")).optional(),
+  email: z.email("Invalid email").trim().toLowerCase().or(z.literal("")).optional(),
+  phone: phoneSchema.or(z.literal("")).optional(),
   notes: z.string().or(z.literal("")).optional(),
   isActive: z.boolean().default(true),
 });

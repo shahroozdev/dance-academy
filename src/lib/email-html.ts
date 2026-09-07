@@ -31,7 +31,7 @@ export function wrapEmailHtml({ studioName, logoUrl, primaryColor, bodyText, now
     .join("\n");
 
   const header = logoUrl
-    ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(studioName)}" style="max-height:48px;max-width:220px;" />`
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;background-color:#ffffff;border-radius:8px;"><tr><td style="padding:8px 16px;"><img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(studioName)}" style="display:block;max-height:48px;max-width:220px;" /></td></tr></table>`
     : `<span style="font-size:20px;font-weight:600;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">${escapeHtml(studioName)}</span>`;
 
   return `<!doctype html>

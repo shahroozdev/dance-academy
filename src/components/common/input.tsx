@@ -1,7 +1,9 @@
 "use client";
 
-import { forwardRef, type ReactNode } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { forwardRef, useState, type ReactNode } from "react";
 
+import { PhoneInput } from "@/components/common/phone-input";
 import { Input as UIInput } from "@/components/ui/input";
 import {
   Select,
@@ -11,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 export type InputOption = { label: string; value: string };
 
@@ -39,34 +42,6 @@ type InputProps = {
   min?: string;
   max?: string;
 };
-
-// Matches the phone regex in registrations.schema.ts — stripped live so a letter can never even
-// land in the field, instead of only being caught by zod after the fact.
-const PHONE_DISALLOWED_CHARS = /[^\d+\s().-]/g;
-
-// Formats digits as the user types: US-style "(555) 123-4567" for local numbers, or
-// "+<country> XXX XXX XXX" grouping once a leading "+" signals an international number.
-// Digit counts are capped so the result always fits the 20-char limit in the phone schema.
-function formatPhoneNumber(raw: string): string {
-  const stripped = raw.replace(PHONE_DISALLOWED_CHARS, "");
-
-  if (stripped.trimStart().startsWith("+")) {
-    const digits = stripped.replace(/\D/g, "").slice(0, 15);
-    if (!digits) return "+";
-    const groups = digits.match(/.{1,3}/g) ?? [];
-    return `+${groups.join(" ")}`;
-  }
-
-  const digits = stripped.replace(/\D/g, "").slice(0, 10);
-  const area = digits.slice(0, 3);
-  const mid = digits.slice(3, 6);
-  const last = digits.slice(6, 10);
-
-  if (digits.length > 6) return `(${area}) ${mid}-${last}`;
-  if (digits.length > 3) return `(${area}) ${mid}`;
-  if (digits.length > 0) return `(${area}`;
-  return "";
-}
 
 export const Input = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
@@ -117,6 +92,20 @@ export const Input = forwardRef<
     return renderers[type]();
   }
 
+  if (type === "password") {
+    return (
+      <PasswordInput
+        ref={ref as React.Ref<HTMLInputElement>}
+        {...props}
+        onChange={onChange}
+      />
+    );
+  }
+
+  if (type === "tel") {
+    return <PhoneInput {...props} onChange={onChange} />;
+  }
+
   return (
     <UIInput
       ref={ref as React.Ref<HTMLInputElement>}
@@ -131,10 +120,41 @@ export const Input = forwardRef<
       min={props.min}
       max={props.max}
       onBlur={props.onBlur}
-      onChange={(event) => {
-        const raw = event.target.value;
-        onChange?.(type === "tel" ? formatPhoneNumber(raw) : raw);
-      }}
+      onChange={(event) => onChange?.(event.target.value)}
     />
   );
 });
+
+const PasswordInput = forwardRef<HTMLInputElement, Omit<InputProps, "type">>(
+  function PasswordInput({ onChange, ...props }, ref) {
+    const [visible, setVisible] = useState(false);
+
+    return (
+      <div className="relative">
+        <UIInput
+          ref={ref}
+          id={props.id}
+          type={visible ? "text" : "password"}
+          value={props.value}
+          name={props.name}
+          placeholder={props.placeholder}
+          disabled={props.disabled}
+          className={cn("pr-8", props.className)}
+          aria-invalid={props["aria-invalid"]}
+          onBlur={props.onBlur}
+          onChange={(event) => onChange?.(event.target.value)}
+        />
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={() => setVisible((prev) => !prev)}
+          disabled={props.disabled}
+          aria-label={visible ? "Hide password" : "Show password"}
+          className="absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+        >
+          {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+        </button>
+      </div>
+    );
+  },
+);

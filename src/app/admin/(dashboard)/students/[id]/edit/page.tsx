@@ -118,7 +118,7 @@ export default function EditStudentPage() {
                 <FormFeilds name="emergencyContactName" label="Emergency Contact Name" placeholder="e.g. Priya Sharma" />
                 <FormFeilds name="emergencyContactRelationship" label="Relationship" placeholder="e.g. Grandmother" />
               </div>
-              <FormFeilds name="emergencyPhone" label="Emergency Phone" placeholder="e.g. (555) 123-4567" />
+              <FormFeilds name="emergencyPhone" label="Emergency Phone" type="tel" />
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" type="button" asChild>
                   <Link href={`/admin/students/${id}`}>Cancel</Link>

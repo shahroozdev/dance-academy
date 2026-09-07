@@ -51,7 +51,7 @@ export default function NewFamilyPage() {
                 <FormFeilds name="parentGuardianName" label="Parent/Guardian Name" placeholder="e.g. Priya Sharma" />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormFeilds name="phone" label="Phone" type="tel" placeholder="+1 (555) 123-4567" />
+                <FormFeilds name="phone" label="Phone" type="tel" />
                 <FormFeilds name="email" label="Email" type="email" placeholder="priya@example.com" />
               </div>
               <FormFeilds name="notes" label="Notes" type="textarea" placeholder="Any additional notes..." />

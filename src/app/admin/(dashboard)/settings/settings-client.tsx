@@ -11,7 +11,7 @@ import { useQuery } from "@/hooks/useQuery";
 import { AppearanceForm, BrandingForm } from "./settings-appearance";
 import { DiscountForm, ReminderForm } from "./settings-billing";
 import { EmailTemplatesTab } from "./settings-email-templates";
-import { SmtpForm, WhatsappForm } from "./settings-integrations";
+import { SmtpForm } from "./settings-integrations";
 
 export function SettingsClient({
   initialSettings,
@@ -58,7 +58,7 @@ export function SettingsClient({
         </TabsContent>
         <TabsContent value="integrations" className="flex flex-col gap-6 pt-4">
           <SmtpForm settings={settings} />
-          <WhatsappForm settings={settings} />
+          {/* WhatsApp Cloud API hidden for now — wa.me links are enough for this version. */}
         </TabsContent>
         <TabsContent value="emails" className="flex flex-col gap-6 pt-4">
           <EmailTemplatesTab initialTemplates={initialEmailTemplates} />

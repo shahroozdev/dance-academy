@@ -44,11 +44,16 @@ export function buildFamilyMessage({ parentGuardianName, monthLabel, students }:
   ].join("\n");
 }
 
-// Best-effort normalization for a wa.me deep link — assumes a 10-digit number without a country
-// code is a US number, since this studio uses Zelle (a US-only payment system).
+// Normalization for a wa.me deep link. Phone numbers entered through the international phone
+// input (@/components/common/phone-input) always carry an explicit "+<country code>" and are
+// trusted as-is here — just strip the formatting. The 10-digit-implies-US fallback only exists
+// for phone numbers stored before that input existed (a bare local number with no country code);
+// it must NOT trigger for a number that already declared its country via a leading "+", since
+// plenty of countries' full E.164 numbers are also 10 digits once the "+" is stripped (e.g.
+// Singapore's +65 XXXX XXXX) and would otherwise get a bogus US "1" prepended.
 export function normalizePhoneForWhatsApp(phone: string): string {
   const digits = phone.replace(/\D/g, "");
-  if (digits.length === 10) return `1${digits}`;
+  if (!phone.trim().startsWith("+") && digits.length === 10) return `1${digits}`;
   return digits;
 }
 

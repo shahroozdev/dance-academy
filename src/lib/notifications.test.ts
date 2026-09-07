@@ -78,6 +78,15 @@ describe("normalizePhoneForWhatsApp", () => {
   it("leaves an already-country-coded number untouched aside from stripping formatting", () => {
     expect(normalizePhoneForWhatsApp("+1 555-123-4567")).toBe("15551234567");
   });
+
+  it("prepends India's country code for an Indian number entered via the international input", () => {
+    expect(normalizePhoneForWhatsApp("+91 98765 43210")).toBe("919876543210");
+  });
+
+  it("does not mistake a 10-digit number for a bare US number once it declares a country via '+'", () => {
+    // Singapore's E.164 form is 10 digits once the "+" is stripped — must not get a US "1" prepended.
+    expect(normalizePhoneForWhatsApp("+65 8123 4567")).toBe("6581234567");
+  });
 });
 
 describe("buildWhatsAppLink", () => {

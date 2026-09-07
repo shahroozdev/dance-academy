@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-const phoneSchema = z
-  .string()
-  .min(1, "Phone number is required")
-  .regex(/^[+]?[0-9\s().-]{7,20}$/, "Enter a valid phone number");
+import { phoneSchema } from "@/actions/validation.schema";
 
 const dobSchema = z
   .iso.date("Enter a valid date of birth")
@@ -13,7 +10,12 @@ const dobSchema = z
 
 export const registrationRequestCreateSchema = z.object({
   parentGuardianName: z.string().trim().min(1, "Parent/guardian name is required").max(200),
-  parentEmail: z.email("Enter a valid email").or(z.literal("")).optional(),
+  parentEmail: z
+    .email("Enter a valid email")
+    .trim()
+    .toLowerCase()
+    .or(z.literal(""))
+    .optional(),
   parentPhone: phoneSchema,
   studentFullName: z.string().trim().min(1, "Student name is required").max(200),
   dob: dobSchema,

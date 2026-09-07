@@ -49,14 +49,14 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
           <CardTitle className="text-xl">
             Thank you for registering!
           </CardTitle>
-          <CardDescription className="mx-auto max-w-md text-balance">
+          <CardDescription className="mx-auto text-base max-w-md text-balance">
             We&apos;ve received your registration request for Malhaar Dance
             Company. Our team will review the details and reach out to you by
             email or phone within 1&ndash;2 business days to confirm
             enrollment and next steps.
           </CardDescription>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Didn&apos;t hear from us? Feel free to reach out to the studio
           directly.
         </p>
@@ -134,7 +134,6 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                   name="parentPhone"
                   label="Phone"
                   type="tel"
-                  placeholder="e.g. (555) 123-4567"
                   required
                 />
               </div>
@@ -201,7 +200,6 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                 name="emergencyPhone"
                 label="Emergency Phone"
                 type="tel"
-                placeholder="e.g. (555) 123-4567"
                 required
               />
             </div>

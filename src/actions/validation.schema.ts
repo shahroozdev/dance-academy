@@ -1,8 +1,17 @@
+import { isValidPhoneNumber } from "libphonenumber-js";
 import { z } from "zod";
 
 export const idSchema = z.string().trim().min(1).max(200);
 export const booleanSchema = z.boolean();
 export const dateInputSchema = z.string().min(1).refine((value) => Number.isFinite(Date.parse(value)), "Enter a valid date");
+
+// The phone input always submits E.164 (e.g. "+919876543210"), so this validates against that
+// format rather than any single country's — the studio is US-based but registers plenty of
+// students on Indian (and other) numbers.
+export const phoneSchema = z
+  .string()
+  .min(1, "Phone number is required")
+  .refine((value) => isValidPhoneNumber(value), "Enter a valid phone number, including country code");
 
 const listQuerySchema = z.object({
   page: z.number().int().min(1).max(100000).optional(),

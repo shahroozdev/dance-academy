@@ -4,7 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 
 export const credentialsSchema = z.object({
-  email: z.email(),
+  email: z.email().trim().toLowerCase(),
   password: z.string().min(1),
 });
 
@@ -20,7 +20,7 @@ export async function verifyAdminCredentials(
   email: string,
   password: string,
 ): Promise<AdminSessionUser | null> {
-  const admin = await db.adminUser.findUnique({ where: { email } });
+  const admin = await db.adminUser.findFirst({ where: { email: { equals: email, mode: "insensitive" } } });
   if (!admin || !admin.isActive) return null;
 
   const passwordMatches = await bcrypt.compare(password, admin.passwordHash);
