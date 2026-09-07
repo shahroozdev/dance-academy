@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
-import { sendTemplatedEmail } from "@/actions/email";
+import { sendAdminOperationalAlert, sendTemplatedEmail } from "@/actions/email";
 import { registrationRequestCreateSchema } from "@/actions/registrations.schema";
 import type { RegistrationRequestCreateInput } from "@/actions/registrations.schema";
 import { serializableTransaction } from "@/actions/transaction";
@@ -105,6 +105,11 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
       request.parentEmail,
     );
   }
+  await sendAdminOperationalAlert({
+    setting: "registrationAlertEnabled",
+    subject: `New registration received — ${request.studentFullName}`,
+    lines: ["A new registration is ready for review.", "", `Student: ${request.studentFullName}`, `Parent/guardian: ${request.parentGuardianName}`, `Requested class: ${request.requestedClass?.name ?? "Not selected"}`],
+  });
 
   return request;
 }

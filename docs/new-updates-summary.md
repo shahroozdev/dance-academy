@@ -1,5 +1,11 @@
 # Updates Summary
 
+## 2026-09-08
+
+- **Monthly billing-ready email** — Billing Settings now lets you choose which staff email receives an alert after the automatic monthly billing run. The alert is on by default, can be turned off, and reminds staff to review and finalize class fees before notifying parents.
+- **Parent notification confirmations** — Billing Settings can also email staff a checkmarked confirmation after a family fee notice is sent or manually marked as sent, showing the family, billing month, and delivery method. This confirmation is on by default and can be turned off.
+- **Complete admin alert controls** — The same Billing Settings card now offers separate switches for new registrations, recorded payments, credits, automatic billing failures, failed parent notices, failed payment reminders, and class fees that still need finalization. Each alert goes only to the configured staff address, and every category can be turned off independently.
+
 ## 2026-09-07
 
 - Admin operations now check that the user is signed in and still has access, and reject invalid submitted values.

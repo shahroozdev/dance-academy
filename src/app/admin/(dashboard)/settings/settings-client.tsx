@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@/hooks/useQuery";
 
 import { AppearanceForm, BrandingForm } from "./settings-appearance";
-import { DiscountForm, ReminderForm } from "./settings-billing";
+import { BillingAlertForm, DiscountForm, ReminderForm } from "./settings-billing";
 import { EmailTemplatesTab } from "./settings-email-templates";
 import { SmtpForm } from "./settings-integrations";
 
@@ -55,6 +55,7 @@ export function SettingsClient({
         <TabsContent value="billing" className="flex flex-col gap-6 pt-4">
           <DiscountForm settings={settings} />
           <ReminderForm settings={settings} />
+          <BillingAlertForm settings={settings} />
         </TabsContent>
         <TabsContent value="integrations" className="flex flex-col gap-6 pt-4">
           <SmtpForm settings={settings} />

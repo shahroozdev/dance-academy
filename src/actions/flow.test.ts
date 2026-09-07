@@ -17,7 +17,10 @@ const mocks = vi.hoisted(() => {
 });
 vi.mock("@/auth", () => ({ auth: mocks.auth }));
 vi.mock("@/lib/db", () => ({ db: { ...mocks.tx, $transaction: mocks.transaction } }));
-vi.mock("@/actions/email", () => ({ sendTemplatedEmail: mocks.sendEmail }));
+vi.mock("@/actions/email", () => ({
+  sendTemplatedEmail: mocks.sendEmail,
+  sendAdminOperationalAlert: vi.fn().mockResolvedValue({ sent: true }),
+}));
 
 import {
   buildLineItemInputs,

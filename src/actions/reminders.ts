@@ -1,7 +1,7 @@
 import "server-only";
 
 import { assertFinalizedForNotification, getUnfinalizedBillingIds } from "@/actions/billing-service";
-import { sendTemplatedEmail } from "@/actions/email";
+import { sendAdminOperationalAlert, sendTemplatedEmail } from "@/actions/email";
 import { sendConfiguredWhatsApp } from "@/actions/whatsapp";
 import { isPaymentReminderDue } from "@/lib/billing";
 import { db } from "@/lib/db";
@@ -116,7 +116,14 @@ export async function sendPaymentReminders(retry?: { familyId: string; month: Da
     });
 
     if (result.sent) summary.familiesReminded += 1;
-    else summary.familiesFailed += 1;
+    else {
+      summary.familiesFailed += 1;
+      await sendAdminOperationalAlert({
+        setting: "paymentReminderFailureAlertEnabled",
+        subject: `Payment reminder failed — ${group.familyName}`,
+        lines: [`Family: ${group.familyName}`, `Billing month: ${monthLabel}`, `Delivery method: ${channel}`, `Error: ${result.error ?? "Unknown error"}`],
+      });
+    }
     summary.families.push({
       familyId: group.familyId,
       familyName: group.familyName,

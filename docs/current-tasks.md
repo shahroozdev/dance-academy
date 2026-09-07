@@ -29,6 +29,32 @@ _Nothing currently in progress._
 
 ## Done
 
+### 2026-09-08
+- **Added complete owner-controlled admin alerts.** Billing Settings now has separate enabled-by-
+  default switches for new registrations, recorded payments, credits/overpayments, automatic
+  billing failures, failed parent fee notices, failed payment reminders, and class fees still
+  awaiting finalization. Alerts use the configured staff address or owner fallback. The
+  unfinalized-fee reminder waits until the monthly due day and sends at most once per month.
+- **Added optional staff confirmations for parent fee notices.** An enabled-by-default switch in
+  Billing Settings now sends a checkmarked email to the configured billing-alert address (or active
+  owner) after a family notice is successfully emailed, accepted by WhatsApp, or manually marked
+  sent. The confirmation identifies the family, billing month, and delivery method. Failed parent
+  sends do not trigger a success confirmation.
+- **Added a configurable monthly billing-ready admin email.** Billing Settings now has an enabled-
+  by-default switch and recipient address (falling back to the active owner email). After the
+  scheduled monthly billing run, staff receive the created/updated/skipped summary and a reminder
+  to review and finalize Class Fees before parent notices. Turning the setting off skips the alert.
+  Added a database migration and focused tests for default fallback, opt-out, and custom recipient.
+- **Completed the live deployment A-to-Z acceptance test.** The browser-driven run against the
+  client-confirmed test deployment/database passed: admin login and core routes, two public
+  registrations, approval and same-family sibling matching, student/class enrollments, mid-month
+  proration, 5% multi-class and sibling discounts, seasonal discount exclusion, notification
+  blocking before class-fee finalization, post-finalization notification readiness, partial and
+  full payment balance/status updates, financial-report visibility, and a second-month check proving
+  the seasonal enrollment was charged only once. No email or WhatsApp delivery was triggered. The
+  final Playwright run passed in 1.3 minutes; uniquely labelled `LIVE E2E` records remain in the test
+  database, including records from selector-debug reruns.
+
 ### 2026-09-07
 - **Closed the remaining Varsha/Malhaar billing audit items.** Mid-month enrollments are now
   prorated to sessions actually falling within the enrolled range (`computeProratedLineItemAmount`,

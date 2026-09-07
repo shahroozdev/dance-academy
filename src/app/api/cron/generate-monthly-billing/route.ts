@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { generateMonthlyBilling } from "@/actions/billing-service";
+import { sendAdminOperationalAlert, sendBillingReadyAlert } from "@/actions/email";
 import { sendPendingWhatsAppNotifications } from "@/actions/whatsapp-notifications";
 import { normalizeMonth } from "@/lib/billing";
 import { isCronAuthorized } from "@/lib/cron-auth";
@@ -18,12 +19,18 @@ async function handle(request: Request) {
 
   try {
     const summary = await generateMonthlyBilling(month);
+    const billingAlert = await sendBillingReadyAlert(normalizeMonth(month), summary);
     const notifications = await sendPendingWhatsAppNotifications(month);
-    // Logged, not emailed (§4.5) — the admin reviews results in /admin/billing, not an inbox.
+    // The summary remains logged for operations in addition to the optional staff email alert.
     console.warn("[cron] generate-monthly-billing:", summary);
-    return NextResponse.json({ ok: true, summary, notifications });
+    return NextResponse.json({ ok: true, summary, billingAlert, notifications });
   } catch (error) {
     console.error("[cron] generate-monthly-billing failed:", error);
+    await sendAdminOperationalAlert({
+      setting: "billingFailureAlertEnabled",
+      subject: "Automatic monthly billing failed",
+      lines: ["The scheduled monthly billing run failed.", "", `Error: ${error instanceof Error ? error.message : "Unknown error"}`],
+    });
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 },

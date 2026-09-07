@@ -1,5 +1,6 @@
 import "server-only";
 
+import { sendAdminOperationalAlert, sendParentNotificationConfirmation } from "@/actions/email";
 import { getFamilyNotificationPreview, getPendingNotifications } from "@/actions/notification-data";
 import { sendConfiguredWhatsApp } from "@/actions/whatsapp";
 import { normalizeMonth } from "@/lib/billing";
@@ -29,6 +30,15 @@ export async function sendMonthlyWhatsApp(familyId: string, monthInput: string) 
       data: { notificationStatus: "SENT", notificationSentAt: new Date() },
     });}
   });
+  if (result.sent) {
+    await sendParentNotificationConfirmation({ familyName: preview.familyName, month, channel: "WhatsApp" });
+  } else {
+    await sendAdminOperationalAlert({
+      setting: "parentNotificationFailureAlertEnabled",
+      subject: `Parent fee notification failed — ${preview.familyName}`,
+      lines: [`Family: ${preview.familyName}`, `Billing month: ${monthLabel}`, "Delivery method: WhatsApp", `Error: ${result.error ?? "Unknown error"}`],
+    });
+  }
   return result;
 }
 

@@ -396,6 +396,19 @@ model StudioSettings {
   dueDayOfMonth               Int @default(5)
   paymentReminderDaysAfterDue Int @default(7)
 
+  // Owner alert sent after the scheduled monthly job prepares bills for staff review.
+  billingAlertEnabled Boolean @default(true)
+  billingAlertEmail   String?
+  parentNotificationAlertEnabled Boolean @default(true)
+  registrationAlertEnabled Boolean @default(true)
+  paymentRecordedAlertEnabled Boolean @default(true)
+  creditAlertEnabled Boolean @default(true)
+  billingFailureAlertEnabled Boolean @default(true)
+  parentNotificationFailureAlertEnabled Boolean @default(true)
+  paymentReminderFailureAlertEnabled Boolean @default(true)
+  unfinalizedFeeAlertEnabled Boolean @default(true)
+  lastUnfinalizedFeeAlertMonth DateTime?
+
   // SMTP / email (was env-only SMTP_*/EMAIL_FROM) — smtpPassword is a secret, never returned to the client as-is
   smtpHost     String?
   smtpPort     Int?    @default(587)
