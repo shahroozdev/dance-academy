@@ -18,7 +18,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
         <AppSidebar logoSrc={settings.logoUrl} />
         <SidebarInset>
           <AppTopbar />
-          <div className="flex-1 p-4 sm:p-6">{children}</div>
+          <div className="min-w-0 flex-1 overflow-x-hidden p-4 sm:p-6">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </SessionProvider>
