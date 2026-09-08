@@ -35,7 +35,7 @@ export function TablePagination({
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Rows per page</span>
           <Select value={String(pageSize)} onValueChange={(value) => onPageSizeChange(Number(value))}>
-            <SelectTrigger size="sm" className="w-[76px]">
+            <SelectTrigger size="sm" className="w-19">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
