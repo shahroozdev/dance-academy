@@ -7,7 +7,7 @@ import {
 } from "@/actions/class-fees";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
 import { updateEmailTemplate } from "@/actions/email-templates";
-import { createEnrollment, endEnrollment } from "@/actions/enrollments";
+import { createEnrollment, endEnrollment, reactivateEnrollment } from "@/actions/enrollments";
 import { createExpense, deleteExpense, updateExpense, uploadExpenseReceipt } from "@/actions/expenses";
 import {
   createFamily,
@@ -43,6 +43,7 @@ export const mutationRegistry = {
   toggleTeacherActive,
   createEnrollment,
   endEnrollment,
+  reactivateEnrollment,
   approveRegistrationRequest,
   rejectRegistrationRequest,
   generateMonthlyBilling,

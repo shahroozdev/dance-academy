@@ -2,7 +2,7 @@
 
 import { ExternalLink, ListChecks, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
@@ -30,6 +30,20 @@ export default function EnrollmentsPage() {
     invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
     onSuccess: () => refetch(),
   });
+  const { mutate: reactivateEnroll, error: reactivateError } = useMutate("reactivateEnrollment", {
+    invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
+    onSuccess: () => refetch(),
+  });
+
+  // Best-effort dedupe check (limited to the current page) so an already-superseded ENDED row
+  // doesn't offer a "Re-enroll" that the backend's active-duplicate guard would just reject.
+  const activeStudentClassPairs = useMemo(() => {
+    const pairs = new Set<string>();
+    data?.data.forEach((e) => {
+      if (e.status === "ACTIVE") pairs.add(`${e.studentId}|${e.classId}`);
+    });
+    return pairs;
+  }, [data]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -144,6 +158,56 @@ export default function EnrollmentsPage() {
                         )}
                       </Modal>
                     )}
+                    {enrollment.status !== "ACTIVE" && activeStudentClassPairs.has(`${enrollment.studentId}|${enrollment.classId}`) && (
+                      <TooltipWrapper label={`${enrollment.student.fullName} already has an active enrollment in ${enrollment.class.name}`}>
+                        <Button variant="outline" size="sm" disabled>
+                          Re-enroll
+                        </Button>
+                      </TooltipWrapper>
+                    )}
+                    {enrollment.status !== "ACTIVE" && !activeStudentClassPairs.has(`${enrollment.studentId}|${enrollment.classId}`) && (
+                      <Modal
+                        trigger={
+                          <TooltipWrapper label={`Re-enroll ${enrollment.student.fullName} in ${enrollment.class.name}`}>
+                            <Button variant="outline" size="sm">Re-enroll</Button>
+                          </TooltipWrapper>
+                        }
+                        className="max-w-sm"
+                        title={
+                          <div>
+                            Re-enroll?
+                            <p className="text-sm font-normal text-muted-foreground">
+                              This will reactivate {enrollment.student.fullName}&apos;s enrollment in {enrollment.class.name}, starting today.
+                            </p>
+                          </div>
+                        }
+                      >
+                        {({ close }) => (
+                          <div className="space-y-3">
+                            {Boolean(reactivateError) && (
+                              <p className="text-sm text-destructive">
+                                {reactivateError instanceof Error ? reactivateError.message : "Could not re-enroll. Please try again."}
+                              </p>
+                            )}
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" onClick={close}>Cancel</Button>
+                              <Button
+                                onClick={async () => {
+                                  try {
+                                    await reactivateEnroll(enrollment.id);
+                                    close();
+                                  } catch {
+                                    // Surfaced via the error message above — nothing further to do here.
+                                  }
+                                }}
+                              >
+                                Re-enroll
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </Modal>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -184,7 +248,7 @@ function EnrollmentsCreateModal({
   const { data: studentsData } = useQuery("getStudents", [{ pageSize: 100 }]);
   const { data: classesData } = useQuery("getClasses", [{ pageSize: 100 }]);
 
-  const { mutate: createEnroll, isLoading } = useMutate("createEnrollment", {
+  const { mutate: createEnroll, isLoading, error } = useMutate("createEnrollment", {
     invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
     onSuccess: () => {
       onCreated();
@@ -201,7 +265,13 @@ function EnrollmentsCreateModal({
   const isAtCapacity = selectedClass?.capacity != null && selectedClass.enrollmentCount >= selectedClass.capacity;
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange} className="max-w-md" title="Add Enrollment">
+    <Modal
+      open={open}
+      onOpenChange={onOpenChange}
+      className="max-w-md"
+      title="Add Enrollment"
+    >
+      {() => (
       <div className="space-y-4">
         <div className="space-y-3">
           <div>
@@ -237,18 +307,28 @@ function EnrollmentsCreateModal({
             )}
           </div>
         </div>
+        {Boolean(error) && (
+          <p className="text-sm text-destructive">
+            {error instanceof Error ? error.message : "Could not save. Please try again."}
+          </p>
+        )}
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             disabled={!studentId || !classId || isLoading}
             onClick={async () => {
-              await createEnroll({ studentId, classId });
+              try {
+                await createEnroll({ studentId, classId });
+              } catch {
+                // Surfaced via the error message above — nothing further to do here.
+              }
             }}
           >
             {isLoading ? "Creating..." : "Create Enrollment"}
           </Button>
         </div>
       </div>
+      )}
     </Modal>
   );
 }

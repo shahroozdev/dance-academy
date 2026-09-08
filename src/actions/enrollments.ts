@@ -70,3 +70,30 @@ export async function endEnrollment(id: string) {
     data: { status: "ENDED", endDate: new Date() },
   });
 }
+
+// Reactivates the same enrollment record (rather than creating a new one) so a student's
+// enrollment in a given class stays a single row across an end/re-enroll cycle.
+export async function reactivateEnrollment(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  return serializableTransaction(async (tx) => {
+    const enrollment = await tx.enrollment.findUniqueOrThrow({ where: { id } });
+    if (enrollment.status !== "ENDED") throw new Error("Only an ended enrollment can be re-enrolled.");
+
+    const [student, cls] = await Promise.all([
+      tx.student.findUniqueOrThrow({ where: { id: enrollment.studentId } }),
+      tx.class.findUniqueOrThrow({ where: { id: enrollment.classId } }),
+    ]);
+    if (!student.isActive || !cls.isActive) throw new Error("Both the student and class must be active to re-enroll.");
+
+    const existingActive = await tx.enrollment.findFirst({
+      where: { studentId: enrollment.studentId, classId: enrollment.classId, status: "ACTIVE" },
+    });
+    if (existingActive) throw new Error("This student is already enrolled in this class.");
+
+    return tx.enrollment.update({
+      where: { id },
+      data: { status: "ACTIVE", startDate: new Date(), endDate: null },
+    });
+  });
+}
