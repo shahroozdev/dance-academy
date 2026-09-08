@@ -8,6 +8,7 @@ import { Card } from "@/components/common/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@/hooks/useQuery";
@@ -17,8 +18,9 @@ export default function TeachersPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
-  const { data, isLoading } = useQuery("getTeachers", [{ search: search || undefined, page, pageSize: 20 }]);
+  const { data, isLoading } = useQuery("getTeachers", [{ search: search || undefined, page, pageSize }]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -100,20 +102,16 @@ export default function TeachersPage() {
           </Table>
         )}
 
-        {data && data.pages > 1 && (
-          <div className="flex items-center justify-between border-t px-4 py-2">
-            <p className="text-sm text-muted-foreground">
-              Page {page} of {data.pages} ({data.total} teachers)
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm" disabled={page >= data.pages} onClick={() => setPage((p) => p + 1)}>
-                Next
-              </Button>
-            </div>
-          </div>
+        {data && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={data.total}
+            pages={data.pages}
+            itemLabel="teachers"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </Card>
     </div>

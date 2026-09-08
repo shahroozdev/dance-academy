@@ -7,7 +7,9 @@ import { NotificationModal } from "@/app/admin/(dashboard)/billing/notification-
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { PageHeader } from "@/components/shared/page-header";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@/hooks/useQuery";
@@ -25,9 +27,13 @@ export default function NotificationsPage() {
   const [month, setMonth] = useState(currentMonthValue());
   const [notifyingFamilyId, setNotifyingFamilyId] = useState<string | null>(null);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [logPage, setLogPage] = useState(1);
+  const [logPageSize, setLogPageSize] = useState(20);
 
   const { data: pending, isLoading: isLoadingPending } = useQuery("getPendingNotifications", [month]);
-  const { data: logs, isLoading: isLoadingLogs } = useQuery("getNotificationLogs", [{ pageSize: 100 }]);
+  const { data: logs, isLoading: isLoadingLogs } = useQuery("getNotificationLogs", [
+    { page: logPage, pageSize: logPageSize },
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -81,9 +87,11 @@ export default function NotificationsPage() {
                   <TableCell>{p.studentCount}</TableCell>
                   <TableCell>{formatCurrency(p.total)}</TableCell>
                   <TableCell>
-                    <Button size="sm" onClick={() => setNotifyingFamilyId(p.familyId)}>
-                      Send
-                    </Button>
+                    <TooltipWrapper label="Send notification">
+                      <Button size="sm" onClick={() => setNotifyingFamilyId(p.familyId)}>
+                        Send
+                      </Button>
+                    </TooltipWrapper>
                   </TableCell>
                 </TableRow>
               ))}
@@ -157,6 +165,18 @@ export default function NotificationsPage() {
               ))}
             </TableBody>
           </Table>
+        )}
+
+        {logs && (
+          <TablePagination
+            page={logPage}
+            pageSize={logPageSize}
+            total={logs.total}
+            pages={logs.pages}
+            itemLabel="log entries"
+            onPageChange={setLogPage}
+            onPageSizeChange={(size) => { setLogPageSize(size); setLogPage(1); }}
+          />
         )}
       </Card>
 

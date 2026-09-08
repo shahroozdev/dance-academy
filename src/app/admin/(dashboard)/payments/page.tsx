@@ -8,6 +8,7 @@ import { Card } from "@/components/common/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@/hooks/useQuery";
 
@@ -32,6 +33,8 @@ export default function PaymentsPage() {
   const [method, setMethod] = useState("ALL");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const { data, isLoading } = useQuery("getPayments", [
     {
@@ -39,7 +42,8 @@ export default function PaymentsPage() {
       method: method === "ALL" ? undefined : (method as "ZELLE" | "CASH" | "CHECK" | "OTHER"),
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
-      pageSize: 100,
+      page,
+      pageSize,
     },
   ]);
 
@@ -69,25 +73,25 @@ export default function PaymentsPage() {
             type="text"
             placeholder="Search student or family..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="flex h-8 w-56 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
           <input
             type="date"
             value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
+            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
             className="flex h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
           <span className="text-sm text-muted-foreground">to</span>
           <input
             type="date"
             value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
+            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
             className="flex h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
           <select
             value={method}
-            onChange={(e) => setMethod(e.target.value)}
+            onChange={(e) => { setMethod(e.target.value); setPage(1); }}
             className="flex h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             {METHOD_OPTIONS.map((option) => (
@@ -142,6 +146,18 @@ export default function PaymentsPage() {
               ))}
             </TableBody>
           </Table>
+        )}
+
+        {data && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={data.total}
+            pages={data.pages}
+            itemLabel="payments"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </Card>
     </div>

@@ -16,7 +16,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
       <ThemeInjector initialSettings={settings} />
       <SidebarProvider>
         <AppSidebar logoSrc={settings.logoUrl} />
-        <SidebarInset>
+        <SidebarInset className="min-w-0">
           <AppTopbar />
           <div className="min-w-0 flex-1 overflow-x-hidden p-4 sm:p-6">{children}</div>
         </SidebarInset>

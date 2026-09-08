@@ -6,7 +6,9 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { PageHeader } from "@/components/shared/page-header";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -35,9 +37,16 @@ export default function ClassFeesPage() {
   const [month, setMonth] = useState(currentMonthValue());
   const [classId, setClassId] = useState<string>("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const { data: classesData } = useQuery("getClasses", [{ pageSize: 100, sortBy: "name" }]);
-  const { data, isLoading } = useQuery("getClassMonthlyFees", [{ month, pageSize: 200 }]);
+  const { data, isLoading } = useQuery("getClassMonthlyFees", [
+    { month, classId: classId === "ALL" ? undefined : classId, page, pageSize },
+  ]);
+  // Unpaginated, whole-month fetch used only to decide whether "Finalize All" is still needed —
+  // the paginated `data` above only reflects the current page/class filter.
+  const { data: monthFeesForFinalizeCheck } = useQuery("getClassMonthlyFees", [{ month, pageSize: 10000 }]);
   const { mutate: finalizeFee, isLoading: isFinalizingOne } = useMutate("finalizeClassMonthlyFee", {
     invalidateKeys: ["getClassMonthlyFees"],
   });
@@ -50,11 +59,7 @@ export default function ClassFeesPage() {
 
   const classOptions = useMemo(() => classesData?.data.map((c) => ({ label: c.name, value: c.id })) ?? [], [classesData]);
 
-  const rows = useMemo(() => {
-    if (!data) return [];
-    if (classId === "ALL") return data.data;
-    return data.data.filter((f) => f.classId === classId);
-  }, [data, classId]);
+  const rows = data?.data ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -76,10 +81,10 @@ export default function ClassFeesPage() {
           <input
             type="month"
             value={month}
-            onChange={(e) => setMonth(e.target.value)}
+            onChange={(e) => { setMonth(e.target.value); setPage(1); }}
             className="flex h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
-          <Select value={classId} onValueChange={setClassId}>
+          <Select value={classId} onValueChange={(value) => { setClassId(value); setPage(1); }}>
             <SelectTrigger className="w-56">
               <SelectValue placeholder="All classes" />
             </SelectTrigger>
@@ -92,15 +97,17 @@ export default function ClassFeesPage() {
               ))}
             </SelectContent>
           </Select>
-          <Button
-            size="sm"
-            variant="outline"
-            className="ml-auto"
-            disabled={isFinalizingAll || !data || data.data.every((f) => f.isFinalized)}
-            onClick={() => finalizeAll(month)}
-          >
-            {isFinalizingAll ? "Finalizing..." : `Finalize All for ${month}`}
-          </Button>
+          <TooltipWrapper label="Finalize all class fees for this month">
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-auto"
+              disabled={isFinalizingAll || !monthFeesForFinalizeCheck || monthFeesForFinalizeCheck.data.every((f) => f.isFinalized)}
+              onClick={() => finalizeAll(month)}
+            >
+              {isFinalizingAll ? "Finalizing..." : `Finalize All for ${month}`}
+            </Button>
+          </TooltipWrapper>
         </div>
 
         {isLoading && (
@@ -149,17 +156,23 @@ export default function ClassFeesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setEditingId(fee.id)}>
-                        Edit
-                      </Button>
+                      <TooltipWrapper label="Edit class fee">
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(fee.id)}>
+                          Edit
+                        </Button>
+                      </TooltipWrapper>
                       {fee.isFinalized ? (
-                        <Button size="sm" variant="outline" disabled={isUnfinalizingOne} onClick={() => unfinalizeFee(fee.id)}>
-                          Un-finalize
-                        </Button>
+                        <TooltipWrapper label="Un-finalize class fee">
+                          <Button size="sm" variant="outline" disabled={isUnfinalizingOne} onClick={() => unfinalizeFee(fee.id)}>
+                            Un-finalize
+                          </Button>
+                        </TooltipWrapper>
                       ) : (
-                        <Button size="sm" disabled={isFinalizingOne} onClick={() => finalizeFee(fee.id)}>
-                          Finalize
-                        </Button>
+                        <TooltipWrapper label="Finalize class fee">
+                          <Button size="sm" disabled={isFinalizingOne} onClick={() => finalizeFee(fee.id)}>
+                            Finalize
+                          </Button>
+                        </TooltipWrapper>
                       )}
                     </div>
                   </TableCell>
@@ -167,6 +180,18 @@ export default function ClassFeesPage() {
               ))}
             </TableBody>
           </Table>
+        )}
+
+        {data && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={data.total}
+            pages={data.pages}
+            itemLabel="fee rows"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </Card>
 

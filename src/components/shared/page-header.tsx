@@ -17,7 +17,7 @@ export function PageHeader({ title, subtitle, actions, className }: PageHeaderPr
         <h1 className="font-heading text-2xl font-semibold text-foreground">{title}</h1>
         {subtitle ? <p className="max-w-2xl text-sm text-muted-foreground">{subtitle}</p> : null}
       </div>
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">{actions}</div> : null}
     </div>
   );
 }

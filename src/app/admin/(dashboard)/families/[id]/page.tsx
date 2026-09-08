@@ -49,7 +49,7 @@ export default function FamilyDetailPage() {
         title={family.familyName}
         subtitle={`Parent/Guardian: ${family.parentGuardianName}`}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" asChild>
               <Link href={`/admin/families/${id}/edit`}>Edit</Link>
             </Button>

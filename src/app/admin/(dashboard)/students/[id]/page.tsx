@@ -64,7 +64,7 @@ export default function StudentDetailPage() {
         title={student.fullName}
         subtitle={`${student.family.familyName} family`}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" asChild>
               <Link href={`/admin/students/${id}/edit`}>Edit</Link>
             </Button>

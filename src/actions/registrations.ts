@@ -59,11 +59,21 @@ export type RegistrationMatchPlan = {
 };
 
 // Read-only preview of what approval would do, so the admin can review before committing.
-export async function previewRegistrationApproval(id: string): Promise<RegistrationMatchPlan> {
+export async function getRegistrationFamilyOptions() {
+  await requireAdmin();
+  return db.family.findMany({
+    where: { isActive: true },
+    select: { id: true, familyName: true, parentGuardianName: true, phone: true, email: true },
+    orderBy: [{ familyName: "asc" }, { id: "asc" }],
+  });
+}
+
+export async function previewRegistrationApproval(id: string, familyId?: string): Promise<RegistrationMatchPlan> {
   await requireAdmin();
   id = idSchema.parse(id);
+  familyId = idSchema.optional().parse(familyId);
   const request = await db.registrationRequest.findUniqueOrThrow({ where: { id } });
-  return resolveMatchPlan(db, request);
+  return resolveMatchPlan(db, request, familyId);
 }
 
 // ---------- Mutations ----------
@@ -123,9 +133,10 @@ export async function rejectRegistrationRequest(id: string) {
   });
 }
 
-export async function approveRegistrationRequest(id: string) {
+export async function approveRegistrationRequest(id: string, familyId?: string) {
   const admin = await requireAdmin();
   id = idSchema.parse(id);
+  familyId = idSchema.optional().parse(familyId);
   const { processedRequest, familyEmail, studentFullName, classId } = await serializableTransaction(async (tx) => {
     const request = await tx.registrationRequest.findUniqueOrThrow({ where: { id } });
     if (request.status !== "PENDING") {
@@ -137,7 +148,7 @@ export async function approveRegistrationRequest(id: string) {
 
     const requestedClass = await tx.class.findUniqueOrThrow({ where: { id: request.requestedClassId } });
     if (!requestedClass.isActive) throw new Error("This class is inactive. Update the registration before approving it.");
-    const plan = await resolveMatchPlan(tx, request);
+    const plan = await resolveMatchPlan(tx, request, familyId);
 
     const family =
       plan.family.action === "match"
@@ -237,9 +248,18 @@ function deriveFamilyName(parentGuardianName: string): string {
 async function resolveMatchPlan(
   client: Prisma.TransactionClient,
   request: { parentGuardianName: string; parentPhone: string; parentEmail: string | null; studentFullName: string },
+  familyId?: string,
 ): Promise<RegistrationMatchPlan> {
-  const families = await client.family.findMany({ select: { id: true, phone: true, email: true, familyName: true } });
-  const existingFamily = matchRegistrationFamily(families, request.parentPhone, request.parentEmail);
+  // An explicit staff choice takes priority over contact matching, including ambiguous contacts.
+  // Re-read it within approval's transaction so a stale preview cannot authorize an inactive family.
+  let existingFamily;
+  if (familyId !== undefined) {
+    existingFamily = await client.family.findUnique({ where: { id: familyId } });
+    if (!existingFamily?.isActive) throw new Error("The selected family is unavailable or inactive. Choose an active family.");
+  } else {
+    const families = await client.family.findMany({ select: { id: true, phone: true, email: true, familyName: true } });
+    existingFamily = matchRegistrationFamily(families, request.parentPhone, request.parentEmail);
+  }
 
   if (!existingFamily) {
     return {

@@ -1,5 +1,9 @@
 # Client user manual
 
+WhatsApp instructions cover only opening the wa.me link, reviewing and sending in
+WhatsApp, and marking the notice sent in the app. Keep this phase's manual focused
+on that workflow when updating the document.
+
 Give the client **Malhaar-Dance-Company-User-Manual.pdf**. It is a 32-page A4 guide
 with 22 screenshot figures, clickable contents and alphabetical index, PDF bookmarks,
 worked billing/refund examples, troubleshooting, and three appendices.

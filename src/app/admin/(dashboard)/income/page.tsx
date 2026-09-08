@@ -7,7 +7,9 @@ import { OtherIncomeModal } from "@/app/admin/(dashboard)/income/other-income-mo
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { PageHeader } from "@/components/shared/page-header";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { OtherIncomeCategory } from "@/generated/prisma/client";
 import { useQuery } from "@/hooks/useQuery";
@@ -31,17 +33,30 @@ export default function OtherIncomePage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const { data, isLoading } = useQuery("getOtherIncome", [
     {
       category: category === "ALL" ? undefined : category,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
-      pageSize: 100,
+      page,
+      pageSize,
+    },
+  ]);
+  // Sums every matching record, not just the current page — the header total should reflect the
+  // full filtered result set regardless of how the table itself is paginated.
+  const { data: allForTotal } = useQuery("getOtherIncome", [
+    {
+      category: category === "ALL" ? undefined : category,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      pageSize: 10000,
     },
   ]);
 
-  const total = data?.data.reduce((sum, i) => sum + i.amount, 0) ?? 0;
+  const total = allForTotal?.data.reduce((sum, i) => sum + i.amount, 0) ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,10 +64,12 @@ export default function OtherIncomePage() {
         title="Other Income"
         subtitle="Track income outside of regular monthly tuition."
         actions={
-          <Button onClick={() => setEditingId("new")}>
-            <Plus className="size-4" />
-            Add Income
-          </Button>
+          <TooltipWrapper label="Add a new income entry">
+            <Button onClick={() => setEditingId("new")}>
+              <Plus className="size-4" />
+              Add Income
+            </Button>
+          </TooltipWrapper>
         }
       />
       <Card
@@ -69,7 +86,7 @@ export default function OtherIncomePage() {
         <div className="flex flex-wrap items-center gap-2 p-2">
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value as OtherIncomeCategory | "ALL")}
+            onChange={(e) => { setCategory(e.target.value as OtherIncomeCategory | "ALL"); setPage(1); }}
             className="flex h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <option value="ALL">All Categories</option>
@@ -82,14 +99,14 @@ export default function OtherIncomePage() {
           <input
             type="date"
             value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
+            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
             className="flex h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
           <span className="text-sm text-muted-foreground">to</span>
           <input
             type="date"
             value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
+            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
             className="flex h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
         </div>
@@ -128,14 +145,28 @@ export default function OtherIncomePage() {
                   <TableCell>{formatCurrency(income.amount)}</TableCell>
                   <TableCell>{income.paymentMethod}</TableCell>
                   <TableCell>
-                    <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setEditingId(income.id); }}>
-                      Edit
-                    </Button>
+                    <TooltipWrapper label="Edit income entry">
+                      <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setEditingId(income.id); }}>
+                        Edit
+                      </Button>
+                    </TooltipWrapper>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+        )}
+
+        {data && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={data.total}
+            pages={data.pages}
+            itemLabel="entries"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </Card>
 

@@ -1,6 +1,13 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Download, MessageCircle, Receipt, RefreshCw } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Download,
+  MessageCircle,
+  Receipt,
+  RefreshCw,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { AdjustmentModal } from "@/app/admin/(dashboard)/billing/adjustment-modal";
@@ -10,9 +17,18 @@ import { Badge } from "@/components/common/badge";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Skeleton } from "@/components/common/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/common/table";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { downloadCsv, toCsv } from "@/lib/csv";
@@ -20,7 +36,10 @@ import { downloadCsv, toCsv } from "@/lib/csv";
 const STATUS_OPTIONS = ["UNPAID", "PARTIAL", "PAID", "OVERPAID"] as const;
 type StatusValue = (typeof STATUS_OPTIONS)[number];
 
-const STATUS_BADGE_VARIANT: Record<StatusValue, "default" | "secondary" | "destructive" | "outline"> = {
+const STATUS_BADGE_VARIANT: Record<
+  StatusValue,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   UNPAID: "destructive",
   PARTIAL: "secondary",
   PAID: "default",
@@ -28,7 +47,10 @@ const STATUS_BADGE_VARIANT: Record<StatusValue, "default" | "secondary" | "destr
 };
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
 }
 
 function currentMonthValue(): string {
@@ -51,23 +73,38 @@ export default function BillingPage() {
   const [visibleStatuses, setVisibleStatuses] = useState<Set<StatusValue>>(
     new Set<StatusValue>(["UNPAID", "PARTIAL", "OVERPAID"]),
   );
-  const [expandedFamilies, setExpandedFamilies] = useState<Set<string>>(new Set());
-  const [adjustingBillingId, setAdjustingBillingId] = useState<string | null>(null);
+  const [expandedFamilies, setExpandedFamilies] = useState<Set<string>>(
+    new Set(),
+  );
+  const [adjustingBillingId, setAdjustingBillingId] = useState<string | null>(
+    null,
+  );
   const [payingBillingId, setPayingBillingId] = useState<string | null>(null);
-  const [notifyingFamilyId, setNotifyingFamilyId] = useState<string | null>(null);
+  const [notifyingFamilyId, setNotifyingFamilyId] = useState<string | null>(
+    null,
+  );
   const [generateSummary, setGenerateSummary] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
-  const { data, isLoading } = useQuery("getMonthlyBillings", [{ month }]);
-  const { mutate: generate, isLoading: isGenerating } = useMutate("generateMonthlyBilling", {
-    invalidateKeys: ["getMonthlyBillings"],
-  });
+  const { data, isLoading } = useQuery("getMonthlyBillings", [{ month, pageSize: 5000 }]);
+  const { mutate: generate, isLoading: isGenerating } = useMutate(
+    "generateMonthlyBilling",
+    {
+      invalidateKeys: ["getMonthlyBillings"],
+    },
+  );
 
   const filtered = useMemo(() => {
     if (!data) return [];
     const term = search.trim().toLowerCase();
     return data.data.filter((b) => {
       if (!visibleStatuses.has(b.status as StatusValue)) return false;
-      if (term && !b.studentName.toLowerCase().includes(term) && !b.familyName.toLowerCase().includes(term)) {
+      if (
+        term &&
+        !b.studentName.toLowerCase().includes(term) &&
+        !b.familyName.toLowerCase().includes(term)
+      ) {
         return false;
       }
       return true;
@@ -75,15 +112,30 @@ export default function BillingPage() {
   }, [data, visibleStatuses, search]);
 
   const families = useMemo(() => {
-    const map = new Map<string, { familyId: string; familyName: string; bills: typeof filtered }>();
+    const map = new Map<
+      string,
+      { familyId: string; familyName: string; bills: typeof filtered }
+    >();
     for (const bill of filtered) {
       if (!map.has(bill.familyId)) {
-        map.set(bill.familyId, { familyId: bill.familyId, familyName: bill.familyName, bills: [] });
+        map.set(bill.familyId, {
+          familyId: bill.familyId,
+          familyName: bill.familyName,
+          bills: [],
+        });
       }
       map.get(bill.familyId)!.bills.push(bill);
     }
-    return [...map.values()].sort((a, b) => a.familyName.localeCompare(b.familyName));
+    return [...map.values()].sort((a, b) =>
+      a.familyName.localeCompare(b.familyName),
+    );
   }, [filtered]);
+
+  const familyPages = Math.max(1, Math.ceil(families.length / pageSize));
+  const pagedFamilies = useMemo(
+    () => families.slice((page - 1) * pageSize, page * pageSize),
+    [families, page, pageSize],
+  );
 
   const totals = useMemo(
     () =>
@@ -141,35 +193,57 @@ export default function BillingPage() {
         title="Billing"
         subtitle="Generate and review monthly student billing."
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2">
             <input
               type="month"
               value={month}
-              onChange={(e) => setMonth(e.target.value)}
+              onChange={(e) => { setMonth(e.target.value); setPage(1); }}
               className="flex h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
-            <Button
-              disabled={isGenerating}
-              onClick={async () => {
-                const summary = await generate(month);
-                setGenerateSummary(
-                  `${summary.created} created, ${summary.updated} updated, ${summary.skipped} skipped (already has payments).`,
-                );
-              }}
+            <TooltipWrapper
+              label={
+                isGenerating
+                  ? "Generating..."
+                  : `Generate Bills for ${formatMonthLabel(month)}`
+              }
             >
-              <RefreshCw className={isGenerating ? "size-4 animate-spin" : "size-4"} />
-              {isGenerating ? "Generating..." : `Generate Bills for ${formatMonthLabel(month)}`}
-            </Button>
-            <Button variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
-              <Download className="size-4" />
-              Export CSV
-            </Button>
+              <Button
+                disabled={isGenerating}
+                onClick={async () => {
+                  const summary = await generate(month);
+                  setGenerateSummary(
+                    `${summary.created} created, ${summary.updated} updated, ${summary.skipped} skipped (already has payments).`,
+                  );
+                }}
+              >
+                <RefreshCw
+                  className={isGenerating ? "size-4 animate-spin" : "size-4"}
+                />
+                <span className="lg:inline hidden">
+                  {isGenerating
+                    ? "Generating..."
+                    : `Generate Bills for ${formatMonthLabel(month)}`}
+                </span>
+              </Button>
+            </TooltipWrapper>
+            <TooltipWrapper label="Export CSV">
+              <Button
+                variant="outline"
+                onClick={exportCsv}
+                disabled={filtered.length === 0}
+              >
+                <Download className="size-4" />
+                <span className="lg:inline hidden">Export CSV</span>
+              </Button>
+            </TooltipWrapper>
           </div>
         }
       />
 
       {generateSummary && (
-        <div className="rounded-md border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">{generateSummary}</div>
+        <div className="rounded-md border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+          {generateSummary}
+        </div>
       )}
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -179,11 +253,15 @@ export default function BillingPage() {
         </Card>
         <Card contentClassName="p-4">
           <p className="text-sm text-muted-foreground">Total Collected</p>
-          <p className="text-2xl font-semibold">{formatCurrency(totals.collected)}</p>
+          <p className="text-2xl font-semibold">
+            {formatCurrency(totals.collected)}
+          </p>
         </Card>
         <Card contentClassName="p-4">
           <p className="text-sm text-muted-foreground">Total Outstanding</p>
-          <p className="text-2xl font-semibold">{formatCurrency(totals.outstanding)}</p>
+          <p className="text-2xl font-semibold">
+            {formatCurrency(totals.outstanding)}
+          </p>
         </Card>
       </div>
 
@@ -203,7 +281,7 @@ export default function BillingPage() {
               key={status}
               size="sm"
               variant={visibleStatuses.has(status) ? "default" : "outline"}
-              onClick={() => toggleStatus(status)}
+              onClick={() => { toggleStatus(status); setPage(1); }}
             >
               {status}
             </Button>
@@ -212,7 +290,7 @@ export default function BillingPage() {
             type="text"
             placeholder="Search student or family..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="ml-auto flex h-8 w-64 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
         </div>
@@ -234,9 +312,12 @@ export default function BillingPage() {
         )}
         {!isLoading && families.length > 0 && (
           <div className="divide-y">
-            {families.map((family) => {
+            {pagedFamilies.map((family) => {
               const isExpanded = expandedFamilies.has(family.familyId);
-              const familyTotal = family.bills.reduce((sum, b) => sum + b.finalAmountDue, 0);
+              const familyTotal = family.bills.reduce(
+                (sum, b) => sum + b.finalAmountDue,
+                0,
+              );
               return (
                 <div key={family.familyId}>
                   <div className="flex w-full items-center justify-between gap-2 p-3 hover:bg-muted/50">
@@ -245,17 +326,30 @@ export default function BillingPage() {
                       onClick={() => toggleFamily(family.familyId)}
                       className="flex flex-1 items-center gap-2 text-left font-medium"
                     >
-                      {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                      {isExpanded ? (
+                        <ChevronDown className="size-4" />
+                      ) : (
+                        <ChevronRight className="size-4" />
+                      )}
                       {family.familyName}
                       <span className="text-sm font-normal text-muted-foreground">
-                        ({family.bills.length} student{family.bills.length > 1 ? "s" : ""})
+                        ({family.bills.length} student
+                        {family.bills.length > 1 ? "s" : ""})
                       </span>
                     </button>
-                    <Button size="sm" variant="outline" onClick={() => setNotifyingFamilyId(family.familyId)}>
-                      <MessageCircle className="size-4" />
-                      Notify
-                    </Button>
-                    <span className="font-medium">{formatCurrency(familyTotal)}</span>
+                    <TooltipWrapper label="Send notification">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setNotifyingFamilyId(family.familyId)}
+                      >
+                        <MessageCircle className="size-4" />
+                        Notify
+                      </Button>
+                    </TooltipWrapper>
+                    <span className="font-medium">
+                      {formatCurrency(familyTotal)}
+                    </span>
                   </div>
                   {isExpanded && (
                     <Table>
@@ -277,7 +371,10 @@ export default function BillingPage() {
                         {family.bills.map((bill) => (
                           <TableRow key={bill.id}>
                             <TableCell className="font-medium">
-                              <Link href={`/admin/billing/${bill.id}`} className="hover:underline">
+                              <Link
+                                href={`/admin/billing/${bill.id}`}
+                                className="hover:underline"
+                              >
                                 {bill.studentName}
                               </Link>
                             </TableCell>
@@ -285,29 +382,68 @@ export default function BillingPage() {
                               {bill.classNames.join(", ") || "—"}
                             </TableCell>
                             <TableCell>
-                              {bill.multiClassDiscount > 0 ? `-${formatCurrency(bill.multiClassDiscount)}` : "—"}
+                              {bill.multiClassDiscount > 0
+                                ? `-${formatCurrency(bill.multiClassDiscount)}`
+                                : "—"}
                             </TableCell>
                             <TableCell>
-                              {bill.siblingDiscount > 0 ? `-${formatCurrency(bill.siblingDiscount)}` : "—"}
+                              {bill.siblingDiscount > 0
+                                ? `-${formatCurrency(bill.siblingDiscount)}`
+                                : "—"}
                             </TableCell>
-                            <TableCell>{bill.adjustment !== 0 ? formatCurrency(bill.adjustment) : "—"}</TableCell>
+                            <TableCell>
+                              {bill.adjustment !== 0
+                                ? formatCurrency(bill.adjustment)
+                                : "—"}
+                            </TableCell>
                             <TableCell className="text-base font-semibold">
                               {formatCurrency(bill.finalAmountDue)}
                             </TableCell>
-                            <TableCell>{formatCurrency(bill.amountPaid)}</TableCell>
-                            <TableCell>{formatCurrency(bill.balance)}</TableCell>
                             <TableCell>
-                              <Badge variant={STATUS_BADGE_VARIANT[bill.status as StatusValue]}>{bill.status}</Badge>
+                              {formatCurrency(bill.amountPaid)}
+                            </TableCell>
+                            <TableCell>
+                              {formatCurrency(bill.balance)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  STATUS_BADGE_VARIANT[
+                                    bill.status as StatusValue
+                                  ]
+                                }
+                              >
+                                {bill.status}
+                              </Badge>
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">
-                                <Button size="sm" variant="outline" onClick={() => setAdjustingBillingId(bill.id)}>
-                                  Adjust
-                                </Button>
-                                {bill.status !== "PAID" && (
-                                  <Button size="sm" onClick={() => setPayingBillingId(bill.id)}>
-                                    {bill.status === "OVERPAID" ? "Record Refund" : "Record Payment"}
+                                <TooltipWrapper label="Adjust billing">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setAdjustingBillingId(bill.id)}
+                                  >
+                                    Adjust
                                   </Button>
+                                </TooltipWrapper>
+                                {bill.status !== "PAID" && (
+                                  <TooltipWrapper
+                                    label={
+                                      bill.status === "OVERPAID"
+                                        ? "Record Refund"
+                                        : "Record Payment"
+                                    }
+                                  >
+                                    <Button
+                                      size="sm"
+                                      onClick={() => setPayingBillingId(bill.id)}
+                                    >
+                                      {bill.status === "OVERPAID"
+                                        ? "Record Refund"
+                                        : "Record Payment"}
+                                    </Button>
+                                  </TooltipWrapper>
                                 )}
                               </div>
                             </TableCell>
@@ -321,14 +457,38 @@ export default function BillingPage() {
             })}
           </div>
         )}
+
+        {families.length > 0 && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={families.length}
+            pages={familyPages}
+            itemLabel="families"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
+        )}
       </Card>
 
       {adjustingBillingId && (
-        <AdjustmentModal billingId={adjustingBillingId} onClose={() => setAdjustingBillingId(null)} />
+        <AdjustmentModal
+          billingId={adjustingBillingId}
+          onClose={() => setAdjustingBillingId(null)}
+        />
       )}
-      {payingBillingId && <PaymentModal billingId={payingBillingId} onClose={() => setPayingBillingId(null)} />}
+      {payingBillingId && (
+        <PaymentModal
+          billingId={payingBillingId}
+          onClose={() => setPayingBillingId(null)}
+        />
+      )}
       {notifyingFamilyId && (
-        <NotificationModal familyId={notifyingFamilyId} month={month} onClose={() => setNotifyingFamilyId(null)} />
+        <NotificationModal
+          familyId={notifyingFamilyId}
+          month={month}
+          onClose={() => setNotifyingFamilyId(null)}
+        />
       )}
     </div>
   );

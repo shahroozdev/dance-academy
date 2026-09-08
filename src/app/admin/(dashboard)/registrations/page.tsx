@@ -3,14 +3,16 @@
 import { ClipboardList } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
+import { RegistrationApprovalForm } from "@/app/admin/(dashboard)/registrations/registration-approval-form";
+import { Badge } from "@/components/common/badge";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
+import { Skeleton } from "@/components/common/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { PageHeader } from "@/components/shared/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useMutate } from "@/hooks/useMutate";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { useQuery } from "@/hooks/useQuery";
 
 const STATUS_TABS = [
@@ -30,8 +32,10 @@ const STATUS_BADGE_VARIANT: Record<StatusValue, "default" | "secondary" | "destr
 export default function RegistrationsPage() {
   const [status, setStatus] = useState<StatusValue>("PENDING");
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
-  const { data, isLoading } = useQuery("getRegistrationRequests", [{ status, pageSize: 50 }]);
+  const { data, isLoading } = useQuery("getRegistrationRequests", [{ status, page, pageSize }]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -55,7 +59,7 @@ export default function RegistrationsPage() {
               key={tab.value}
               size="sm"
               variant={status === tab.value ? "default" : "outline"}
-              onClick={() => setStatus(tab.value)}
+              onClick={() => { setStatus(tab.value); setPage(1); }}
             >
               {tab.label}
             </Button>
@@ -101,15 +105,29 @@ export default function RegistrationsPage() {
                   </TableCell>
                   <TableCell>
                     {request.status === "PENDING" && (
-                      <Button size="sm" variant="outline" onClick={() => setReviewingId(request.id)}>
-                        Review
-                      </Button>
+                      <TooltipWrapper label="Review registration request">
+                        <Button size="sm" variant="outline" onClick={() => setReviewingId(request.id)}>
+                          Review
+                        </Button>
+                      </TooltipWrapper>
                     )}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+        )}
+
+        {data && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={data.total}
+            pages={data.pages}
+            itemLabel="requests"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </Card>
 
@@ -120,20 +138,6 @@ export default function RegistrationsPage() {
 
 function ReviewModal({ id, onClose }: { id: string; onClose: () => void }) {
   const { data: request, isLoading: isLoadingRequest } = useQuery("getRegistrationRequestById", [id]);
-  const { data: plan, isLoading: isLoadingPlan } = useQuery("previewRegistrationApproval", [id]);
-
-  const {
-    mutate: approve,
-    isLoading: isApproving,
-    error: approveError,
-  } = useMutate("approveRegistrationRequest", {
-    invalidateKeys: ["getRegistrationRequests", "getFamilies", "getStudents", "getEnrollments"],
-    onSuccess: onClose,
-  });
-  const { mutate: reject, isLoading: isRejecting } = useMutate("rejectRegistrationRequest", {
-    invalidateKeys: ["getRegistrationRequests"],
-    onSuccess: onClose,
-  });
 
   return (
     <Modal
@@ -186,43 +190,10 @@ function ReviewModal({ id, onClose }: { id: string; onClose: () => void }) {
                 />
               </Section>
 
-              {!isLoadingPlan && plan && (
-                <div className="space-y-1 rounded-md border bg-muted/30 p-3">
-                  <p className="font-medium text-foreground">On approval:</p>
-                  <p>
-                    Family —{" "}
-                    {plan.family.action === "match"
-                      ? `match existing "${plan.family.name}"`
-                      : `create new "${plan.family.name}"`}
-                  </p>
-                  <p>
-                    Student —{" "}
-                    {plan.student.action === "match"
-                      ? "match existing student in that family"
-                      : "create new student"}
-                  </p>
-                </div>
-              )}
             </div>
           )}
 
-          {Boolean(approveError) && (
-            <p className="text-sm text-destructive">
-              Could not approve this request. It may have already been processed.
-            </p>
-          )}
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={close} disabled={isApproving || isRejecting}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={() => reject(id)} disabled={isApproving || isRejecting}>
-              {isRejecting ? "Rejecting..." : "Reject"}
-            </Button>
-            <Button onClick={() => approve(id)} disabled={isApproving || isRejecting || !request}>
-              {isApproving ? "Approving..." : "Approve & Process"}
-            </Button>
-          </div>
+          {request && <RegistrationApprovalForm id={id} onClose={close} />}
         </div>
       )}
     </Modal>

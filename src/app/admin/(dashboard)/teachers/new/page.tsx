@@ -20,7 +20,6 @@ export default function NewTeacherPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title="Add Teacher" subtitle="Add a new instructor." />
       <Card
-        className="max-w-2xl"
         header={
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Teacher Details</span>

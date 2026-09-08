@@ -5,6 +5,7 @@ import { XIcon } from "lucide-react"
 import { Dialog as SheetPrimitive } from "radix-ui"
 import * as React from "react"
 
+import TooltipWrapper from "@/components/common/TooltipWrapper"
 import { Button } from "@/components/ui/button"
 
 
@@ -71,15 +72,17 @@ function SheetContent({
         {children}
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
-            <Button
-              variant="ghost"
-              className="absolute top-3 right-3"
-              size="icon-sm"
-            >
-              <XIcon
-              />
-              <span className="sr-only">Close</span>
-            </Button>
+            <TooltipWrapper label="Close">
+              <Button
+                variant="ghost"
+                className="absolute top-3 right-3"
+                size="icon-sm"
+              >
+                <XIcon
+                />
+                <span className="sr-only">Close</span>
+              </Button>
+            </TooltipWrapper>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Content>

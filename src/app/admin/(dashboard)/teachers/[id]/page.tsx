@@ -53,7 +53,7 @@ export default function TeacherDetailPage() {
         title={teacher.name}
         subtitle={`${teacher.classes.length} class${teacher.classes.length === 1 ? "" : "es"}`}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" asChild>
               <Link href={`/admin/teachers/${id}/edit`}>Edit</Link>
             </Button>

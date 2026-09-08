@@ -7,7 +7,9 @@ import { ExpenseModal } from "@/app/admin/(dashboard)/expenses/expense-modal";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { PageHeader } from "@/components/shared/page-header";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ExpenseCategory } from "@/generated/prisma/client";
 import { useQuery } from "@/hooks/useQuery";
@@ -36,17 +38,30 @@ export default function ExpensesPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const { data, isLoading } = useQuery("getExpenses", [
     {
       category: category === "ALL" ? undefined : category,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
-      pageSize: 100,
+      page,
+      pageSize,
+    },
+  ]);
+  // Sums every matching record, not just the current page — the header total should reflect the
+  // full filtered result set regardless of how the table itself is paginated.
+  const { data: allForTotal } = useQuery("getExpenses", [
+    {
+      category: category === "ALL" ? undefined : category,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      pageSize: 10000,
     },
   ]);
 
-  const total = data?.data.reduce((sum, e) => sum + e.amount, 0) ?? 0;
+  const total = allForTotal?.data.reduce((sum, e) => sum + e.amount, 0) ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -54,10 +69,12 @@ export default function ExpensesPage() {
         title="Expenses"
         subtitle="Log studio expenses by category, such as rent and costumes."
         actions={
-          <Button onClick={() => setEditingId("new")}>
-            <Plus className="size-4" />
-            Add Expense
-          </Button>
+          <TooltipWrapper label="Add a new expense">
+            <Button onClick={() => setEditingId("new")}>
+              <Plus className="size-4" />
+              Add Expense
+            </Button>
+          </TooltipWrapper>
         }
       />
       <Card
@@ -74,7 +91,7 @@ export default function ExpensesPage() {
         <div className="flex flex-wrap items-center gap-2 p-2">
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value as ExpenseCategory | "ALL")}
+            onChange={(e) => { setCategory(e.target.value as ExpenseCategory | "ALL"); setPage(1); }}
             className="flex h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <option value="ALL">All Categories</option>
@@ -87,14 +104,14 @@ export default function ExpensesPage() {
           <input
             type="date"
             value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
+            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
             className="flex h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
           <span className="text-sm text-muted-foreground">to</span>
           <input
             type="date"
             value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
+            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
             className="flex h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
         </div>
@@ -135,14 +152,28 @@ export default function ExpensesPage() {
                   <TableCell>{formatCurrency(expense.amount)}</TableCell>
                   <TableCell>{expense.paymentMethod}</TableCell>
                   <TableCell>
-                    <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setEditingId(expense.id); }}>
-                      Edit
-                    </Button>
+                    <TooltipWrapper label="Edit expense">
+                      <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setEditingId(expense.id); }}>
+                        Edit
+                      </Button>
+                    </TooltipWrapper>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+        )}
+
+        {data && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={data.total}
+            pages={data.pages}
+            itemLabel="expenses"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </Card>
 

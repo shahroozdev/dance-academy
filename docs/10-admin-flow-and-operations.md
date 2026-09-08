@@ -24,6 +24,17 @@ discount is calculated from, and never receive a discount themselves.
 
 ## How siblings are identified
 
+In Registration Requests → Review, **Link to existing family** defaults to automatic
+phone/email matching. Staff can instead select a verified active family when siblings
+register using different parent contacts, or to resolve conflicting automatic matches.
+The choices show family name, parent name, phone, and email to distinguish similar names.
+The preview refreshes to show the family and whether its student will be reused or created;
+approval is unavailable while the preview is loading or has an error. Review it before
+selecting Approve & Process. Approval checks that the chosen family is still active and
+records the chosen family, student, and approving staff member. Existing family contacts
+are preserved and remain the recipients for family notices. This choice is available only
+to signed-in staff reviewing a request, not on the public registration form.
+
 Students are treated as siblings for billing when they belong to the same Family record. Their surnames do not determine the discount, and there is no separate biological-relationship check.
 
 On registration approval, the app compares the parent's phone or email with existing families. Phone formatting is normalized (a 10-digit number is treated as a US number); email matching ignores capitalization and surrounding spaces. If both contacts point to different families, or several families match, approval stops for review instead of choosing one arbitrarily.

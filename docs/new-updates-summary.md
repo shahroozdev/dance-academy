@@ -2,6 +2,13 @@
 
 ## 2026-09-08
 
+- Tooltips now appear when hovering over icon-only buttons, table action buttons, and toolbar buttons across the admin — including the close button on pop-ups and side panels, the notification bell, and the Export/Import CSV buttons. Buttons that hide their label on smaller screens also show the tooltip at all sizes.
+
+## 2026-09-08
+
+- Registration review now lets staff link a child to an existing family when siblings use different parent contact details, with a matching preview before approval.
+- The user manual now explains WhatsApp messaging through Open in WhatsApp (wa.me), sending the prepared message, and marking it sent.
+- Admin pages now fit beside the sidebar without making the whole page scroll sideways; wide tables still scroll within their own area.
 - The fee notification window no longer shows a direct WhatsApp send button while studio WhatsApp integration setup is unavailable. Staff can still open WhatsApp with the message prepared for manual sending.
 - Settings now has a dedicated Notifications tab, with staff alerts grouped into Registration, Billing & Payments, Parent Communication, and System alerts. Billing Settings now contains only billing rules and payment timing.
 - The Save Billing Alert button now stays visible while scrolling through the billing notification settings.

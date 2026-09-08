@@ -8,8 +8,10 @@ import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
@@ -20,8 +22,10 @@ export default function EnrollmentsPage() {
   const studentId = searchParams.get("studentId") ?? undefined;
   const classId = searchParams.get("classId") ?? undefined;
   const [showCreate, setShowCreate] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
-  const { data, isLoading, refetch } = useQuery("getEnrollments", [{ studentId, classId, page: 1, pageSize: 50 }]);
+  const { data, isLoading, refetch } = useQuery("getEnrollments", [{ studentId, classId, page, pageSize }]);
   const { mutate: endEnroll } = useMutate("endEnrollment", {
     invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
     onSuccess: () => refetch(),
@@ -33,13 +37,15 @@ export default function EnrollmentsPage() {
         title="Enrollments"
         subtitle="Manage student class enrollments."
         actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/register" target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="size-4" />
-                Enrollment Form
-              </Link>
-            </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <TooltipWrapper label="Open registration form in new tab">
+              <Button variant="outline" asChild>
+                <Link href="/register" target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="size-4" />
+                  Enrollment Form
+                </Link>
+              </Button>
+            </TooltipWrapper>
             <Button onClick={() => setShowCreate(true)}>
               <Plus className="size-4" />
               Add Enrollment
@@ -108,7 +114,9 @@ export default function EnrollmentsPage() {
                     {enrollment.status === "ACTIVE" && (
                       <Modal
                         trigger={
-                          <Button variant="destructive" size="sm">End</Button>
+                          <TooltipWrapper label="End this enrollment">
+                            <Button variant="destructive" size="sm">End</Button>
+                          </TooltipWrapper>
                         }
                         className="max-w-sm"
                         title={
@@ -141,6 +149,18 @@ export default function EnrollmentsPage() {
               ))}
             </TableBody>
           </Table>
+        )}
+
+        {data && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={data.total}
+            pages={data.pages}
+            itemLabel="enrollments"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </Card>
 

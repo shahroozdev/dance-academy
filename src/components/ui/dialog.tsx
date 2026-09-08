@@ -5,6 +5,7 @@ import { XIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 import * as React from "react"
 
+import TooltipWrapper from "@/components/common/TooltipWrapper"
 import { Button } from "@/components/ui/button"
 
 
@@ -79,15 +80,17 @@ function DialogContent({
         </div>
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
-            <Button
-              variant="ghost"
-              className="absolute top-2 right-2"
-              size="icon-sm"
-            >
-              <XIcon
-              />
-              <span className="sr-only">Close</span>
-            </Button>
+            <TooltipWrapper label="Close">
+              <Button
+                variant="ghost"
+                className="absolute top-2 right-2"
+                size="icon-sm"
+              >
+                <XIcon
+                />
+                <span className="sr-only">Close</span>
+              </Button>
+            </TooltipWrapper>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>

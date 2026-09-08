@@ -10,6 +10,7 @@ import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Skeleton } from "@/components/common/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { useMutate } from "@/hooks/useMutate";
@@ -62,22 +63,45 @@ export default function BillingDetailPage() {
         title={billing.student.fullName}
         subtitle={`${formatMonth(billing.month)} — ${billing.student.family.familyName} family`}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" asChild>
               <Link href={`/admin/students/${billing.studentId}`}>View Student</Link>
             </Button>
-            <Button variant="outline" onClick={() => setIsAdjusting(true)}>
-              Adjust
-            </Button>
-            {billing.status !== "PAID" && <Button onClick={() => setIsPaying(true)}>{billing.status === "OVERPAID" ? "Record Refund" : "Record Payment"}</Button>}
-            <Button
-              variant="outline"
-              disabled={hasPayments || isRecalculating}
-              title={hasPayments ? "This bill has payments recorded and can no longer be recalculated." : undefined}
-              onClick={() => recalculate(id)}
+            <TooltipWrapper label="Adjust billing">
+              <Button variant="outline" onClick={() => setIsAdjusting(true)}>
+                Adjust
+              </Button>
+            </TooltipWrapper>
+            {billing.status !== "PAID" && (
+              <TooltipWrapper
+                label={
+                  billing.status === "OVERPAID"
+                    ? "Record Refund"
+                    : "Record Payment"
+                }
+              >
+                <Button onClick={() => setIsPaying(true)}>
+                  {billing.status === "OVERPAID"
+                    ? "Record Refund"
+                    : "Record Payment"}
+                </Button>
+              </TooltipWrapper>
+            )}
+            <TooltipWrapper
+              label={
+                hasPayments
+                  ? "Payments exist — cannot recalculate"
+                  : "Recalculate billing"
+              }
             >
-              {isRecalculating ? "Recalculating..." : "Recalculate"}
-            </Button>
+              <Button
+                variant="outline"
+                disabled={hasPayments || isRecalculating}
+                onClick={() => recalculate(id)}
+              >
+                {isRecalculating ? "Recalculating..." : "Recalculate"}
+              </Button>
+            </TooltipWrapper>
           </div>
         }
       />

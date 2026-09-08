@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/common/button";
 import { Modal } from "@/components/common/modal";
 import { Skeleton } from "@/components/common/skeleton";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 
@@ -67,13 +68,6 @@ export function NotificationModal({
     >
       {({ close }) => (
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-medium">Send Notification</h3>
-            <p className="text-sm text-muted-foreground">
-              Send by email or open WhatsApp to send the prepared message manually.
-            </p>
-          </div>
-
           {isLoading || !preview ? (
             <Skeleton className="h-48 w-full" />
           ) : (
@@ -97,25 +91,33 @@ export function NotificationModal({
               <pre className="whitespace-pre-wrap rounded-md border bg-muted/30 p-3 text-sm">{preview.message}</pre>
 
               <div className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" disabled={isSendingReminder || !preview.finalized} onClick={async () => {
-                  setReminderResult(null);
-                  try { setReminderResult(await sendReminder(familyId, month)); } catch { /* The mutation error is displayed below. */ }
-                }}>{isSendingReminder ? "Sending..." : "Send Payment Reminder"}</Button>
-                <Button type="button" variant="outline" onClick={copyMessage}>
-                  {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-                  {copied ? "Copied!" : "Copy Message"}
-                </Button>
-                <Button type="button" variant="outline" asChild>
-                  <a href={preview.waLink} target="_blank" rel="noreferrer">
-                    <MessageCircle className="size-4" />
-                    Open in WhatsApp
-                  </a>
-                </Button>
-                {preview.email && (
-                  <Button type="button" variant="outline" disabled={isSendingEmail || !preview.finalized} onClick={sendViaEmail}>
-                    <Mail className="size-4" />
-                    {isSendingEmail ? "Sending..." : "Send Email"}
+                <TooltipWrapper label="Send payment reminder via WhatsApp">
+                  <Button type="button" variant="outline" disabled={isSendingReminder || !preview.finalized} onClick={async () => {
+                    setReminderResult(null);
+                    try { setReminderResult(await sendReminder(familyId, month)); } catch { /* The mutation error is displayed below. */ }
+                  }}>{isSendingReminder ? "Sending..." : "Send Payment Reminder"}</Button>
+                </TooltipWrapper>
+                <TooltipWrapper label="Copy message to clipboard">
+                  <Button type="button" variant="outline" onClick={copyMessage}>
+                    {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+                    {copied ? "Copied!" : "Copy Message"}
                   </Button>
+                </TooltipWrapper>
+                <TooltipWrapper label="Open conversation in WhatsApp">
+                  <Button type="button" variant="outline" asChild>
+                    <a href={preview.waLink} target="_blank" rel="noreferrer">
+                      <MessageCircle className="size-4" />
+                      Open in WhatsApp
+                    </a>
+                  </Button>
+                </TooltipWrapper>
+                {preview.email && (
+                  <TooltipWrapper label="Send fee notification by email">
+                    <Button type="button" variant="outline" disabled={isSendingEmail || !preview.finalized} onClick={sendViaEmail}>
+                      <Mail className="size-4" />
+                      {isSendingEmail ? "Sending..." : "Send Email"}
+                    </Button>
+                  </TooltipWrapper>
                 )}
               </div>
 
