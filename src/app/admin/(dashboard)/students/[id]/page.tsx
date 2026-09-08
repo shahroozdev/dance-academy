@@ -75,31 +75,29 @@ export default function StudentDetailPage() {
                 </Button>
               }
               className="max-w-sm"
+              title={
+                <div>
+                  {student.isActive ? "Deactivate Student?" : "Activate Student?"}
+                  <p className="text-sm font-normal text-muted-foreground">
+                    {student.isActive
+                      ? "This student will be excluded from future billing generation."
+                      : "This student will be included in future billing generation."}
+                  </p>
+                </div>
+              }
             >
               {({ close }) => (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-medium">
-                      {student.isActive ? "Deactivate Student?" : "Activate Student?"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {student.isActive
-                        ? "This student will be excluded from future billing generation."
-                        : "This student will be included in future billing generation."}
-                    </p>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={close}>Cancel</Button>
-                    <Button
-                      variant={student.isActive ? "destructive" : "default"}
-                      onClick={async () => {
-                        await toggleActive(id, !student.isActive);
-                        close();
-                      }}
-                    >
-                      {student.isActive ? "Deactivate" : "Activate"}
-                    </Button>
-                  </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={close}>Cancel</Button>
+                  <Button
+                    variant={student.isActive ? "destructive" : "default"}
+                    onClick={async () => {
+                      await toggleActive(id, !student.isActive);
+                      close();
+                    }}
+                  >
+                    {student.isActive ? "Deactivate" : "Activate"}
+                  </Button>
                 </div>
               )}
             </Modal>

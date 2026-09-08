@@ -46,14 +46,14 @@ describe("action access", () => {
   for (const [name, action] of Object.entries({ ...queryRegistry, ...mutationRegistry })) {
     it(`${name} rejects an unauthenticated call before inspecting arguments`, async () => {
       mocks.auth.mockResolvedValue(null);
-      await expect((action as () => Promise<unknown>)()).rejects.toThrow("sign in");
+      await expect((action as () => Promise<unknown>)()).rejects.toThrow("NEXT_REDIRECT");
       expect(mocks.tx.adminUser.findUnique).not.toHaveBeenCalled();
       expect(mocks.transaction).not.toHaveBeenCalled();
     });
   }
   it("rejects a disabled admin even with a valid session", async () => {
     mocks.tx.adminUser.findUnique.mockResolvedValue({ isActive: false, role: "OWNER" });
-    await expect(queryRegistry.getStudents()).rejects.toThrow("access");
+    await expect(queryRegistry.getStudents()).rejects.toThrow("NEXT_REDIRECT");
   });
   it("keeps owner settings restricted from staff", async () => {
     mocks.tx.adminUser.findUnique.mockResolvedValue({ isActive: true, role: "STAFF" });

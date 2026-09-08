@@ -111,16 +111,23 @@ export function ImportStudentsModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <Modal open onOpenChange={(open) => !open && onClose()} className="max-w-2xl">
-      {({ close }) => (
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Import Students</h3>
-          <p className="text-sm text-muted-foreground">
+    <Modal
+      open
+      onOpenChange={(open) => !open && onClose()}
+      className="max-w-2xl"
+      title={
+        <div>
+          Import Students
+          <p className="text-sm font-normal text-muted-foreground">
             Upload a CSV of students to add in bulk. Each row is matched to an existing family by
             Parent Phone or Parent Email; if no family matches, a new one is created from the
             Family Name / Parent Name / Phone in that row.
           </p>
-
+        </div>
+      }
+    >
+      {({ close }) => (
+        <div className="space-y-4">
           <Button type="button" variant="outline" size="sm" onClick={downloadTemplate}>
             <Download className="size-4" />
             Download CSV Template

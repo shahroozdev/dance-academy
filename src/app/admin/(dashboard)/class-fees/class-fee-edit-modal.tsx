@@ -20,17 +20,22 @@ export function ClassFeeEditModal({ id, onClose }: { id: string; onClose: () => 
   });
 
   return (
-    <Modal open onOpenChange={(open) => !open && onClose()} className="max-w-sm">
+    <Modal
+      open
+      onOpenChange={(open) => !open && onClose()}
+      className="max-w-sm"
+      title={
+        <div>
+          Override Class Fee
+          <p className="text-sm font-normal text-muted-foreground">
+            Only affects this class&apos;s fee for this month. Bills already generated need
+            &ldquo;Recalculate&rdquo; on the bill detail page to pick this up.
+          </p>
+        </div>
+      }
+    >
       {({ close }) => (
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-medium">Override Class Fee</h3>
-            <p className="text-sm text-muted-foreground">
-              Only affects this class&apos;s fee for this month. Bills already generated need
-              &ldquo;Recalculate&rdquo; on the bill detail page to pick this up.
-            </p>
-          </div>
-
           {isLoading || !fee ? (
             <Skeleton className="h-48 w-full" />
           ) : (

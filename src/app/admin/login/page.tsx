@@ -1,8 +1,13 @@
+import { redirect } from "next/navigation";
+
+import { getActiveAdmin } from "@/actions/access";
 import { LoginForm } from "@/components/admin/LoginForm";
 import { Card, CardDescription, CardTitle } from "@/components/common/card";
 import { Logo } from "@/components/layout/logo";
 
-export default function AdminLoginPage() {
+export default async function AdminLoginPage() {
+  if (await getActiveAdmin()) redirect("/admin");
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-muted/30 p-4">
       <Logo size={56} />

@@ -1,5 +1,10 @@
 # Updates Summary
 
+## 2026-09-08
+
+- A client user manual is now available as a PDF, with page screenshots, step-by-step instructions, billing examples, troubleshooting, and printable checklists.
+- Opening admin with an outdated or disabled sign-in now returns you to the login page instead of showing an error or getting stuck redirecting.
+
 ## 2026-09-07
 
 - Admin operations now check that the user is signed in and still has access, and reject invalid submitted values.

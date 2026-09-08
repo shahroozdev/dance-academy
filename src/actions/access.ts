@@ -1,16 +1,24 @@
 import "server-only";
 
+import { redirect } from "next/navigation";
+
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 
-export async function requireAdmin() {
+export async function getActiveAdmin() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Please sign in to continue.");
+  if (!session?.user?.id) return null;
   const admin = await db.adminUser.findUnique({ where: { id: session.user.id } });
   if (!admin?.isActive || !["OWNER", "STAFF"].includes(admin.role)) {
-    throw new Error("You do not have access to this studio.");
+    return null;
   }
   return { id: admin.id, role: admin.role };
+}
+
+export async function requireAdmin() {
+  const admin = await getActiveAdmin();
+  if (!admin) redirect("/admin/login");
+  return admin;
 }
 
 export async function requireOwner() {

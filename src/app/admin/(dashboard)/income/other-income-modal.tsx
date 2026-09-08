@@ -49,11 +49,14 @@ export function OtherIncomeModal({ id, onClose }: { id: string | "new"; onClose:
   const error = createError ?? updateError;
 
   return (
-    <Modal open onOpenChange={(open) => !open && onClose()} className="max-w-md">
+    <Modal
+      open
+      onOpenChange={(open) => !open && onClose()}
+      className="max-w-md"
+      title={isNew ? "Add Other Income" : "Edit Other Income"}
+    >
       {({ close }) => (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">{isNew ? "Add Other Income" : "Edit Other Income"}</h3>
-
           {!isNew && (isLoading || !income) ? (
             <Skeleton className="h-64 w-full" />
           ) : (

@@ -67,31 +67,29 @@ export default function ClassDetailPage() {
                 </Button>
               }
               className="max-w-sm"
+              title={
+                <div>
+                  {cls.isActive ? "Deactivate Class?" : "Activate Class?"}
+                  <p className="text-sm font-normal text-muted-foreground">
+                    {cls.isActive
+                      ? "This class will be hidden from enrollment options and billing."
+                      : "This class will reappear in enrollment options and billing."}
+                  </p>
+                </div>
+              }
             >
               {({ close }) => (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-medium">
-                      {cls.isActive ? "Deactivate Class?" : "Activate Class?"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {cls.isActive
-                        ? "This class will be hidden from enrollment options and billing."
-                        : "This class will reappear in enrollment options and billing."}
-                    </p>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={close}>Cancel</Button>
-                    <Button
-                      variant={cls.isActive ? "destructive" : "default"}
-                      onClick={async () => {
-                        await toggleActive(id, !cls.isActive);
-                        close();
-                      }}
-                    >
-                      {cls.isActive ? "Deactivate" : "Activate"}
-                    </Button>
-                  </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={close}>Cancel</Button>
+                  <Button
+                    variant={cls.isActive ? "destructive" : "default"}
+                    onClick={async () => {
+                      await toggleActive(id, !cls.isActive);
+                      close();
+                    }}
+                  >
+                    {cls.isActive ? "Deactivate" : "Activate"}
+                  </Button>
                 </div>
               )}
             </Modal>

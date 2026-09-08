@@ -45,18 +45,23 @@ export function PaymentModal({ billingId, onClose }: { billingId: string; onClos
   });
 
   return (
-    <Modal open onOpenChange={(open) => !open && onClose()} className="max-w-sm">
+    <Modal
+      open
+      onOpenChange={(open) => !open && onClose()}
+      className="max-w-sm"
+      title={
+        <div>
+          {title}
+          {billing && (
+            <p className="text-sm font-normal text-muted-foreground">
+              {billing.student.fullName} — {isRefund ? "credit available" : "balance due"} {formatCurrency(Math.abs(billing.balance))}
+            </p>
+          )}
+        </div>
+      }
+    >
       {({ close }) => (
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-medium">{title}</h3>
-            {billing && (
-              <p className="text-sm text-muted-foreground">
-                {billing.student.fullName} — {isRefund ? "credit available" : "balance due"} {formatCurrency(Math.abs(billing.balance))}
-              </p>
-            )}
-          </div>
-
           {isLoading || !billing ? (
             <Skeleton className="h-48 w-full" />
           ) : (

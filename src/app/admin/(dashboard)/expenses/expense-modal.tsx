@@ -68,11 +68,14 @@ export function ExpenseModal({ id, onClose }: { id: string | "new"; onClose: () 
   const error = createError ?? updateError;
 
   return (
-    <Modal open onOpenChange={(open) => !open && onClose()} className="max-w-md">
+    <Modal
+      open
+      onOpenChange={(open) => !open && onClose()}
+      className="max-w-md"
+      title={isNew ? "Add Expense" : "Edit Expense"}
+    >
       {({ close }) => (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">{isNew ? "Add Expense" : "Edit Expense"}</h3>
-
           {!isNew && (isLoading || !expense) ? (
             <Skeleton className="h-64 w-full" />
           ) : (

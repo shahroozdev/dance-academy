@@ -1,0 +1,2511 @@
+[
+  {
+    "name": "login",
+    "route": "/admin/login",
+    "text": "Malhaar Dance Company\nSign in to the studio admin.\nEmail\nPassword\nSign in",
+    "links": []
+  },
+  {
+    "name": "dashboard",
+    "route": "/admin",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nDashboard\n1\n1 items need attention\nSO\nStudio Owner\nDashboard\n\nStudio overview for September 2026.\n\nCurrent month tuition due\n\n$0.00\n\nCurrent month collected\n\n$0.00\n\nCurrent month outstanding\n\n$0.00\n\nActive students\n\n8\n\nUnpaid / Partial bills\n\n0\n\nRevenue Trend\nIncome vs. expenses by month, 2026.\nJan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec\n$0\n$400\n$800\n$1,200\n$1,600\nRegistration Funnel\nAll-time registration requests, submitted through enrolled.\nBilling Status\nSeptember 2026 bills by status.\nUnpaid\nPartial\nPaid\nOverpaid\n0\n1\n2\n3\n4\nFinancial Report\nMonthly report\nYearly report (2026)\nAll-time report\n0",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Unpaid / Partial bills0",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Monthly report",
+        "href": "/admin/reports/financials?period=MONTH"
+      },
+      {
+        "text": "Yearly report (2026)",
+        "href": "/admin/reports/financials?period=YEAR&year=2026"
+      },
+      {
+        "text": "All-time report",
+        "href": "/admin/reports/financials?period=ALL_TIME"
+      }
+    ]
+  },
+  {
+    "name": "families",
+    "route": "/admin/families",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nFamilies\n1\n1 items need attention\nSO\nStudio Owner\nFamilies\n\nManage family accounts, contacts, and household details.\n\nAdd Family\nAll Families\nFamily Name\n\tParent/Guardian\n\tPhone\n\tStudents\n\tStatus\n\nO'Brien Family\tMary Anne O'Brien\t5556789012\t1\tActive\nKhan Family\tFatima Khan\t5555678901\t1\tActive\nGupta Family\tSunita Gupta\t5554567890\t2\tActive\nPatel Family\tRavi Patel\t5553456789\t1\tActive\nNair Family\tPriya Nair\t5552345678\t1\tActive\nSharma Family\tAnu Sharma\t5551234567\t2\tActive",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Add Family",
+        "href": "/admin/families/new"
+      }
+    ]
+  },
+  {
+    "name": "students",
+    "route": "/admin/students",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nStudents\n1\n1 items need attention\nSO\nStudio Owner\nStudents\n\nTrack enrolled students, profiles, and class history.\n\nImport CSV\nExport CSV\nAdd Student\nAll Students\nName\n\tFamily\n\tActive Classes\n\tStatus\n\nAarav Patel\tPatel Family\t\nBharatanatyam Intermediate\nBollywood Fusion\n\tActive\nArjun Gupta\tGupta Family\t\nBollywood Fusion\n\tActive\nDiya Gupta\tGupta Family\t\nKathak Beginner\n\tActive\nKiera O'Brien\tO'Brien Family\t\nSummer Intensive Workshop\n\tActive\nLeia Sharma\tSharma Family\t\nBharatanatyam Beginner\n\tActive\nMeera Nair\tNair Family\t\nKathak Intermediate\n\tActive\nNia Sharma\tSharma Family\t\nBharatanatyam Beginner\nKathak Beginner\n\tActive\nZara Khan\tKhan Family\t\nBharatanatyam Beginner\n\tActive",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Add Student",
+        "href": "/admin/students/new"
+      }
+    ]
+  },
+  {
+    "name": "teachers",
+    "route": "/admin/teachers",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nTeachers\n1\n1 items need attention\nSO\nStudio Owner\nTeachers\n\nManage instructors and see which classes each one teaches.\n\nAdd Teacher\nAll Teachers\nName\n\tEmail\n\tPhone\n\tActive Classes\n\tStatus\n\nGuest Choreographer\t—\t—\t1\tActive\nMeera Iyer\t—\t—\t2\tActive\nRohan Verma\t—\t—\t2\tActive\nSimran Kaur\t—\t—\t1\tActive",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Add Teacher",
+        "href": "/admin/teachers/new"
+      }
+    ]
+  },
+  {
+    "name": "classes",
+    "route": "/admin/classes",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nClasses\n1\n1 items need attention\nSO\nStudio Owner\nClasses\n\nSet up dance classes, schedules, teachers, and pricing.\n\nAdd Class\nAll Classes\nName\n\tDance Style\n\tTeacher\n\tDay/Time\n\tRate\n\tEnrolled\n\tStatus\n\nBharatanatyam Beginner\tBharatanatyam\tMeera Iyer\tMONDAY 16:00\t$20.00\t3\tActive\nBharatanatyam Intermediate\tBharatanatyam\tMeera Iyer\tWEDNESDAY 16:00\t$22.00\t1\tActive\nBollywood Fusion\tBollywood\tSimran Kaur\tSATURDAY 10:00\t$18.00\t2\tActive\nKathak Beginner\tKathak\tRohan Verma\tTUESDAY 17:00\t$20.00\t2\tActive\nKathak Intermediate\tKathak\tRohan Verma\tTHURSDAY 17:00\t$25.00\t1\tActive\nSummer Intensive Workshop\tMixed\tGuest Choreographer\t\t$150.00(flat)\t1\tActive",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Add Class",
+        "href": "/admin/classes/new"
+      }
+    ]
+  },
+  {
+    "name": "enrollments",
+    "route": "/admin/enrollments",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nEnrollments\n1\n1 items need attention\nSO\nStudio Owner\nEnrollments\n\nManage student class enrollments.\n\nEnrollment Form\nAdd Enrollment\nAll Enrollments\nStudent\n\tClass\n\tSchedule\n\tStart Date\n\tStatus\n\tActions\n\nKiera O'Brien\tSummer Intensive Workshop\t\t8/29/2026\tACTIVE\tEnd\nZara Khan\tBharatanatyam Beginner\tMONDAY at 16:00\t8/19/2026\tACTIVE\tEnd\nArjun Gupta\tBollywood Fusion\tSATURDAY at 10:00\t8/9/2026\tACTIVE\tEnd\nLeia Sharma\tBharatanatyam Beginner\tMONDAY at 16:00\t7/25/2026\tACTIVE\tEnd\nNia Sharma\tBharatanatyam Beginner\tMONDAY at 16:00\t7/10/2026\tACTIVE\tEnd\nNia Sharma\tKathak Beginner\tTUESDAY at 17:00\t7/10/2026\tACTIVE\tEnd\nDiya Gupta\tKathak Beginner\tTUESDAY at 17:00\t6/30/2026\tACTIVE\tEnd\nMeera Nair\tKathak Intermediate\tTHURSDAY at 17:00\t6/10/2026\tACTIVE\tEnd\nAarav Patel\tBollywood Fusion\tSATURDAY at 10:00\t5/11/2026\tACTIVE\tEnd\nAarav Patel\tBharatanatyam Intermediate\tWEDNESDAY at 16:00\t5/11/2026\tACTIVE\tEnd",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Kiera O'Brien",
+        "href": "/admin/students/cmts9i1o4000wd8uy4hmv1o4b"
+      },
+      {
+        "text": "Summer Intensive Workshop",
+        "href": "/admin/classes/cmts9i1lj0009d8uyadt39kmq"
+      },
+      {
+        "text": "Zara Khan",
+        "href": "/admin/students/cmts9i1o1000td8uy1mw7cl5c"
+      },
+      {
+        "text": "Bharatanatyam Beginner",
+        "href": "/admin/classes/cmts9i1ld0004d8uyvci24469"
+      },
+      {
+        "text": "Arjun Gupta",
+        "href": "/admin/students/cmts9i1nx000pd8uyaqnjgkx6"
+      },
+      {
+        "text": "Bollywood Fusion",
+        "href": "/admin/classes/cmts9i1li0008d8uyv7g0onm1"
+      },
+      {
+        "text": "Leia Sharma",
+        "href": "/admin/students/cmts9i1n9000cd8uyrcr2vr3y"
+      },
+      {
+        "text": "Bharatanatyam Beginner",
+        "href": "/admin/classes/cmts9i1ld0004d8uyvci24469"
+      },
+      {
+        "text": "Nia Sharma",
+        "href": "/admin/students/cmts9i1n5000bd8uyryjzany9"
+      },
+      {
+        "text": "Bharatanatyam Beginner",
+        "href": "/admin/classes/cmts9i1ld0004d8uyvci24469"
+      },
+      {
+        "text": "Nia Sharma",
+        "href": "/admin/students/cmts9i1n5000bd8uyryjzany9"
+      },
+      {
+        "text": "Kathak Beginner",
+        "href": "/admin/classes/cmts9i1lg0006d8uyhi1ifldt"
+      },
+      {
+        "text": "Diya Gupta",
+        "href": "/admin/students/cmts9i1nw000od8uyfip7v77u"
+      },
+      {
+        "text": "Kathak Beginner",
+        "href": "/admin/classes/cmts9i1lg0006d8uyhi1ifldt"
+      },
+      {
+        "text": "Meera Nair",
+        "href": "/admin/students/cmts9i1no000hd8uyxauvgfiz"
+      },
+      {
+        "text": "Kathak Intermediate",
+        "href": "/admin/classes/cmts9i1lh0007d8uyua2bebv6"
+      },
+      {
+        "text": "Aarav Patel",
+        "href": "/admin/students/cmts9i1ns000kd8uy4l3i3xi3"
+      },
+      {
+        "text": "Bollywood Fusion",
+        "href": "/admin/classes/cmts9i1li0008d8uyv7g0onm1"
+      },
+      {
+        "text": "Aarav Patel",
+        "href": "/admin/students/cmts9i1ns000kd8uy4l3i3xi3"
+      },
+      {
+        "text": "Bharatanatyam Intermediate",
+        "href": "/admin/classes/cmts9i1le0005d8uyerc2772g"
+      }
+    ]
+  },
+  {
+    "name": "registrations",
+    "route": "/admin/registrations",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nRegistration Requests\n1\n1 items need attention\nSO\nStudio Owner\nRegistration Requests\n\nReview new registration requests and match them to families and classes.\n\nRequests\nPending\nProcessed\nRejected\nParent/Guardian\n\tStudent\n\tRequested Class\n\tSubmitted\n\tStatus\n\t\n\nWei Chen\tLily Chen\tBollywood Fusion\t9/8/2026\tPENDING\tReview",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "billing",
+    "route": "/admin/billing",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nBilling\n1\n1 items need attention\nSO\nStudio Owner\nBilling\n\nGenerate and review monthly student billing.\n\nGenerate Bills for September 2026\nExport CSV\n\nTotal Due\n\n$0.00\n\nTotal Collected\n\n$0.00\n\nTotal Outstanding\n\n$0.00\n\nMonthly Student Billing\nUNPAID\nPARTIAL\nPAID\nOVERPAID\n\nNo bills match the current filters for September 2026.",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "class-fees",
+    "route": "/admin/class-fees",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nClass Fees\n1\n1 items need attention\nSO\nStudio Owner\nClass Monthly Fees\n\nFees are created automatically when bills are generated. Override a specific month here for cancellations or seasonal pricing.\n\nFee Rows\nAll classes\nFinalize All for 2026-09\n\nNo fee rows for this month yet — they're created the first time bills are generated for it on the Billing page.",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "payments",
+    "route": "/admin/payments",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nPayments\n1\n1 items need attention\nSO\nStudio Owner\nPayments\n\nEvery payment received, linked to its monthly bill.\n\nRecord Payment\nAll Payments\nto\nAll Methods\nZelle\nCash\nCheck\nOther\n\nNo payments match the current filters.",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Record Payment",
+        "href": "/admin/billing"
+      }
+    ]
+  },
+  {
+    "name": "expenses",
+    "route": "/admin/expenses",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nExpenses\n1\n1 items need attention\nSO\nStudio Owner\nExpenses\n\nLog studio expenses by category, such as rent and costumes.\n\nAdd Expense\nAll Expenses\nTotal: $1,685.50\nAll Categories\nStudio Rent\nInstructor/Choreographer\nCostumes\nJewelry/Props\nCompetition/Event Fees\nAdvertising\nSoftware/Subscriptions\nMusic/Editing\nSupplies\nTravel\nMiscellaneous\nto\nDate\n\tCategory\n\tDescription\n\tTeacher\n\tAmount\n\tMethod\n\t\n\n9/3/2026\tSupplies\tCostume fabric and trim\t—\t$85.50\tCASH\tEdit\n8/29/2026\tInstructor/Choreographer\tGuest choreographer fee — Summer Intensive\t—\t$400.00\tZELLE\tEdit\n8/24/2026\tStudio Rent\tMonthly studio rent\t—\t$1,200.00\tCHECK\tEdit",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "income",
+    "route": "/admin/income",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nOther Income\n1\n1 items need attention\nSO\nStudio Owner\nOther Income\n\nTrack income outside of regular monthly tuition.\n\nAdd Income\nAll Other Income\nTotal: $200.00\nAll Categories\nRegistration Fee\nWorkshop/Camp\nPerformance Fee\nCostume Income\nPrivate Lesson\nMiscellaneous\nto\nDate\n\tCategory\n\tDescription\n\tAmount\n\tMethod\n\t\n\n8/31/2026\tWorkshop/Camp\tSummer Intensive Workshop tuition\t$150.00\tZELLE\tEdit\n8/19/2026\tRegistration Fee\tNew student registration fees\t$50.00\tZELLE\tEdit",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "financial-report",
+    "route": "/admin/reports/financials",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nReports\nFinancial Report\n1\n1 items need attention\nSO\nStudio Owner\nFinancial Report\n\nIncome, expenses, and net profit for the studio.\n\nPeriod\nMonthly\nYearly\nAll-Time\nSummary\nTuition/Payments Collected\n$0.00\nOther Income\n$0.00\nTOTAL INCOME\n$0.00\nRent\n$0.00\nCostumes/Props\n$0.00\nOther Expenses (show breakdown)\n$85.50\nTOTAL EXPENSES\n$85.50\nNET PROFIT\n-$85.50",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Reports",
+        "href": "/admin/reports"
+      }
+    ]
+  },
+  {
+    "name": "notifications",
+    "route": "/admin/notifications",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nNotifications\n1\n1 items need attention\nSO\nStudio Owner\nNotifications\n\nPersonalized parent fee messages, generated from billing — copy or open in WhatsApp to send.\n\nPending for\nNo pending notifications for this month — either no bills exist yet, or everyone's been notified.\nNotification Log\nNo notifications sent yet.",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "settings-appearance",
+    "route": "/admin/settings",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nSettings\n1\n1 items need attention\nSO\nStudio Owner\nSettings\n\nCustomize the look and feel of your studio app.\n\nAppearance\nBilling\nIntegrations\nEmail Templates\nTheme\nMalhaar Pink\nMalhaar Pink\nRoyal Purple\nOcean Blue\nEmerald Green\nSunset Orange\nCrimson Red\nSlate Gray\n\nApplies instantly across the app once saved.\n\nFont Size\nMedium (16px)\nSmall (14px)\nMedium (16px)\nLarge (18px)\nSave Appearance\nStudio Logo\nUpload Logo\n\nPNG, JPEG, WebP, or SVG. Max 5 MB.\n\nStudio Name\nStudio Name\nSave Name",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "settings-billing",
+    "route": "/admin/settings",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nSettings\n1\n1 items need attention\nSO\nStudio Owner\nSettings\n\nCustomize the look and feel of your studio app.\n\nAppearance\nBilling\nIntegrations\nEmail Templates\nDiscount Policy\nMulti-Class Discount\nSibling Discount\n\nEnter as a decimal fraction of tuition, e.g. 0.05 for 5%. Applied automatically when generating monthly billing.\n\nSave Discount Policy\nDue Date & Payment Reminders\nDue Day of Month\nReminder Days After Due\n\nA bill for a given month is due on this day of that month. A daily scheduled job emails a one-time payment reminder to any family still Unpaid/Partial this many days after their due date.\n\nSave Reminder Settings",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "settings-integrations",
+    "route": "/admin/settings",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nSettings\n1\n1 items need attention\nSO\nStudio Owner\nSettings\n\nCustomize the look and feel of your studio app.\n\nAppearance\nBilling\nIntegrations\nEmail Templates\nEmail (SMTP)\nSMTP Host\nSMTP Port\nSMTP User\nSMTP Password\nFrom Address\nUse TLS (secure)\n\nLeave the host blank to disable email sending. Any standard SMTP provider works (Gmail app password, Google Workspace, SendGrid, Mailgun, Resend SMTP, etc.).\n\nSave Email Settings",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "settings-emails",
+    "route": "/admin/settings",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nSettings\n1\n1 items need attention\nSO\nStudio Owner\nSettings\n\nCustomize the look and feel of your studio app.\n\nAppearance\nBilling\nIntegrations\nEmail Templates\nRegistration Received\nRegistration Received\n\nSent to a parent right after they submit the public registration form.\n\nSubject\nBody\n\nAvailable placeholders: {{parentName}}, {{studentName}}, {{className}}, {{studioName}}. The header (logo + theme color) and footer around this text are fixed and not editable here.\n\nReset to Default\nSave Template",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "registration-form",
+    "route": "/register",
+    "text": "Malhaar Dance Company Registration\nTell us about your dancer and we'll get them enrolled.\n\nParent / Guardian\n\nFull Name\n*\nEmail\nPhone\n*\nInternational\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAscension Island\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Sint Eustatius and Saba\nBosnia and Herzegovina\nBotswana\nBrazil\nBritish Indian Ocean Territory\nBrunei Darussalam\nBulgaria\nBurkina Faso\nBurundi\nCambodia\nCameroon\nCanada\nCape Verde\nCayman Islands\nCentral African Republic\nChad\nChile\nChina\nChristmas Island\nCocos (Keeling) Islands\nColombia\nComoros\nCongo\nCongo, Democratic Republic of the\nCook Islands\nCosta Rica\nCote d'Ivoire\nCroatia\nCuba\nCuraçao\nCyprus\nCzech Republic\nDenmark\nDjibouti\nDominica\nDominican Republic\nEcuador\nEgypt\nEl Salvador\nEquatorial Guinea\nEritrea\nEstonia\nEthiopia\nFalkland Islands\nFaroe Islands\nFederated States of Micronesia\nFiji\nFinland\nFrance\nFrench Guiana\nFrench Polynesia\nGabon\nGambia\nGeorgia\nGermany\nGhana\nGibraltar\nGreece\nGreenland\nGrenada\nGuadeloupe\nGuam\nGuatemala\nGuernsey\nGuinea\nGuinea-Bissau\nGuyana\nHaiti\nHoly See (Vatican City State)\nHonduras\nHong Kong\nHungary\nIceland\nIndia\nIndonesia\nIran\nIraq\nIreland\nIsle of Man\nIsrael\nItaly\nJamaica\nJapan\nJersey\nJordan\nKazakhstan\nKenya\nKiribati\nKosovo\nKuwait\nKyrgyzstan\nLaos\nLatvia\nLebanon\nLesotho\nLiberia\nLibya\nLiechtenstein\nLithuania\nLuxembourg\nMacao\nMadagascar\nMalawi\nMalaysia\nMaldives\nMali\nMalta\nMarshall Islands\nMartinique\nMauritania\nMauritius\nMayotte\nMexico\nMoldova\nMonaco\nMongolia\nMontenegro\nMontserrat\nMorocco\nMozambique\nMyanmar\nNamibia\nNauru\nNepal\nNetherlands\nNew Caledonia\nNew Zealand\nNicaragua\nNiger\nNigeria\nNiue\nNorfolk Island\nNorth Korea\nNorth Macedonia\nNorthern Mariana Islands\nNorway\nOman\nPakistan\nPalau\nPalestine\nPanama\nPapua New Guinea\nParaguay\nPeru\nPhilippines\nPoland\nPortugal\nPuerto Rico\nQatar\nReunion\nRomania\nRussia\nRwanda\nSaint Barthélemy\nSaint Helena\nSaint Kitts and Nevis\nSaint Lucia\nSaint Martin (French Part)\nSaint Pierre and Miquelon\nSaint Vincent and the Grenadines\nSamoa\nSan Marino\nSao Tome and Principe\nSaudi Arabia\nSenegal\nSerbia\nSeychelles\nSierra Leone\nSingapore\nSint Maarten\nSlovakia\nSlovenia\nSolomon Islands\nSomalia\nSouth Africa\nSouth Korea\nSouth Sudan\nSpain\nSri Lanka\nSudan\nSuriname\nSvalbard and Jan Mayen\nSwaziland\nSweden\nSwitzerland\nSyria\nTaiwan\nTajikistan\nTanzania\nThailand\nTimor-Leste\nTogo\nTokelau\nTonga\nTrinidad and Tobago\nTristan da Cunha\nTunisia\nTurkey\nTurkmenistan\nTurks and Caicos Islands\nTuvalu\nUganda\nUkraine\nUnited Arab Emirates\nUnited Kingdom\nUnited States\nUruguay\nUzbekistan\nVanuatu\nVenezuela\nVietnam\nVirgin Islands, British\nVirgin Islands, U.S.\nWallis and Futuna\nWestern Sahara\nYemen\nZambia\nZimbabwe\n\nStudent\n\nStudent Full Name\n*\nDate of Birth\nGender\nSelect...\nMale\nFemale\nOther\nPrefer not to say\nRequested Class\n*\nSelect a class...\nBharatanatyam Beginner (Bharatanatyam)\nBharatanatyam Intermediate (Bharatanatyam)\nBollywood Fusion (Bollywood)\nKathak Beginner (Kathak)\nKathak Intermediate (Kathak)\nSummer Intensive Workshop (Mixed)\nPrevious Dance Experience\n\nEmergency Contact\n\nContact Name\n*\nRelationship\n*\nEmergency Phone\n*\nInternational\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAscension Island\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Sint Eustatius and Saba\nBosnia and Herzegovina\nBotswana\nBrazil\nBritish Indian Ocean Territory\nBrunei Darussalam\nBulgaria\nBurkina Faso\nBurundi\nCambodia\nCameroon\nCanada\nCape Verde\nCayman Islands\nCentral African Republic\nChad\nChile\nChina\nChristmas Island\nCocos (Keeling) Islands\nColombia\nComoros\nCongo\nCongo, Democratic Republic of the\nCook Islands\nCosta Rica\nCote d'Ivoire\nCroatia\nCuba\nCuraçao\nCyprus\nCzech Republic\nDenmark\nDjibouti\nDominica\nDominican Republic\nEcuador\nEgypt\nEl Salvador\nEquatorial Guinea\nEritrea\nEstonia\nEthiopia\nFalkland Islands\nFaroe Islands\nFederated States of Micronesia\nFiji\nFinland\nFrance\nFrench Guiana\nFrench Polynesia\nGabon\nGambia\nGeorgia\nGermany\nGhana\nGibraltar\nGreece\nGreenland\nGrenada\nGuadeloupe\nGuam\nGuatemala\nGuernsey\nGuinea\nGuinea-Bissau\nGuyana\nHaiti\nHoly See (Vatican City State)\nHonduras\nHong Kong\nHungary\nIceland\nIndia\nIndonesia\nIran\nIraq\nIreland\nIsle of Man\nIsrael\nItaly\nJamaica\nJapan\nJersey\nJordan\nKazakhstan\nKenya\nKiribati\nKosovo\nKuwait\nKyrgyzstan\nLaos\nLatvia\nLebanon\nLesotho\nLiberia\nLibya\nLiechtenstein\nLithuania\nLuxembourg\nMacao\nMadagascar\nMalawi\nMalaysia\nMaldives\nMali\nMalta\nMarshall Islands\nMartinique\nMauritania\nMauritius\nMayotte\nMexico\nMoldova\nMonaco\nMongolia\nMontenegro\nMontserrat\nMorocco\nMozambique\nMyanmar\nNamibia\nNauru\nNepal\nNetherlands\nNew Caledonia\nNew Zealand\nNicaragua\nNiger\nNigeria\nNiue\nNorfolk Island\nNorth Korea\nNorth Macedonia\nNorthern Mariana Islands\nNorway\nOman\nPakistan\nPalau\nPalestine\nPanama\nPapua New Guinea\nParaguay\nPeru\nPhilippines\nPoland\nPortugal\nPuerto Rico\nQatar\nReunion\nRomania\nRussia\nRwanda\nSaint Barthélemy\nSaint Helena\nSaint Kitts and Nevis\nSaint Lucia\nSaint Martin (French Part)\nSaint Pierre and Miquelon\nSaint Vincent and the Grenadines\nSamoa\nSan Marino\nSao Tome and Principe\nSaudi Arabia\nSenegal\nSerbia\nSeychelles\nSierra Leone\nSingapore\nSint Maarten\nSlovakia\nSlovenia\nSolomon Islands\nSomalia\nSouth Africa\nSouth Korea\nSouth Sudan\nSpain\nSri Lanka\nSudan\nSuriname\nSvalbard and Jan Mayen\nSwaziland\nSweden\nSwitzerland\nSyria\nTaiwan\nTajikistan\nTanzania\nThailand\nTimor-Leste\nTogo\nTokelau\nTonga\nTrinidad and Tobago\nTristan da Cunha\nTunisia\nTurkey\nTurkmenistan\nTurks and Caicos Islands\nTuvalu\nUganda\nUkraine\nUnited Arab Emirates\nUnited Kingdom\nUnited States\nUruguay\nUzbekistan\nVanuatu\nVenezuela\nVietnam\nVirgin Islands, British\nVirgin Islands, U.S.\nWallis and Futuna\nWestern Sahara\nYemen\nZambia\nZimbabwe\nI agree to the studio's policies and procedures.\nI consent to my child being photographed/recorded for studio use (e.g. social media, promotional materials).\nSubmit Registration",
+    "links": []
+  },
+  {
+    "name": "login",
+    "route": "/admin/login",
+    "text": "Malhaar Dance Company\nSign in to the studio admin.\nEmail\nPassword\nSign in",
+    "links": []
+  },
+  {
+    "name": "new-family",
+    "route": "/admin/families/new",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nFamilies\nNew\n1\n1 items need attention\nSO\nStudio Owner\nAdd Family\n\nCreate a new family account.\n\nFamily Details\nCancel\nFamily Name\nParent/Guardian Name\nPhone\nInternational\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAscension Island\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Sint Eustatius and Saba\nBosnia and Herzegovina\nBotswana\nBrazil\nBritish Indian Ocean Territory\nBrunei Darussalam\nBulgaria\nBurkina Faso\nBurundi\nCambodia\nCameroon\nCanada\nCape Verde\nCayman Islands\nCentral African Republic\nChad\nChile\nChina\nChristmas Island\nCocos (Keeling) Islands\nColombia\nComoros\nCongo\nCongo, Democratic Republic of the\nCook Islands\nCosta Rica\nCote d'Ivoire\nCroatia\nCuba\nCuraçao\nCyprus\nCzech Republic\nDenmark\nDjibouti\nDominica\nDominican Republic\nEcuador\nEgypt\nEl Salvador\nEquatorial Guinea\nEritrea\nEstonia\nEthiopia\nFalkland Islands\nFaroe Islands\nFederated States of Micronesia\nFiji\nFinland\nFrance\nFrench Guiana\nFrench Polynesia\nGabon\nGambia\nGeorgia\nGermany\nGhana\nGibraltar\nGreece\nGreenland\nGrenada\nGuadeloupe\nGuam\nGuatemala\nGuernsey\nGuinea\nGuinea-Bissau\nGuyana\nHaiti\nHoly See (Vatican City State)\nHonduras\nHong Kong\nHungary\nIceland\nIndia\nIndonesia\nIran\nIraq\nIreland\nIsle of Man\nIsrael\nItaly\nJamaica\nJapan\nJersey\nJordan\nKazakhstan\nKenya\nKiribati\nKosovo\nKuwait\nKyrgyzstan\nLaos\nLatvia\nLebanon\nLesotho\nLiberia\nLibya\nLiechtenstein\nLithuania\nLuxembourg\nMacao\nMadagascar\nMalawi\nMalaysia\nMaldives\nMali\nMalta\nMarshall Islands\nMartinique\nMauritania\nMauritius\nMayotte\nMexico\nMoldova\nMonaco\nMongolia\nMontenegro\nMontserrat\nMorocco\nMozambique\nMyanmar\nNamibia\nNauru\nNepal\nNetherlands\nNew Caledonia\nNew Zealand\nNicaragua\nNiger\nNigeria\nNiue\nNorfolk Island\nNorth Korea\nNorth Macedonia\nNorthern Mariana Islands\nNorway\nOman\nPakistan\nPalau\nPalestine\nPanama\nPapua New Guinea\nParaguay\nPeru\nPhilippines\nPoland\nPortugal\nPuerto Rico\nQatar\nReunion\nRomania\nRussia\nRwanda\nSaint Barthélemy\nSaint Helena\nSaint Kitts and Nevis\nSaint Lucia\nSaint Martin (French Part)\nSaint Pierre and Miquelon\nSaint Vincent and the Grenadines\nSamoa\nSan Marino\nSao Tome and Principe\nSaudi Arabia\nSenegal\nSerbia\nSeychelles\nSierra Leone\nSingapore\nSint Maarten\nSlovakia\nSlovenia\nSolomon Islands\nSomalia\nSouth Africa\nSouth Korea\nSouth Sudan\nSpain\nSri Lanka\nSudan\nSuriname\nSvalbard and Jan Mayen\nSwaziland\nSweden\nSwitzerland\nSyria\nTaiwan\nTajikistan\nTanzania\nThailand\nTimor-Leste\nTogo\nTokelau\nTonga\nTrinidad and Tobago\nTristan da Cunha\nTunisia\nTurkey\nTurkmenistan\nTurks and Caicos Islands\nTuvalu\nUganda\nUkraine\nUnited Arab Emirates\nUnited Kingdom\nUnited States\nUruguay\nUzbekistan\nVanuatu\nVenezuela\nVietnam\nVirgin Islands, British\nVirgin Islands, U.S.\nWallis and Futuna\nWestern Sahara\nYemen\nZambia\nZimbabwe\nEmail\nNotes\nCancel\nCreate Family",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/families"
+      }
+    ]
+  },
+  {
+    "name": "new-student",
+    "route": "/admin/students/new",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nStudents\nNew\n1\n1 items need attention\nSO\nStudio Owner\nAdd Student\n\nAdd a new student to a family.\n\nStudent Details\nCancel\nStudent Name\nFamily\nSelect family...\nO'Brien Family\nKhan Family\nGupta Family\nPatel Family\nNair Family\nSharma Family\nDate of Birth\nGender\nSelect...\nMale\nFemale\nOther\nPrefer not to say\nMedical/Allergy Notes\nGeneral Notes\nEmergency Contact Name\nRelationship\nEmergency Phone\nInternational\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAscension Island\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Sint Eustatius and Saba\nBosnia and Herzegovina\nBotswana\nBrazil\nBritish Indian Ocean Territory\nBrunei Darussalam\nBulgaria\nBurkina Faso\nBurundi\nCambodia\nCameroon\nCanada\nCape Verde\nCayman Islands\nCentral African Republic\nChad\nChile\nChina\nChristmas Island\nCocos (Keeling) Islands\nColombia\nComoros\nCongo\nCongo, Democratic Republic of the\nCook Islands\nCosta Rica\nCote d'Ivoire\nCroatia\nCuba\nCuraçao\nCyprus\nCzech Republic\nDenmark\nDjibouti\nDominica\nDominican Republic\nEcuador\nEgypt\nEl Salvador\nEquatorial Guinea\nEritrea\nEstonia\nEthiopia\nFalkland Islands\nFaroe Islands\nFederated States of Micronesia\nFiji\nFinland\nFrance\nFrench Guiana\nFrench Polynesia\nGabon\nGambia\nGeorgia\nGermany\nGhana\nGibraltar\nGreece\nGreenland\nGrenada\nGuadeloupe\nGuam\nGuatemala\nGuernsey\nGuinea\nGuinea-Bissau\nGuyana\nHaiti\nHoly See (Vatican City State)\nHonduras\nHong Kong\nHungary\nIceland\nIndia\nIndonesia\nIran\nIraq\nIreland\nIsle of Man\nIsrael\nItaly\nJamaica\nJapan\nJersey\nJordan\nKazakhstan\nKenya\nKiribati\nKosovo\nKuwait\nKyrgyzstan\nLaos\nLatvia\nLebanon\nLesotho\nLiberia\nLibya\nLiechtenstein\nLithuania\nLuxembourg\nMacao\nMadagascar\nMalawi\nMalaysia\nMaldives\nMali\nMalta\nMarshall Islands\nMartinique\nMauritania\nMauritius\nMayotte\nMexico\nMoldova\nMonaco\nMongolia\nMontenegro\nMontserrat\nMorocco\nMozambique\nMyanmar\nNamibia\nNauru\nNepal\nNetherlands\nNew Caledonia\nNew Zealand\nNicaragua\nNiger\nNigeria\nNiue\nNorfolk Island\nNorth Korea\nNorth Macedonia\nNorthern Mariana Islands\nNorway\nOman\nPakistan\nPalau\nPalestine\nPanama\nPapua New Guinea\nParaguay\nPeru\nPhilippines\nPoland\nPortugal\nPuerto Rico\nQatar\nReunion\nRomania\nRussia\nRwanda\nSaint Barthélemy\nSaint Helena\nSaint Kitts and Nevis\nSaint Lucia\nSaint Martin (French Part)\nSaint Pierre and Miquelon\nSaint Vincent and the Grenadines\nSamoa\nSan Marino\nSao Tome and Principe\nSaudi Arabia\nSenegal\nSerbia\nSeychelles\nSierra Leone\nSingapore\nSint Maarten\nSlovakia\nSlovenia\nSolomon Islands\nSomalia\nSouth Africa\nSouth Korea\nSouth Sudan\nSpain\nSri Lanka\nSudan\nSuriname\nSvalbard and Jan Mayen\nSwaziland\nSweden\nSwitzerland\nSyria\nTaiwan\nTajikistan\nTanzania\nThailand\nTimor-Leste\nTogo\nTokelau\nTonga\nTrinidad and Tobago\nTristan da Cunha\nTunisia\nTurkey\nTurkmenistan\nTurks and Caicos Islands\nTuvalu\nUganda\nUkraine\nUnited Arab Emirates\nUnited Kingdom\nUnited States\nUruguay\nUzbekistan\nVanuatu\nVenezuela\nVietnam\nVirgin Islands, British\nVirgin Islands, U.S.\nWallis and Futuna\nWestern Sahara\nYemen\nZambia\nZimbabwe\nCancel\nCreate Student",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/students"
+      }
+    ]
+  },
+  {
+    "name": "new-teacher",
+    "route": "/admin/teachers/new",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nTeachers\nNew\n1\n1 items need attention\nSO\nStudio Owner\nAdd Teacher\n\nAdd a new instructor.\n\nTeacher Details\nCancel\nFull Name\nEmail\nPhone\nInternational\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAscension Island\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Sint Eustatius and Saba\nBosnia and Herzegovina\nBotswana\nBrazil\nBritish Indian Ocean Territory\nBrunei Darussalam\nBulgaria\nBurkina Faso\nBurundi\nCambodia\nCameroon\nCanada\nCape Verde\nCayman Islands\nCentral African Republic\nChad\nChile\nChina\nChristmas Island\nCocos (Keeling) Islands\nColombia\nComoros\nCongo\nCongo, Democratic Republic of the\nCook Islands\nCosta Rica\nCote d'Ivoire\nCroatia\nCuba\nCuraçao\nCyprus\nCzech Republic\nDenmark\nDjibouti\nDominica\nDominican Republic\nEcuador\nEgypt\nEl Salvador\nEquatorial Guinea\nEritrea\nEstonia\nEthiopia\nFalkland Islands\nFaroe Islands\nFederated States of Micronesia\nFiji\nFinland\nFrance\nFrench Guiana\nFrench Polynesia\nGabon\nGambia\nGeorgia\nGermany\nGhana\nGibraltar\nGreece\nGreenland\nGrenada\nGuadeloupe\nGuam\nGuatemala\nGuernsey\nGuinea\nGuinea-Bissau\nGuyana\nHaiti\nHoly See (Vatican City State)\nHonduras\nHong Kong\nHungary\nIceland\nIndia\nIndonesia\nIran\nIraq\nIreland\nIsle of Man\nIsrael\nItaly\nJamaica\nJapan\nJersey\nJordan\nKazakhstan\nKenya\nKiribati\nKosovo\nKuwait\nKyrgyzstan\nLaos\nLatvia\nLebanon\nLesotho\nLiberia\nLibya\nLiechtenstein\nLithuania\nLuxembourg\nMacao\nMadagascar\nMalawi\nMalaysia\nMaldives\nMali\nMalta\nMarshall Islands\nMartinique\nMauritania\nMauritius\nMayotte\nMexico\nMoldova\nMonaco\nMongolia\nMontenegro\nMontserrat\nMorocco\nMozambique\nMyanmar\nNamibia\nNauru\nNepal\nNetherlands\nNew Caledonia\nNew Zealand\nNicaragua\nNiger\nNigeria\nNiue\nNorfolk Island\nNorth Korea\nNorth Macedonia\nNorthern Mariana Islands\nNorway\nOman\nPakistan\nPalau\nPalestine\nPanama\nPapua New Guinea\nParaguay\nPeru\nPhilippines\nPoland\nPortugal\nPuerto Rico\nQatar\nReunion\nRomania\nRussia\nRwanda\nSaint Barthélemy\nSaint Helena\nSaint Kitts and Nevis\nSaint Lucia\nSaint Martin (French Part)\nSaint Pierre and Miquelon\nSaint Vincent and the Grenadines\nSamoa\nSan Marino\nSao Tome and Principe\nSaudi Arabia\nSenegal\nSerbia\nSeychelles\nSierra Leone\nSingapore\nSint Maarten\nSlovakia\nSlovenia\nSolomon Islands\nSomalia\nSouth Africa\nSouth Korea\nSouth Sudan\nSpain\nSri Lanka\nSudan\nSuriname\nSvalbard and Jan Mayen\nSwaziland\nSweden\nSwitzerland\nSyria\nTaiwan\nTajikistan\nTanzania\nThailand\nTimor-Leste\nTogo\nTokelau\nTonga\nTrinidad and Tobago\nTristan da Cunha\nTunisia\nTurkey\nTurkmenistan\nTurks and Caicos Islands\nTuvalu\nUganda\nUkraine\nUnited Arab Emirates\nUnited Kingdom\nUnited States\nUruguay\nUzbekistan\nVanuatu\nVenezuela\nVietnam\nVirgin Islands, British\nVirgin Islands, U.S.\nWallis and Futuna\nWestern Sahara\nYemen\nZambia\nZimbabwe\nNotes\nCancel\nAdd Teacher",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/teachers"
+      }
+    ]
+  },
+  {
+    "name": "new-class",
+    "route": "/admin/classes/new",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nClasses\nNew\n1\n1 items need attention\nSO\nStudio Owner\nAdd Class\n\nCreate a new dance class.\n\nClass Details\nCancel\nClass Name\nDance Style\nLevel\nTeacher\nSelect a teacher...\nGuest Choreographer\nMeera Iyer\nRohan Verma\nSimran Kaur\n+ Add a new teacher\nDay\nSelect day...\nMonday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday\nStart Time\nEnd Time\nDuration (mins)\nStandard Rate ($)\nPricing Type\nRegular (per session)\nRegular (per session)\nSeasonal (flat fee)\nCapacity\nCancel\nCreate Class",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "+ Add a new teacher",
+        "href": "/admin/teachers/new"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/classes"
+      }
+    ]
+  },
+  {
+    "name": "add-enrollment",
+    "route": "/admin/enrollments",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nEnrollments\n1\n1 items need attention\nSO\nStudio Owner\nEnrollments\n\nManage student class enrollments.\n\nEnrollment Form\nAdd Enrollment\nAll Enrollments\nStudent\n\tClass\n\tSchedule\n\tStart Date\n\tStatus\n\tActions\n\nKiera O'Brien\tSummer Intensive Workshop\t\t8/29/2026\tACTIVE\tEnd\nZara Khan\tBharatanatyam Beginner\tMONDAY at 16:00\t8/19/2026\tACTIVE\tEnd\nArjun Gupta\tBollywood Fusion\tSATURDAY at 10:00\t8/9/2026\tACTIVE\tEnd\nLeia Sharma\tBharatanatyam Beginner\tMONDAY at 16:00\t7/25/2026\tACTIVE\tEnd\nNia Sharma\tBharatanatyam Beginner\tMONDAY at 16:00\t7/10/2026\tACTIVE\tEnd\nNia Sharma\tKathak Beginner\tTUESDAY at 17:00\t7/10/2026\tACTIVE\tEnd\nDiya Gupta\tKathak Beginner\tTUESDAY at 17:00\t6/30/2026\tACTIVE\tEnd\nMeera Nair\tKathak Intermediate\tTHURSDAY at 17:00\t6/10/2026\tACTIVE\tEnd\nAarav Patel\tBollywood Fusion\tSATURDAY at 10:00\t5/11/2026\tACTIVE\tEnd\nAarav Patel\tBharatanatyam Intermediate\tWEDNESDAY at 16:00\t5/11/2026\tACTIVE\tEnd\nAdd Enrollment\nStudent\nSelect student...\nAarav Patel (Patel Family)\nArjun Gupta (Gupta Family)\nDiya Gupta (Gupta Family)\nKiera O'Brien (O'Brien Family)\nLeia Sharma (Sharma Family)\nMeera Nair (Nair Family)\nNia Sharma (Sharma Family)\nZara Khan (Khan Family)\nClass\nSelect class...\nBharatanatyam Beginner — Bharatanatyam\nBharatanatyam Intermediate — Bharatanatyam\nBollywood Fusion — Bollywood\nKathak Beginner — Kathak\nKathak Intermediate — Kathak\nSummer Intensive Workshop — Mixed\nCancel\nCreate Enrollment\nClose",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Kiera O'Brien",
+        "href": "/admin/students/cmts9i1o4000wd8uy4hmv1o4b"
+      },
+      {
+        "text": "Summer Intensive Workshop",
+        "href": "/admin/classes/cmts9i1lj0009d8uyadt39kmq"
+      },
+      {
+        "text": "Zara Khan",
+        "href": "/admin/students/cmts9i1o1000td8uy1mw7cl5c"
+      },
+      {
+        "text": "Bharatanatyam Beginner",
+        "href": "/admin/classes/cmts9i1ld0004d8uyvci24469"
+      },
+      {
+        "text": "Arjun Gupta",
+        "href": "/admin/students/cmts9i1nx000pd8uyaqnjgkx6"
+      },
+      {
+        "text": "Bollywood Fusion",
+        "href": "/admin/classes/cmts9i1li0008d8uyv7g0onm1"
+      },
+      {
+        "text": "Leia Sharma",
+        "href": "/admin/students/cmts9i1n9000cd8uyrcr2vr3y"
+      },
+      {
+        "text": "Bharatanatyam Beginner",
+        "href": "/admin/classes/cmts9i1ld0004d8uyvci24469"
+      },
+      {
+        "text": "Nia Sharma",
+        "href": "/admin/students/cmts9i1n5000bd8uyryjzany9"
+      },
+      {
+        "text": "Bharatanatyam Beginner",
+        "href": "/admin/classes/cmts9i1ld0004d8uyvci24469"
+      },
+      {
+        "text": "Nia Sharma",
+        "href": "/admin/students/cmts9i1n5000bd8uyryjzany9"
+      },
+      {
+        "text": "Kathak Beginner",
+        "href": "/admin/classes/cmts9i1lg0006d8uyhi1ifldt"
+      },
+      {
+        "text": "Diya Gupta",
+        "href": "/admin/students/cmts9i1nw000od8uyfip7v77u"
+      },
+      {
+        "text": "Kathak Beginner",
+        "href": "/admin/classes/cmts9i1lg0006d8uyhi1ifldt"
+      },
+      {
+        "text": "Meera Nair",
+        "href": "/admin/students/cmts9i1no000hd8uyxauvgfiz"
+      },
+      {
+        "text": "Kathak Intermediate",
+        "href": "/admin/classes/cmts9i1lh0007d8uyua2bebv6"
+      },
+      {
+        "text": "Aarav Patel",
+        "href": "/admin/students/cmts9i1ns000kd8uy4l3i3xi3"
+      },
+      {
+        "text": "Bollywood Fusion",
+        "href": "/admin/classes/cmts9i1li0008d8uyv7g0onm1"
+      },
+      {
+        "text": "Aarav Patel",
+        "href": "/admin/students/cmts9i1ns000kd8uy4l3i3xi3"
+      },
+      {
+        "text": "Bharatanatyam Intermediate",
+        "href": "/admin/classes/cmts9i1le0005d8uyerc2772g"
+      }
+    ]
+  },
+  {
+    "name": "review-registration",
+    "route": "/admin/registrations",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nRegistration Requests\n1\n1 items need attention\nSO\nStudio Owner\nRegistration Requests\n\nReview new registration requests and match them to families and classes.\n\nRequests\nPending\nProcessed\nRejected\nParent/Guardian\n\tStudent\n\tRequested Class\n\tSubmitted\n\tStatus\n\t\n\nWei Chen\tLily Chen\tBollywood Fusion\t9/8/2026\tPENDING\tReview\nReview Registration\n\nConfirm the details before creating/matching family, student, and enrollment records.\n\nParent / Guardian\n\nName\nWei Chen\nEmail\nwei.chen@example.com\nPhone\n5557890123\n\nStudent\n\nName\nLily Chen\nDOB\n9/8/2018\nGender\nFEMALE\nRequested Class\nBollywood Fusion\nPrevious Experience\nOne year of ballet\n\nEmergency Contact\n\nName\nWei Chen\nRelationship\nFather\nPhone\n5557890123\n\nConsent\n\nStudio Policy Agreement\nAgreed\nPhoto/Video Consent\nConsented\n\nOn approval:\n\nFamily — create new \"Chen Family\"\n\nStudent — create new student\n\nCancel\nReject\nApprove & Process\nClose",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "import-students",
+    "route": "/admin/students",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nStudents\n1\n1 items need attention\nSO\nStudio Owner\nStudents\n\nTrack enrolled students, profiles, and class history.\n\nImport CSV\nExport CSV\nAdd Student\nAll Students\nName\n\tFamily\n\tActive Classes\n\tStatus\n\nAarav Patel\tPatel Family\t\nBharatanatyam Intermediate\nBollywood Fusion\n\tActive\nArjun Gupta\tGupta Family\t\nBollywood Fusion\n\tActive\nDiya Gupta\tGupta Family\t\nKathak Beginner\n\tActive\nKiera O'Brien\tO'Brien Family\t\nSummer Intensive Workshop\n\tActive\nLeia Sharma\tSharma Family\t\nBharatanatyam Beginner\n\tActive\nMeera Nair\tNair Family\t\nKathak Intermediate\n\tActive\nNia Sharma\tSharma Family\t\nBharatanatyam Beginner\nKathak Beginner\n\tActive\nZara Khan\tKhan Family\t\nBharatanatyam Beginner\n\tActive\nImport Students\n\nUpload a CSV of students to add in bulk. Each row is matched to an existing family by Parent Phone or Parent Email; if no family matches, a new one is created from the Family Name / Parent Name / Phone in that row.\n\nDownload CSV Template\nChoose CSV File\nCancel\nImport Students\nClose",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Add Student",
+        "href": "/admin/students/new"
+      }
+    ]
+  },
+  {
+    "name": "add-expense",
+    "route": "/admin/expenses",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nExpenses\n1\n1 items need attention\nSO\nStudio Owner\nExpenses\n\nLog studio expenses by category, such as rent and costumes.\n\nAdd Expense\nAll Expenses\nTotal: $1,685.50\nAll Categories\nStudio Rent\nInstructor/Choreographer\nCostumes\nJewelry/Props\nCompetition/Event Fees\nAdvertising\nSoftware/Subscriptions\nMusic/Editing\nSupplies\nTravel\nMiscellaneous\nto\nDate\n\tCategory\n\tDescription\n\tTeacher\n\tAmount\n\tMethod\n\t\n\n9/3/2026\tSupplies\tCostume fabric and trim\t—\t$85.50\tCASH\tEdit\n8/29/2026\tInstructor/Choreographer\tGuest choreographer fee — Summer Intensive\t—\t$400.00\tZELLE\tEdit\n8/24/2026\tStudio Rent\tMonthly studio rent\t—\t$1,200.00\tCHECK\tEdit\nAdd Expense\nDate\nCategory\nMiscellaneous\nStudio Rent\nInstructor/Choreographer\nCostumes\nJewelry/Props\nCompetition/Event Fees\nAdvertising\nSoftware/Subscriptions\nMusic/Editing\nSupplies\nTravel\nMiscellaneous\nDescription\nAmount ($)\nPayment Method\nCash\nZelle\nCash\nCheck\nOther\nTeacher\nNot linked to a teacher\nGuest Choreographer\nMeera Iyer\nRohan Verma\nSimran Kaur\nNotes\n\nReceipt\n\nAttach Receipt\nCancel\nSave Expense\nClose",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "add-income",
+    "route": "/admin/income",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nOther Income\n1\n1 items need attention\nSO\nStudio Owner\nOther Income\n\nTrack income outside of regular monthly tuition.\n\nAdd Income\nAll Other Income\nTotal: $200.00\nAll Categories\nRegistration Fee\nWorkshop/Camp\nPerformance Fee\nCostume Income\nPrivate Lesson\nMiscellaneous\nto\nDate\n\tCategory\n\tDescription\n\tAmount\n\tMethod\n\t\n\n8/31/2026\tWorkshop/Camp\tSummer Intensive Workshop tuition\t$150.00\tZELLE\tEdit\n8/19/2026\tRegistration Fee\tNew student registration fees\t$50.00\tZELLE\tEdit\nAdd Other Income\nDate\nCategory\nMiscellaneous\nRegistration Fee\nWorkshop/Camp\nPerformance Fee\nCostume Income\nPrivate Lesson\nMiscellaneous\nDescription\nAmount ($)\nPayment Method\nCash\nZelle\nCash\nCheck\nOther\nNotes\nCancel\nSave Income\nClose",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "login",
+    "route": "/admin/login",
+    "text": "Malhaar Dance Company\nSign in to the studio admin.\nEmail\nPassword\nSign in",
+    "links": []
+  },
+  {
+    "name": "new-family",
+    "route": "/admin/families/new",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nFamilies\nNew\n1\n1 items need attention\nSO\nStudio Owner\nAdd Family\n\nCreate a new family account.\n\nFamily Details\nCancel\nFamily Name\nParent/Guardian Name\nPhone\nInternational\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAscension Island\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Sint Eustatius and Saba\nBosnia and Herzegovina\nBotswana\nBrazil\nBritish Indian Ocean Territory\nBrunei Darussalam\nBulgaria\nBurkina Faso\nBurundi\nCambodia\nCameroon\nCanada\nCape Verde\nCayman Islands\nCentral African Republic\nChad\nChile\nChina\nChristmas Island\nCocos (Keeling) Islands\nColombia\nComoros\nCongo\nCongo, Democratic Republic of the\nCook Islands\nCosta Rica\nCote d'Ivoire\nCroatia\nCuba\nCuraçao\nCyprus\nCzech Republic\nDenmark\nDjibouti\nDominica\nDominican Republic\nEcuador\nEgypt\nEl Salvador\nEquatorial Guinea\nEritrea\nEstonia\nEthiopia\nFalkland Islands\nFaroe Islands\nFederated States of Micronesia\nFiji\nFinland\nFrance\nFrench Guiana\nFrench Polynesia\nGabon\nGambia\nGeorgia\nGermany\nGhana\nGibraltar\nGreece\nGreenland\nGrenada\nGuadeloupe\nGuam\nGuatemala\nGuernsey\nGuinea\nGuinea-Bissau\nGuyana\nHaiti\nHoly See (Vatican City State)\nHonduras\nHong Kong\nHungary\nIceland\nIndia\nIndonesia\nIran\nIraq\nIreland\nIsle of Man\nIsrael\nItaly\nJamaica\nJapan\nJersey\nJordan\nKazakhstan\nKenya\nKiribati\nKosovo\nKuwait\nKyrgyzstan\nLaos\nLatvia\nLebanon\nLesotho\nLiberia\nLibya\nLiechtenstein\nLithuania\nLuxembourg\nMacao\nMadagascar\nMalawi\nMalaysia\nMaldives\nMali\nMalta\nMarshall Islands\nMartinique\nMauritania\nMauritius\nMayotte\nMexico\nMoldova\nMonaco\nMongolia\nMontenegro\nMontserrat\nMorocco\nMozambique\nMyanmar\nNamibia\nNauru\nNepal\nNetherlands\nNew Caledonia\nNew Zealand\nNicaragua\nNiger\nNigeria\nNiue\nNorfolk Island\nNorth Korea\nNorth Macedonia\nNorthern Mariana Islands\nNorway\nOman\nPakistan\nPalau\nPalestine\nPanama\nPapua New Guinea\nParaguay\nPeru\nPhilippines\nPoland\nPortugal\nPuerto Rico\nQatar\nReunion\nRomania\nRussia\nRwanda\nSaint Barthélemy\nSaint Helena\nSaint Kitts and Nevis\nSaint Lucia\nSaint Martin (French Part)\nSaint Pierre and Miquelon\nSaint Vincent and the Grenadines\nSamoa\nSan Marino\nSao Tome and Principe\nSaudi Arabia\nSenegal\nSerbia\nSeychelles\nSierra Leone\nSingapore\nSint Maarten\nSlovakia\nSlovenia\nSolomon Islands\nSomalia\nSouth Africa\nSouth Korea\nSouth Sudan\nSpain\nSri Lanka\nSudan\nSuriname\nSvalbard and Jan Mayen\nSwaziland\nSweden\nSwitzerland\nSyria\nTaiwan\nTajikistan\nTanzania\nThailand\nTimor-Leste\nTogo\nTokelau\nTonga\nTrinidad and Tobago\nTristan da Cunha\nTunisia\nTurkey\nTurkmenistan\nTurks and Caicos Islands\nTuvalu\nUganda\nUkraine\nUnited Arab Emirates\nUnited Kingdom\nUnited States\nUruguay\nUzbekistan\nVanuatu\nVenezuela\nVietnam\nVirgin Islands, British\nVirgin Islands, U.S.\nWallis and Futuna\nWestern Sahara\nYemen\nZambia\nZimbabwe\nEmail\nNotes\nCancel\nCreate Family",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/families"
+      }
+    ]
+  },
+  {
+    "name": "new-student",
+    "route": "/admin/students/new",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nStudents\nNew\n1\n1 items need attention\nSO\nStudio Owner\nAdd Student\n\nAdd a new student to a family.\n\nStudent Details\nCancel\nStudent Name\nFamily\nSelect family...\nO'Brien Family\nKhan Family\nGupta Family\nPatel Family\nNair Family\nSharma Family\nDate of Birth\nGender\nSelect...\nMale\nFemale\nOther\nPrefer not to say\nMedical/Allergy Notes\nGeneral Notes\nEmergency Contact Name\nRelationship\nEmergency Phone\nInternational\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAscension Island\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Sint Eustatius and Saba\nBosnia and Herzegovina\nBotswana\nBrazil\nBritish Indian Ocean Territory\nBrunei Darussalam\nBulgaria\nBurkina Faso\nBurundi\nCambodia\nCameroon\nCanada\nCape Verde\nCayman Islands\nCentral African Republic\nChad\nChile\nChina\nChristmas Island\nCocos (Keeling) Islands\nColombia\nComoros\nCongo\nCongo, Democratic Republic of the\nCook Islands\nCosta Rica\nCote d'Ivoire\nCroatia\nCuba\nCuraçao\nCyprus\nCzech Republic\nDenmark\nDjibouti\nDominica\nDominican Republic\nEcuador\nEgypt\nEl Salvador\nEquatorial Guinea\nEritrea\nEstonia\nEthiopia\nFalkland Islands\nFaroe Islands\nFederated States of Micronesia\nFiji\nFinland\nFrance\nFrench Guiana\nFrench Polynesia\nGabon\nGambia\nGeorgia\nGermany\nGhana\nGibraltar\nGreece\nGreenland\nGrenada\nGuadeloupe\nGuam\nGuatemala\nGuernsey\nGuinea\nGuinea-Bissau\nGuyana\nHaiti\nHoly See (Vatican City State)\nHonduras\nHong Kong\nHungary\nIceland\nIndia\nIndonesia\nIran\nIraq\nIreland\nIsle of Man\nIsrael\nItaly\nJamaica\nJapan\nJersey\nJordan\nKazakhstan\nKenya\nKiribati\nKosovo\nKuwait\nKyrgyzstan\nLaos\nLatvia\nLebanon\nLesotho\nLiberia\nLibya\nLiechtenstein\nLithuania\nLuxembourg\nMacao\nMadagascar\nMalawi\nMalaysia\nMaldives\nMali\nMalta\nMarshall Islands\nMartinique\nMauritania\nMauritius\nMayotte\nMexico\nMoldova\nMonaco\nMongolia\nMontenegro\nMontserrat\nMorocco\nMozambique\nMyanmar\nNamibia\nNauru\nNepal\nNetherlands\nNew Caledonia\nNew Zealand\nNicaragua\nNiger\nNigeria\nNiue\nNorfolk Island\nNorth Korea\nNorth Macedonia\nNorthern Mariana Islands\nNorway\nOman\nPakistan\nPalau\nPalestine\nPanama\nPapua New Guinea\nParaguay\nPeru\nPhilippines\nPoland\nPortugal\nPuerto Rico\nQatar\nReunion\nRomania\nRussia\nRwanda\nSaint Barthélemy\nSaint Helena\nSaint Kitts and Nevis\nSaint Lucia\nSaint Martin (French Part)\nSaint Pierre and Miquelon\nSaint Vincent and the Grenadines\nSamoa\nSan Marino\nSao Tome and Principe\nSaudi Arabia\nSenegal\nSerbia\nSeychelles\nSierra Leone\nSingapore\nSint Maarten\nSlovakia\nSlovenia\nSolomon Islands\nSomalia\nSouth Africa\nSouth Korea\nSouth Sudan\nSpain\nSri Lanka\nSudan\nSuriname\nSvalbard and Jan Mayen\nSwaziland\nSweden\nSwitzerland\nSyria\nTaiwan\nTajikistan\nTanzania\nThailand\nTimor-Leste\nTogo\nTokelau\nTonga\nTrinidad and Tobago\nTristan da Cunha\nTunisia\nTurkey\nTurkmenistan\nTurks and Caicos Islands\nTuvalu\nUganda\nUkraine\nUnited Arab Emirates\nUnited Kingdom\nUnited States\nUruguay\nUzbekistan\nVanuatu\nVenezuela\nVietnam\nVirgin Islands, British\nVirgin Islands, U.S.\nWallis and Futuna\nWestern Sahara\nYemen\nZambia\nZimbabwe\nCancel\nCreate Student",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/students"
+      }
+    ]
+  },
+  {
+    "name": "new-teacher",
+    "route": "/admin/teachers/new",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nTeachers\nNew\n1\n1 items need attention\nSO\nStudio Owner\nAdd Teacher\n\nAdd a new instructor.\n\nTeacher Details\nCancel\nFull Name\nEmail\nPhone\nInternational\nAfghanistan\nÅland Islands\nAlbania\nAlgeria\nAmerican Samoa\nAndorra\nAngola\nAnguilla\nAntigua and Barbuda\nArgentina\nArmenia\nAruba\nAscension Island\nAustralia\nAustria\nAzerbaijan\nBahamas\nBahrain\nBangladesh\nBarbados\nBelarus\nBelgium\nBelize\nBenin\nBermuda\nBhutan\nBolivia\nBonaire, Sint Eustatius and Saba\nBosnia and Herzegovina\nBotswana\nBrazil\nBritish Indian Ocean Territory\nBrunei Darussalam\nBulgaria\nBurkina Faso\nBurundi\nCambodia\nCameroon\nCanada\nCape Verde\nCayman Islands\nCentral African Republic\nChad\nChile\nChina\nChristmas Island\nCocos (Keeling) Islands\nColombia\nComoros\nCongo\nCongo, Democratic Republic of the\nCook Islands\nCosta Rica\nCote d'Ivoire\nCroatia\nCuba\nCuraçao\nCyprus\nCzech Republic\nDenmark\nDjibouti\nDominica\nDominican Republic\nEcuador\nEgypt\nEl Salvador\nEquatorial Guinea\nEritrea\nEstonia\nEthiopia\nFalkland Islands\nFaroe Islands\nFederated States of Micronesia\nFiji\nFinland\nFrance\nFrench Guiana\nFrench Polynesia\nGabon\nGambia\nGeorgia\nGermany\nGhana\nGibraltar\nGreece\nGreenland\nGrenada\nGuadeloupe\nGuam\nGuatemala\nGuernsey\nGuinea\nGuinea-Bissau\nGuyana\nHaiti\nHoly See (Vatican City State)\nHonduras\nHong Kong\nHungary\nIceland\nIndia\nIndonesia\nIran\nIraq\nIreland\nIsle of Man\nIsrael\nItaly\nJamaica\nJapan\nJersey\nJordan\nKazakhstan\nKenya\nKiribati\nKosovo\nKuwait\nKyrgyzstan\nLaos\nLatvia\nLebanon\nLesotho\nLiberia\nLibya\nLiechtenstein\nLithuania\nLuxembourg\nMacao\nMadagascar\nMalawi\nMalaysia\nMaldives\nMali\nMalta\nMarshall Islands\nMartinique\nMauritania\nMauritius\nMayotte\nMexico\nMoldova\nMonaco\nMongolia\nMontenegro\nMontserrat\nMorocco\nMozambique\nMyanmar\nNamibia\nNauru\nNepal\nNetherlands\nNew Caledonia\nNew Zealand\nNicaragua\nNiger\nNigeria\nNiue\nNorfolk Island\nNorth Korea\nNorth Macedonia\nNorthern Mariana Islands\nNorway\nOman\nPakistan\nPalau\nPalestine\nPanama\nPapua New Guinea\nParaguay\nPeru\nPhilippines\nPoland\nPortugal\nPuerto Rico\nQatar\nReunion\nRomania\nRussia\nRwanda\nSaint Barthélemy\nSaint Helena\nSaint Kitts and Nevis\nSaint Lucia\nSaint Martin (French Part)\nSaint Pierre and Miquelon\nSaint Vincent and the Grenadines\nSamoa\nSan Marino\nSao Tome and Principe\nSaudi Arabia\nSenegal\nSerbia\nSeychelles\nSierra Leone\nSingapore\nSint Maarten\nSlovakia\nSlovenia\nSolomon Islands\nSomalia\nSouth Africa\nSouth Korea\nSouth Sudan\nSpain\nSri Lanka\nSudan\nSuriname\nSvalbard and Jan Mayen\nSwaziland\nSweden\nSwitzerland\nSyria\nTaiwan\nTajikistan\nTanzania\nThailand\nTimor-Leste\nTogo\nTokelau\nTonga\nTrinidad and Tobago\nTristan da Cunha\nTunisia\nTurkey\nTurkmenistan\nTurks and Caicos Islands\nTuvalu\nUganda\nUkraine\nUnited Arab Emirates\nUnited Kingdom\nUnited States\nUruguay\nUzbekistan\nVanuatu\nVenezuela\nVietnam\nVirgin Islands, British\nVirgin Islands, U.S.\nWallis and Futuna\nWestern Sahara\nYemen\nZambia\nZimbabwe\nNotes\nCancel\nAdd Teacher",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/teachers"
+      }
+    ]
+  },
+  {
+    "name": "new-class",
+    "route": "/admin/classes/new",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nClasses\nNew\n1\n1 items need attention\nSO\nStudio Owner\nAdd Class\n\nCreate a new dance class.\n\nClass Details\nCancel\nClass Name\nDance Style\nLevel\nTeacher\nSelect a teacher...\nGuest Choreographer\nMeera Iyer\nRohan Verma\nSimran Kaur\n+ Add a new teacher\nDay\nSelect day...\nMonday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday\nStart Time\nEnd Time\nDuration (mins)\nStandard Rate ($)\nPricing Type\nRegular (per session)\nRegular (per session)\nSeasonal (flat fee)\nCapacity\nCancel\nCreate Class",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "+ Add a new teacher",
+        "href": "/admin/teachers/new"
+      },
+      {
+        "text": "Cancel",
+        "href": "/admin/classes"
+      }
+    ]
+  },
+  {
+    "name": "add-enrollment",
+    "route": "/admin/enrollments",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nEnrollments\n1\n1 items need attention\nSO\nStudio Owner\nEnrollments\n\nManage student class enrollments.\n\nEnrollment Form\nAdd Enrollment\nAll Enrollments\nStudent\n\tClass\n\tSchedule\n\tStart Date\n\tStatus\n\tActions\n\nKiera O'Brien\tSummer Intensive Workshop\t\t8/29/2026\tACTIVE\tEnd\nZara Khan\tBharatanatyam Beginner\tMONDAY at 16:00\t8/19/2026\tACTIVE\tEnd\nArjun Gupta\tBollywood Fusion\tSATURDAY at 10:00\t8/9/2026\tACTIVE\tEnd\nLeia Sharma\tBharatanatyam Beginner\tMONDAY at 16:00\t7/25/2026\tACTIVE\tEnd\nNia Sharma\tBharatanatyam Beginner\tMONDAY at 16:00\t7/10/2026\tACTIVE\tEnd\nNia Sharma\tKathak Beginner\tTUESDAY at 17:00\t7/10/2026\tACTIVE\tEnd\nDiya Gupta\tKathak Beginner\tTUESDAY at 17:00\t6/30/2026\tACTIVE\tEnd\nMeera Nair\tKathak Intermediate\tTHURSDAY at 17:00\t6/10/2026\tACTIVE\tEnd\nAarav Patel\tBollywood Fusion\tSATURDAY at 10:00\t5/11/2026\tACTIVE\tEnd\nAarav Patel\tBharatanatyam Intermediate\tWEDNESDAY at 16:00\t5/11/2026\tACTIVE\tEnd\nAdd Enrollment\nStudent\nSelect student...\nAarav Patel (Patel Family)\nArjun Gupta (Gupta Family)\nDiya Gupta (Gupta Family)\nKiera O'Brien (O'Brien Family)\nLeia Sharma (Sharma Family)\nMeera Nair (Nair Family)\nNia Sharma (Sharma Family)\nZara Khan (Khan Family)\nClass\nSelect class...\nBharatanatyam Beginner — Bharatanatyam\nBharatanatyam Intermediate — Bharatanatyam\nBollywood Fusion — Bollywood\nKathak Beginner — Kathak\nKathak Intermediate — Kathak\nSummer Intensive Workshop — Mixed\nCancel\nCreate Enrollment\nClose",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      },
+      {
+        "text": "Kiera O'Brien",
+        "href": "/admin/students/cmts9i1o4000wd8uy4hmv1o4b"
+      },
+      {
+        "text": "Summer Intensive Workshop",
+        "href": "/admin/classes/cmts9i1lj0009d8uyadt39kmq"
+      },
+      {
+        "text": "Zara Khan",
+        "href": "/admin/students/cmts9i1o1000td8uy1mw7cl5c"
+      },
+      {
+        "text": "Bharatanatyam Beginner",
+        "href": "/admin/classes/cmts9i1ld0004d8uyvci24469"
+      },
+      {
+        "text": "Arjun Gupta",
+        "href": "/admin/students/cmts9i1nx000pd8uyaqnjgkx6"
+      },
+      {
+        "text": "Bollywood Fusion",
+        "href": "/admin/classes/cmts9i1li0008d8uyv7g0onm1"
+      },
+      {
+        "text": "Leia Sharma",
+        "href": "/admin/students/cmts9i1n9000cd8uyrcr2vr3y"
+      },
+      {
+        "text": "Bharatanatyam Beginner",
+        "href": "/admin/classes/cmts9i1ld0004d8uyvci24469"
+      },
+      {
+        "text": "Nia Sharma",
+        "href": "/admin/students/cmts9i1n5000bd8uyryjzany9"
+      },
+      {
+        "text": "Bharatanatyam Beginner",
+        "href": "/admin/classes/cmts9i1ld0004d8uyvci24469"
+      },
+      {
+        "text": "Nia Sharma",
+        "href": "/admin/students/cmts9i1n5000bd8uyryjzany9"
+      },
+      {
+        "text": "Kathak Beginner",
+        "href": "/admin/classes/cmts9i1lg0006d8uyhi1ifldt"
+      },
+      {
+        "text": "Diya Gupta",
+        "href": "/admin/students/cmts9i1nw000od8uyfip7v77u"
+      },
+      {
+        "text": "Kathak Beginner",
+        "href": "/admin/classes/cmts9i1lg0006d8uyhi1ifldt"
+      },
+      {
+        "text": "Meera Nair",
+        "href": "/admin/students/cmts9i1no000hd8uyxauvgfiz"
+      },
+      {
+        "text": "Kathak Intermediate",
+        "href": "/admin/classes/cmts9i1lh0007d8uyua2bebv6"
+      },
+      {
+        "text": "Aarav Patel",
+        "href": "/admin/students/cmts9i1ns000kd8uy4l3i3xi3"
+      },
+      {
+        "text": "Bollywood Fusion",
+        "href": "/admin/classes/cmts9i1li0008d8uyv7g0onm1"
+      },
+      {
+        "text": "Aarav Patel",
+        "href": "/admin/students/cmts9i1ns000kd8uy4l3i3xi3"
+      },
+      {
+        "text": "Bharatanatyam Intermediate",
+        "href": "/admin/classes/cmts9i1le0005d8uyerc2772g"
+      }
+    ]
+  },
+  {
+    "name": "review-registration",
+    "route": "/admin/registrations",
+    "text": "Malhaar Dance Company\nOverview\nDashboard\nPeople\nFamilies\nStudents\nPrograms\nTeachers\nClasses\nEnrollments\nRegistration Requests\nFinance\nBilling\nClass Fees\nPayments\nExpenses\nOther Income\nFinancial Report\nSystem\nNotifications\nSettings\nSign out\nToggle Sidebar\nRegistration Requests\n1\n1 items need attention\nSO\nStudio Owner\nRegistration Requests\n\nReview new registration requests and match them to families and classes.\n\nRequests\nPending\nProcessed\nRejected\nParent/Guardian\n\tStudent\n\tRequested Class\n\tSubmitted\n\tStatus\n\t\n\nWei Chen\tLily Chen\tBollywood Fusion\t9/8/2026\tPENDING\tReview\nReview Registration\n\nConfirm the details before creating/matching family, student, and enrollment records.\n\nParent / Guardian\n\nName\nWei Chen\nEmail\nwei.chen@example.com\nPhone\n5557890123\n\nStudent\n\nName\nLily Chen\nDOB\n9/8/2018\nGender\nFEMALE\nRequested Class\nBollywood Fusion\nPrevious Experience\nOne year of ballet\n\nEmergency Contact\n\nName\nWei Chen\nRelationship\nFather\nPhone\n5557890123\n\nConsent\n\nStudio Policy Agreement\nAgreed\nPhoto/Video Consent\nConsented\n\nOn approval:\n\nFamily — create new \"Chen Family\"\n\nStudent — create new student\n\nCancel\nReject\nApprove & Process\nClose",
+    "links": [
+      {
+        "text": "Families",
+        "href": "/admin/families"
+      },
+      {
+        "text": "Students",
+        "href": "/admin/students"
+      },
+      {
+        "text": "Teachers",
+        "href": "/admin/teachers"
+      },
+      {
+        "text": "Classes",
+        "href": "/admin/classes"
+      },
+      {
+        "text": "Enrollments",
+        "href": "/admin/enrollments"
+      },
+      {
+        "text": "Registration Requests",
+        "href": "/admin/registrations"
+      },
+      {
+        "text": "Billing",
+        "href": "/admin/billing"
+      },
+      {
+        "text": "Class Fees",
+        "href": "/admin/class-fees"
+      },
+      {
+        "text": "Payments",
+        "href": "/admin/payments"
+      },
+      {
+        "text": "Expenses",
+        "href": "/admin/expenses"
+      },
+      {
+        "text": "Other Income",
+        "href": "/admin/income"
+      },
+      {
+        "text": "Financial Report",
+        "href": "/admin/reports/financials"
+      },
+      {
+        "text": "Notifications",
+        "href": "/admin/notifications"
+      },
+      {
+        "text": "Settings",
+        "href": "/admin/settings"
+      }
+    ]
+  },
+  {
+    "name": "import-students",
+    "route": "/admin/students",
+    "text": "Something went wrong\nAn unexpected error occurred. Please try again or return to the dashboard.\nTry again\nGo to dashboard",
+    "links": []
+  },
+  {
+    "name": "add-expense",
+    "route": "/admin/expenses",
+    "text": "Something went wrong\nAn unexpected error occurred. Please try again or return to the dashboard.\nTry again\nGo to dashboard",
+    "links": []
+  },
+  {
+    "name": "add-income",
+    "route": "/admin/income",
+    "text": "Something went wrong\nAn unexpected error occurred. Please try again or return to the dashboard.\nTry again\nGo to dashboard",
+    "links": []
+  }
+]

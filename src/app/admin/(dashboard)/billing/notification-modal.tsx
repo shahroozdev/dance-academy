@@ -56,16 +56,21 @@ export function NotificationModal({
   };
 
   return (
-    <Modal open onOpenChange={(open) => !open && onClose()} className="max-w-md">
+    <Modal
+      open
+      onOpenChange={(open) => !open && onClose()}
+      className="max-w-md"
+      title={
+        <div>
+          Send Notification
+          <p className="text-sm font-normal text-muted-foreground">
+            Send through the studio&apos;s WhatsApp account or email, or open WhatsApp to send manually.
+          </p>
+        </div>
+      }
+    >
       {({ close }) => (
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-medium">Send Notification</h3>
-            <p className="text-sm text-muted-foreground">
-              Send through the studio&apos;s WhatsApp account or email, or open WhatsApp to send manually.
-            </p>
-          </div>
-
           {isLoading || !preview ? (
             <Skeleton className="h-48 w-full" />
           ) : (

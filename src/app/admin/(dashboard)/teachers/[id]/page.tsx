@@ -64,20 +64,19 @@ export default function TeacherDetailPage() {
                 </Button>
               }
               className="max-w-sm"
+              title={
+                <div>
+                  {teacher.isActive ? "Deactivate Teacher?" : "Activate Teacher?"}
+                  <p className="text-sm font-normal text-muted-foreground">
+                    {teacher.isActive
+                      ? "This teacher will be hidden from the picker when adding or editing classes. Classes already assigned to them are unaffected."
+                      : "This teacher will reappear in the picker when adding or editing classes."}
+                  </p>
+                </div>
+              }
             >
               {({ close }) => (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-medium">
-                      {teacher.isActive ? "Deactivate Teacher?" : "Activate Teacher?"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {teacher.isActive
-                        ? "This teacher will be hidden from the picker when adding or editing classes. Classes already assigned to them are unaffected."
-                        : "This teacher will reappear in the picker when adding or editing classes."}
-                    </p>
-                  </div>
-                  <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={close}>Cancel</Button>
                     <Button
                       variant={teacher.isActive ? "destructive" : "default"}
@@ -88,7 +87,6 @@ export default function TeacherDetailPage() {
                     >
                       {teacher.isActive ? "Deactivate" : "Activate"}
                     </Button>
-                  </div>
                 </div>
               )}
             </Modal>

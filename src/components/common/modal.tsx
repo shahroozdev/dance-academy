@@ -14,6 +14,7 @@ type ModalProps = {
   trigger?: ReactElement;
   closeOnOutsideClick?: boolean;
   className?: string;
+  title?: ReactNode;
   children: ((props: ModalRenderProps) => ReactNode) | ReactElement<Partial<ModalRenderProps>>;
 };
 
@@ -25,6 +26,7 @@ export function Modal({
   trigger,
   closeOnOutsideClick = true,
   className,
+  title,
   children,
 }: ModalProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
@@ -47,6 +49,7 @@ export function Modal({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
         className={className}
+        header={title}
         onPointerDownOutside={closeOnOutsideClick ? undefined : preventOutsideDismiss}
         onEscapeKeyDown={closeOnOutsideClick ? undefined : preventOutsideDismiss}
       >

@@ -111,27 +111,27 @@ export default function EnrollmentsPage() {
                           <Button variant="destructive" size="sm">End</Button>
                         }
                         className="max-w-sm"
+                        title={
+                          <div>
+                            End Enrollment?
+                            <p className="text-sm font-normal text-muted-foreground">
+                              This will end {enrollment.student.fullName}&apos;s enrollment in {enrollment.class.name}.
+                            </p>
+                          </div>
+                        }
                       >
                         {({ close }) => (
-                          <div className="space-y-4">
-                            <div>
-                              <h3 className="text-lg font-medium">End Enrollment?</h3>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                This will end {enrollment.student.fullName}&apos;s enrollment in {enrollment.class.name}.
-                              </p>
-                            </div>
-                            <div className="flex justify-end gap-2">
-                              <Button variant="outline" onClick={close}>Cancel</Button>
-                              <Button
-                                variant="destructive"
-                                onClick={async () => {
-                                  await endEnroll(enrollment.id);
-                                  close();
-                                }}
-                              >
-                                End Enrollment
-                              </Button>
-                            </div>
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={close}>Cancel</Button>
+                            <Button
+                              variant="destructive"
+                              onClick={async () => {
+                                await endEnroll(enrollment.id);
+                                close();
+                              }}
+                            >
+                              End Enrollment
+                            </Button>
                           </div>
                         )}
                       </Modal>
@@ -181,9 +181,8 @@ function EnrollmentsCreateModal({
   const isAtCapacity = selectedClass?.capacity != null && selectedClass.enrollmentCount >= selectedClass.capacity;
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange} className="max-w-md">
+    <Modal open={open} onOpenChange={onOpenChange} className="max-w-md" title="Add Enrollment">
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Add Enrollment</h3>
         <div className="space-y-3">
           <div>
             <label className="text-sm font-medium">Student</label>

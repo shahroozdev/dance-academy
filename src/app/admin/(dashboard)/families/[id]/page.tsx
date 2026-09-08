@@ -60,31 +60,29 @@ export default function FamilyDetailPage() {
                 </Button>
               }
               className="max-w-sm"
+              title={
+                <div>
+                  {family.isActive ? "Deactivate Family?" : "Activate Family?"}
+                  <p className="text-sm font-normal text-muted-foreground">
+                    {family.isActive
+                      ? "This family will be hidden from active billing and lists."
+                      : "This family will reappear in active lists and billing."}
+                  </p>
+                </div>
+              }
             >
               {({ close }) => (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-medium">
-                      {family.isActive ? "Deactivate Family?" : "Activate Family?"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {family.isActive
-                        ? "This family will be hidden from active billing and lists."
-                        : "This family will reappear in active lists and billing."}
-                    </p>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={close}>Cancel</Button>
-                    <Button
-                      variant={family.isActive ? "destructive" : "default"}
-                      onClick={async () => {
-                        await toggleActive(id, !family.isActive);
-                        close();
-                      }}
-                    >
-                      {family.isActive ? "Deactivate" : "Activate"}
-                    </Button>
-                  </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={close}>Cancel</Button>
+                  <Button
+                    variant={family.isActive ? "destructive" : "default"}
+                    onClick={async () => {
+                      await toggleActive(id, !family.isActive);
+                      close();
+                    }}
+                  >
+                    {family.isActive ? "Deactivate" : "Activate"}
+                  </Button>
                 </div>
               )}
             </Modal>

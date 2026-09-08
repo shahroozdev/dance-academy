@@ -29,6 +29,10 @@ _Nothing currently in progress._
 
 ## Done
 
+### 2026-09-08
+- **Created the client PDF user manual.** Delivered `docs/user-manual/Malhaar-Dance-Company-User-Manual.pdf` (32 A4 pages, 22 screenshot figures, linked contents/index, bookmarks, worked examples, troubleshooting, three appendices), self-contained HTML, reusable screenshots and build source. Validated page count, 68 link annotations, images/anchors, and footer overlap; visually reviewed seven representative pages. No business records changed or parent messages sent. Final website/support details were not supplied; a handover worksheet is included. Additional Import Students/Add Expense/Add Income modal captures hit the error boundary during concurrent local UI edits; unsuccessful images were excluded, with capture limitations documented in `docs/user-manual/README.md`.
+- **Fixed stale admin sessions crashing /admin.** Rejected sessions redirect to login; login checks current database access before redirecting active admins back to the dashboard, replacing the proxy's JWT-only redirect. Preserved owner-only authorization and existing dashboard layout edits. Added missing/disabled/invalid-role session regression coverage. All 167 tests and TypeScript pass; full lint has no errors (unrelated temporary-script warnings remain). Browser verification was not run.
+
 ### 2026-09-07
 - **Closed the remaining Varsha/Malhaar billing audit items.** Mid-month enrollments are now
   prorated to sessions actually falling within the enrolled range (`computeProratedLineItemAmount`,

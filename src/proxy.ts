@@ -13,9 +13,8 @@ export const proxy = auth((req) => {
     return NextResponse.redirect(new URL("/admin/login", req.nextUrl.origin));
   }
 
-  if (isLoggedIn && isLoginPage) {
-    return NextResponse.redirect(new URL("/admin", req.nextUrl.origin));
-  }
+  // The login page checks current database access before redirecting signed-in users.
+  // A JWT alone may belong to a removed or disabled admin.
 });
 
 export const config = {

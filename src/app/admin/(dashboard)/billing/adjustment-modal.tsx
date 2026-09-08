@@ -20,14 +20,26 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
   });
 
   return (
-    <Modal open onOpenChange={(open) => !open && onClose()} className="max-w-sm">
+    <Modal
+      open
+      onOpenChange={(open) => !open && onClose()}
+      className="max-w-sm"
+      title={
+        <div>
+          Adjustment
+          <p className="text-sm font-normal text-muted-foreground">
+            A one-month change. It never touches the class rate or other months. Use a
+            negative amount for a discount or refund, a positive amount to add a charge.
+          </p>
+        </div>
+      }
+    >
       {({ close }) => {
-        let body: React.ReactNode;
         if (isLoading || !billing) {
-          body = <Skeleton className="h-32 w-full" />;
-        } else {
-          body = (
-            <FORM
+          return <Skeleton className="h-32 w-full" />;
+        }
+        return (
+          <FORM
               schema={billingAdjustmentSchema}
               defaultValues={{ adjustment: billing.adjustment, adjustmentNotes: billing.adjustmentNotes ?? "" }}
               onSubmit={async (data: BillingAdjustmentInput) => {
@@ -63,21 +75,6 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
                 </div>
               )}
             </FORM>
-          );
-        }
-
-        return (
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-medium">Adjustment</h3>
-              <p className="text-sm text-muted-foreground">
-                A one-month change. It never touches the class rate or other months. Use a
-                negative amount for a discount or refund, a positive amount to add a charge.
-              </p>
-            </div>
-
-            {body}
-          </div>
         );
       }}
     </Modal>

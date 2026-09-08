@@ -136,16 +136,21 @@ function ReviewModal({ id, onClose }: { id: string; onClose: () => void }) {
   });
 
   return (
-    <Modal open onOpenChange={(open) => !open && onClose()} className="max-w-lg">
+    <Modal
+      open
+      onOpenChange={(open) => !open && onClose()}
+      className="max-w-lg"
+      title={
+        <div>
+          Review Registration
+          <p className="text-sm font-normal text-muted-foreground">
+            Confirm the details before creating/matching family, student, and enrollment records.
+          </p>
+        </div>
+      }
+    >
       {({ close }) => (
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-medium">Review Registration</h3>
-            <p className="text-sm text-muted-foreground">
-              Confirm the details before creating/matching family, student, and enrollment records.
-            </p>
-          </div>
-
           {isLoadingRequest || !request ? (
             <Skeleton className="h-48 w-full" />
           ) : (
