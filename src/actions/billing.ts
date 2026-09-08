@@ -3,6 +3,7 @@ import { requireAdmin } from "@/actions/access";
 import { buildLineItemInputs, familyQualifyingSiblingCount, generateMonthlyBilling as runMonthlyBilling } from "@/actions/billing-service";
 import { billingAdjustmentSchema } from "@/actions/billing.schema";
 import type { BillingAdjustmentInput } from "@/actions/billing.schema";
+import { sendAdminOperationalAlert } from "@/actions/email";
 import { serializableTransaction } from "@/actions/transaction";
 import { validateListQuery , idSchema } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
@@ -142,7 +143,7 @@ export async function setBillingAdjustment(id: string, data: BillingAdjustmentIn
   await requireAdmin();
   id = idSchema.parse(id);
   data = billingAdjustmentSchema.parse(data);
-  return serializableTransaction(async (tx) => {
+  const updated = await serializableTransaction(async (tx) => {
     const billing = await tx.monthlyStudentBilling.findUniqueOrThrow({ where: { id } });
 
     const baseTuition = Number(billing.baseTuition);
@@ -164,6 +165,17 @@ export async function setBillingAdjustment(id: string, data: BillingAdjustmentIn
       },
     });
   });
+  if (Number(updated.balance) < 0) {
+    const billing = await db.monthlyStudentBilling.findUniqueOrThrow({
+      where: { id }, include: { student: { include: { family: true } } },
+    });
+    await sendAdminOperationalAlert({
+      setting: "creditAlertEnabled",
+      subject: `Credit requires review — ${billing.student.family.familyName}`,
+      lines: [`Student: ${billing.student.fullName}`, `Credit balance: $${Math.abs(Number(updated.balance)).toFixed(2)}`],
+    });
+  }
+  return updated;
 }
 
 // Only safe before any payment exists — pulls in the latest ClassMonthlyFee amounts and

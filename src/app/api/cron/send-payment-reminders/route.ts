@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { sendUnfinalizedFeeReminder } from "@/actions/email";
 import { sendPaymentReminders } from "@/actions/reminders";
+import { normalizeMonth } from "@/lib/billing";
 import { isCronAuthorized } from "@/lib/cron-auth";
 
 // Scheduled to run daily (see vercel.json). Finds bills past their configured due date + reminder
@@ -12,8 +14,9 @@ async function handle(request: Request) {
 
   try {
     const summary = await sendPaymentReminders();
+    const unfinalizedFeeAlert = await sendUnfinalizedFeeReminder(normalizeMonth(new Date()));
     console.warn("[cron] send-payment-reminders:", summary);
-    return NextResponse.json({ ok: true, summary });
+    return NextResponse.json({ ok: true, summary, unfinalizedFeeAlert });
   } catch (error) {
     console.error("[cron] send-payment-reminders failed:", error);
     return NextResponse.json(

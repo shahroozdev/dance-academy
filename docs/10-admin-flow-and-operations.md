@@ -60,7 +60,7 @@ The sender is implemented, but live delivery must be verified using the studio's
 - Create approved templates named `monthly_fee_notice` and `payment_reminder`. Both use three positional text body parameters, in this order: parent's first name, month label, student fee summary. The reminder summary contains remaining balances. Parameters are flattened to a single line for the template request.
 - Suggested monthly template body: `Hi {{1}}, your {{2}} dance fees are: {{3}}. Please send payment when convenient. Thank you!`
 - Suggested reminder body: `Hi {{1}}, a reminder about your outstanding {{2}} dance fees: {{3}}. Thank you!`
-- Set `WHATSAPP_AUTOMATION_ENABLED=true` only when ready to enable scheduled WhatsApp notices and reminders. Without it, the monthly job generates bills and the daily reminder job uses email. The explicit Send WhatsApp button is available independently of scheduled sending.
+- Set `WHATSAPP_AUTOMATION_ENABLED=true` only when ready to enable scheduled WhatsApp notices and reminders. Without it, the monthly job generates bills and the daily reminder job uses email. Staff can still use the manual **Open in WhatsApp** action from the notification window.
 - The first-of-month job sends pending family notices after generating bills when enabled. Failed monthly notices remain unsent and can be retried from the family notification window or by rerunning the protected monthly job. The daily job retries failed payment reminders.
 
 The sender stores Meta's message reference on accepted requests and records failures. An accepted request is not a delivery/read receipt; delivery webhooks are not implemented in this change. If a network timeout makes the send outcome uncertain, check Meta before manually retrying.

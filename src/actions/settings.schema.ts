@@ -37,6 +37,21 @@ export const reminderSettingsSchema = z.object({
 
 export type ReminderSettingsInput = z.infer<typeof reminderSettingsSchema>;
 
+export const billingAlertSettingsSchema = z.object({
+  billingAlertEnabled: z.boolean(),
+  parentNotificationAlertEnabled: z.boolean(),
+  registrationAlertEnabled: z.boolean(),
+  paymentRecordedAlertEnabled: z.boolean(),
+  creditAlertEnabled: z.boolean(),
+  billingFailureAlertEnabled: z.boolean(),
+  parentNotificationFailureAlertEnabled: z.boolean(),
+  paymentReminderFailureAlertEnabled: z.boolean(),
+  unfinalizedFeeAlertEnabled: z.boolean(),
+  billingAlertEmail: z.email("Enter a valid email address").max(255).optional().or(z.literal("")),
+});
+
+export type BillingAlertSettingsInput = z.infer<typeof billingAlertSettingsSchema>;
+
 // smtpPassword is left blank when the studio doesn't want to change the stored secret.
 export const smtpSettingsSchema = z.object({
   smtpHost: z.string().max(255).optional().or(z.literal("")),
@@ -62,6 +77,7 @@ export const studioSettingsUpdateSchema = themeSettingsSchema
   .merge(businessProfileSchema)
   .merge(discountSettingsSchema)
   .merge(reminderSettingsSchema)
+  .merge(billingAlertSettingsSchema)
   .merge(smtpSettingsSchema)
   .merge(whatsappSettingsSchema)
   .partial();

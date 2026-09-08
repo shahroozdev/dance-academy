@@ -1,11 +1,10 @@
 "use server";
 import { requireAdmin } from "@/actions/access";
 import { assertFinalizedForNotification } from "@/actions/billing-service";
-import { sendTemplatedEmail } from "@/actions/email";
+import { sendAdminOperationalAlert, sendParentNotificationConfirmation, sendTemplatedEmail } from "@/actions/email";
 import * as notificationData from "@/actions/notification-data";
 import { sendPaymentReminders } from "@/actions/reminders";
 import { validateListQuery , idSchema } from "@/actions/validation.schema";
-import { sendMonthlyWhatsApp } from "@/actions/whatsapp-notifications";
 import type { Prisma } from "@/generated/prisma/client";
 import { normalizeMonth } from "@/lib/billing";
 import { db } from "@/lib/db";
@@ -34,8 +33,9 @@ export async function markFamilyNotificationSent(familyId: string, monthInput: s
   const billings = await db.monthlyStudentBilling.findMany({ where: { month, student: { familyId } }, select: { id: true } });
   await assertFinalizedForNotification(billings.map((b) => b.id));
   // Persist server-built billing text rather than accepting arbitrary log contents from the browser.
-  messageContent = (await notificationData.getFamilyNotificationPreview(familyId, monthInput)).message;
-  return db.$transaction(async (tx) => {
+  const preview = await notificationData.getFamilyNotificationPreview(familyId, monthInput);
+  messageContent = preview.message;
+  const log = await db.$transaction(async (tx) => {
     const log = await tx.notificationLog.create({
       data: {
         familyId,
@@ -52,11 +52,8 @@ export async function markFamilyNotificationSent(familyId: string, monthInput: s
     });
     return log;
   });
-}
-
-export async function sendFamilyNotificationWhatsApp(familyId: string, monthInput: string) {
-  await requireAdmin();
-  return sendMonthlyWhatsApp(idSchema.parse(familyId), monthInput);
+  await sendParentNotificationConfirmation({ familyName: preview.familyName, month, channel: "Manual" });
+  return log;
 }
 
 export async function sendFamilyPaymentReminder(familyId: string, monthInput: string) {
@@ -115,6 +112,16 @@ export async function sendFamilyNotificationEmail(
       });
     }
   });
+
+  if (result.sent) {
+    await sendParentNotificationConfirmation({ familyName: family.familyName, month, channel: "Email" });
+  } else {
+    await sendAdminOperationalAlert({
+      setting: "parentNotificationFailureAlertEnabled",
+      subject: `Parent fee notification failed — ${family.familyName}`,
+      lines: [`Family: ${family.familyName}`, `Billing month: ${monthLabel}`, "Delivery method: Email", `Error: ${result.error ?? "Unknown error"}`],
+    });
+  }
 
   return result;
 }

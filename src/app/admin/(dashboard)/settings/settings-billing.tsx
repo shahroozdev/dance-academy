@@ -1,6 +1,6 @@
 "use client";
 
-import { Percent, CalendarClock } from "lucide-react";
+import { CalendarClock, Percent } from "lucide-react";
 
 import type { StudioSettingsData } from "@/actions/settings";
 import {

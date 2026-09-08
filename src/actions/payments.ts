@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
+import { sendAdminOperationalAlert } from "@/actions/email";
 import { recordBillTransaction } from "@/actions/payment-service";
 import { paymentCreateSchema, refundCreateSchema } from "@/actions/payments.schema";
 import type { PaymentCreateInput, RefundCreateInput } from "@/actions/payments.schema";
@@ -91,7 +92,22 @@ export async function getPayments(params?: {
 export async function createPayment(data: PaymentCreateInput) {
   await requireAdmin();
   data = paymentCreateSchema.parse(data);
-  return recordBillTransaction(data, false);
+  const result = await recordBillTransaction(data, false);
+  const billing = await db.monthlyStudentBilling.findUniqueOrThrow({
+    where: { id: data.billingId }, include: { student: { include: { family: true } } },
+  });
+  await sendAdminOperationalAlert({
+    setting: "paymentRecordedAlertEnabled",
+    subject: `✓ Payment recorded — ${billing.student.fullName}`,
+    lines: [`Family: ${billing.student.family.familyName}`, `Student: ${billing.student.fullName}`, `Amount: $${data.amount.toFixed(2)}`, `Method: ${data.method}`, `Remaining balance: $${Number(billing.balance).toFixed(2)}`],
+  });
+  if (Number(billing.balance) < 0) {
+    await sendAdminOperationalAlert({
+      setting: "creditAlertEnabled", subject: `Credit requires review — ${billing.student.family.familyName}`,
+      lines: [`Student: ${billing.student.fullName}`, `Credit balance: $${Math.abs(Number(billing.balance)).toFixed(2)}`],
+    });
+  }
+  return result;
 }
 
 export async function createRefund(data: RefundCreateInput) {

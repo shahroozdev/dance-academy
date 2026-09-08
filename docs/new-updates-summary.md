@@ -2,6 +2,15 @@
 
 ## 2026-09-08
 
+- The fee notification window no longer shows a direct WhatsApp send button while studio WhatsApp integration setup is unavailable. Staff can still open WhatsApp with the message prepared for manual sending.
+- Settings now has a dedicated Notifications tab, with staff alerts grouped into Registration, Billing & Payments, Parent Communication, and System alerts. Billing Settings now contains only billing rules and payment timing.
+- The Save Billing Alert button now stays visible while scrolling through the billing notification settings.
+- **Monthly billing-ready email** — Billing Settings now lets you choose which staff email receives an alert after the automatic monthly billing run. The alert is on by default, can be turned off, and reminds staff to review and finalize class fees before notifying parents.
+- **Parent notification confirmations** — Billing Settings can also email staff a checkmarked confirmation after a family fee notice is sent or manually marked as sent, showing the family, billing month, and delivery method. This confirmation is on by default and can be turned off.
+- **Complete admin alert controls** — The same Billing Settings card now offers separate switches for new registrations, recorded payments, credits, automatic billing failures, failed parent notices, failed payment reminders, and class fees that still need finalization. Each alert goes only to the configured staff address, and every category can be turned off independently.
+
+## 2026-09-08
+
 - A client user manual is now available as a PDF, with page screenshots, step-by-step instructions, billing examples, troubleshooting, and printable checklists.
 - Opening admin with an outdated or disabled sign-in now returns you to the login page instead of showing an error or getting stuck redirecting.
 

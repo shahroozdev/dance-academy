@@ -33,6 +33,47 @@ _Nothing currently in progress._
 - **Created the client PDF user manual.** Delivered `docs/user-manual/Malhaar-Dance-Company-User-Manual.pdf` (32 A4 pages, 22 screenshot figures, linked contents/index, bookmarks, worked examples, troubleshooting, three appendices), self-contained HTML, reusable screenshots and build source. Validated page count, 68 link annotations, images/anchors, and footer overlap; visually reviewed seven representative pages. No business records changed or parent messages sent. Final website/support details were not supplied; a handover worksheet is included. Additional Import Students/Add Expense/Add Income modal captures hit the error boundary during concurrent local UI edits; unsuccessful images were excluded, with capture limitations documented in `docs/user-manual/README.md`.
 - **Fixed stale admin sessions crashing /admin.** Rejected sessions redirect to login; login checks current database access before redirecting active admins back to the dashboard, replacing the proxy's JWT-only redirect. Preserved owner-only authorization and existing dashboard layout edits. Added missing/disabled/invalid-role session regression coverage. All 167 tests and TypeScript pass; full lint has no errors (unrelated temporary-script warnings remain). Browser verification was not run.
 
+### 2026-09-08
+- **Created the client PDF user manual.** Delivered `docs/user-manual/Malhaar-Dance-Company-User-Manual.pdf` (32 A4 pages, 22 screenshot figures, linked contents/index, bookmarks, worked examples, troubleshooting, three appendices), self-contained HTML, reusable screenshots and build source. Validated page count, 68 link annotations, images/anchors, and footer overlap; visually reviewed seven representative pages. No business records changed or parent messages sent. Final website/support details were not supplied; a handover worksheet is included. Additional Import Students/Add Expense/Add Income modal captures hit the error boundary during concurrent local UI edits; unsuccessful images were excluded, with capture limitations documented in `docs/user-manual/README.md`.
+- **Fixed stale admin sessions crashing /admin.** Rejected sessions redirect to login; login checks current database access before redirecting active admins back to the dashboard, replacing the proxy's JWT-only redirect. Preserved owner-only authorization and existing dashboard layout edits. Added missing/disabled/invalid-role session regression coverage. All 167 tests and TypeScript pass; full lint has no errors (unrelated temporary-script warnings remain). Browser verification was not run.
+
+### 2026-09-08
+- **Audited unavailable WhatsApp controls.** All visible admin screens now offer only manual
+  WhatsApp opening while API setup is unavailable. Removed the unused direct-send browser action
+  and corrected operating documentation that still described that button.
+- **Hid unavailable direct WhatsApp sending.** The fee notification window no longer offers a
+  direct API send while its configuration is unavailable; staff can still open WhatsApp with the
+  prepared message and send it manually.
+- **Separated notification settings from billing.** Settings now has a responsive Notifications
+  tab with staff alerts grouped into registration, billing and payments, parent communications,
+  and system alerts. Billing now contains only discounts, due dates, and reminder timing.
+- **Made the Billing Alert save action sticky.** The save bar now remains visible while the owner
+  scrolls through the notification switches and keeps the existing disabled/saving states.
+- **Added complete owner-controlled admin alerts.** Billing Settings now has separate enabled-by-
+  default switches for new registrations, recorded payments, credits/overpayments, automatic
+  billing failures, failed parent fee notices, failed payment reminders, and class fees still
+  awaiting finalization. Alerts use the configured staff address or owner fallback. The
+  unfinalized-fee reminder waits until the monthly due day and sends at most once per month.
+- **Added optional staff confirmations for parent fee notices.** An enabled-by-default switch in
+  Billing Settings now sends a checkmarked email to the configured billing-alert address (or active
+  owner) after a family notice is successfully emailed, accepted by WhatsApp, or manually marked
+  sent. The confirmation identifies the family, billing month, and delivery method. Failed parent
+  sends do not trigger a success confirmation.
+- **Added a configurable monthly billing-ready admin email.** Billing Settings now has an enabled-
+  by-default switch and recipient address (falling back to the active owner email). After the
+  scheduled monthly billing run, staff receive the created/updated/skipped summary and a reminder
+  to review and finalize Class Fees before parent notices. Turning the setting off skips the alert.
+  Added a database migration and focused tests for default fallback, opt-out, and custom recipient.
+- **Completed the live deployment A-to-Z acceptance test.** The browser-driven run against the
+  client-confirmed test deployment/database passed: admin login and core routes, two public
+  registrations, approval and same-family sibling matching, student/class enrollments, mid-month
+  proration, 5% multi-class and sibling discounts, seasonal discount exclusion, notification
+  blocking before class-fee finalization, post-finalization notification readiness, partial and
+  full payment balance/status updates, financial-report visibility, and a second-month check proving
+  the seasonal enrollment was charged only once. No email or WhatsApp delivery was triggered. The
+  final Playwright run passed in 1.3 minutes; uniquely labelled `LIVE E2E` records remain in the test
+  database, including records from selector-debug reruns.
+
 ### 2026-09-07
 - **Closed the remaining Varsha/Malhaar billing audit items.** Mid-month enrollments are now
   prorated to sessions actually falling within the enrolled range (`computeProratedLineItemAmount`,

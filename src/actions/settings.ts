@@ -27,6 +27,16 @@ export type StudioSettingsData = {
 
   dueDayOfMonth: number;
   paymentReminderDaysAfterDue: number;
+  billingAlertEnabled: boolean;
+  billingAlertEmail: string | null;
+  parentNotificationAlertEnabled: boolean;
+  registrationAlertEnabled: boolean;
+  paymentRecordedAlertEnabled: boolean;
+  creditAlertEnabled: boolean;
+  billingFailureAlertEnabled: boolean;
+  parentNotificationFailureAlertEnabled: boolean;
+  paymentReminderFailureAlertEnabled: boolean;
+  unfinalizedFeeAlertEnabled: boolean;
 
   smtpHost: string | null;
   smtpPort: number | null;
