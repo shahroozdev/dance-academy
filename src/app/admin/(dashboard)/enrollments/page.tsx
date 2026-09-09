@@ -259,7 +259,7 @@ function EnrollmentsCreateModal({
   });
 
   const studentOptions = studentsData?.data.map((s) => ({ label: `${s.fullName} (${s.familyName})`, value: s.id })) ?? [];
-  const classOptions = classesData?.data.map((c) => ({ label: `${c.name} — ${c.danceStyle}`, value: c.id })) ?? [];
+  const classOptions = classesData?.data.map((c) => ({ label: `${c.name} — ${c.programName}`, value: c.id })) ?? [];
 
   const selectedClass = classesData?.data.find((c) => c.id === classId);
   const isAtCapacity = selectedClass?.capacity != null && selectedClass.enrollmentCount >= selectedClass.capacity;

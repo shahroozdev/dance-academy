@@ -79,6 +79,7 @@ export async function getTeacherById(id: string) {
       include: {
         classes: {
           include: {
+            program: { select: { name: true } },
             enrollments: { where: { status: "ACTIVE" }, select: { id: true } },
           },
           orderBy: { name: "asc" },

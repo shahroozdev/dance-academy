@@ -20,6 +20,7 @@ export type StudentListItem = {
   dob: Date | null;
   gender: string | null;
   isActive: boolean;
+  joinDate: Date;
   enrollments: { className: string }[];
   createdAt: Date;
 };
@@ -35,7 +36,7 @@ export async function getStudents(params?: {
   sortOrder?: "asc" | "desc";
 }): Promise<{ data: StudentListItem[]; total: number; pages: number }> {
   await requireAdmin();
-  validateListQuery(params, ["fullName","dob","gender","isActive","createdAt"]);
+  validateListQuery(params, ["fullName","dob","gender","joinDate","isActive","createdAt"]);
   const {
     search,
     isActive,
@@ -86,6 +87,7 @@ export async function getStudents(params?: {
       dob: s.dob,
       gender: s.gender,
       isActive: s.isActive,
+      joinDate: s.joinDate,
       enrollments: s.enrollments.map((e) => ({ className: e.class.name })),
       createdAt: s.createdAt,
     })),
@@ -144,6 +146,7 @@ export async function createStudent(data: StudentCreateInput) {
       familyId: data.familyId,
       dob: data.dob ? new Date(data.dob) : null,
       gender: data.gender ?? null,
+      joinDate: new Date(`${data.joinDate}T00:00:00.000Z`),
       medicalNotes: data.medicalNotes || null,
       generalNotes: data.generalNotes || null,
       emergencyContactName: data.emergencyContactName || null,
@@ -164,6 +167,7 @@ export async function updateStudent(id: string, data: StudentUpdateInput) {
       ...(data.familyId !== undefined && { familyId: data.familyId }),
       ...(data.dob !== undefined && { dob: data.dob ? new Date(data.dob) : null }),
       ...(data.gender !== undefined && { gender: data.gender ?? null }),
+      ...(data.joinDate !== undefined && { joinDate: new Date(`${data.joinDate}T00:00:00.000Z`) }),
       ...(data.medicalNotes !== undefined && { medicalNotes: data.medicalNotes || null }),
       ...(data.generalNotes !== undefined && { generalNotes: data.generalNotes || null }),
       ...(data.emergencyContactName !== undefined && {
@@ -233,6 +237,8 @@ export async function importStudents(rows: StudentImportRow[]): Promise<StudentI
 
       const phone = row.parentPhone?.trim() || undefined;
       const email = row.parentEmail?.trim() || undefined;
+      const joinDate = parseImportDob(row.joinDate);
+      if (row.joinDate?.trim() && !joinDate) throw new Error("Original Joining Date is invalid");
 
       const outcome = await serializableTransaction(async (tx) => {
         const candidates = await tx.family.findMany({ select: { id: true, phone: true, email: true, familyName: true } });
@@ -264,6 +270,7 @@ export async function importStudents(rows: StudentImportRow[]): Promise<StudentI
             familyId: family.id,
             dob: parseImportDob(row.dob),
             gender: parseImportGender(row.gender),
+            ...(joinDate && { joinDate }),
             isActive: row.isActive ?? true,
           },
         });

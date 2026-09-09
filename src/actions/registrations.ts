@@ -28,7 +28,10 @@ export async function getRegistrationRequests(params?: {
   const [data, total] = await Promise.all([
     db.registrationRequest.findMany({
       where,
-      include: { requestedClass: { select: { id: true, name: true, danceStyle: true } } },
+      include: {
+        requestedProgram: { select: { id: true, name: true } },
+        requestedClass: { select: { id: true, name: true, program: { select: { name: true } } } },
+      },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -49,7 +52,11 @@ export async function getRegistrationRequestById(id: string) {
     // requestedClass is select-only (never `true`) — Class.standardRate is a Decimal, which
     // can't cross the server-action boundary to a Client Component un-serialized, and nothing
     // in the UI needs it here anyway (only the class name is displayed).
-    include: { requestedClass: { select: { id: true, name: true, danceStyle: true } }, matchedFamily: true },
+    include: {
+      requestedProgram: { select: { id: true, name: true } },
+      requestedClass: { select: { id: true, name: true, program: { select: { name: true } } } },
+      matchedFamily: true,
+    },
   });
 }
 
@@ -72,8 +79,8 @@ export async function getRegistrationAssignmentClasses() {
   await requireAdmin();
   return db.class.findMany({
     where: { isActive: true },
-    select: { id: true, name: true, danceStyle: true },
-    orderBy: [{ danceStyle: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, program: { select: { id: true, name: true } } },
+    orderBy: [{ program: { name: "asc" } }, { name: "asc" }],
   });
 }
 
@@ -89,11 +96,11 @@ export async function previewRegistrationApproval(id: string, familyId?: string)
 
 export async function createRegistrationRequest(data: RegistrationRequestCreateInput) {
   data = registrationRequestCreateSchema.parse(data);
-  const offeredStyle = await db.class.findFirst({
-    where: { isActive: true, danceStyle: data.requestedDanceStyle },
-    select: { danceStyle: true },
+  const offeredProgram = await db.danceProgram.findFirst({
+    where: { id: data.requestedProgramId, isActive: true, classes: { some: { isActive: true } } },
+    select: { id: true, name: true },
   });
-  if (!offeredStyle) throw new Error("This dance style is no longer accepting registration.");
+  if (!offeredProgram) throw new Error("This dance program is no longer accepting registration.");
   const request = await db.registrationRequest.create({
     data: {
       parentGuardianName: data.parentGuardianName,
@@ -102,7 +109,7 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
       studentFullName: data.studentFullName,
       dob: data.dob ? new Date(data.dob) : null,
       gender: data.gender ?? null,
-      requestedDanceStyle: offeredStyle.danceStyle,
+      requestedProgramId: offeredProgram.id,
       previousDanceExperience: data.previousDanceExperience || null,
       emergencyContactName: data.emergencyContactName,
       emergencyContactRelationship: data.emergencyContactRelationship,
@@ -121,7 +128,7 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
       {
         parentName: firstName(request.parentGuardianName),
         studentName: request.studentFullName,
-        className: request.requestedDanceStyle ?? "the selected dance program",
+        className: offeredProgram.name,
       },
       request.parentEmail,
     );
@@ -129,7 +136,7 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
   await sendAdminOperationalAlert({
     setting: "registrationAlertEnabled",
     subject: `New registration received — ${request.studentFullName}`,
-    lines: ["A new registration is ready for review.", "", `Student: ${request.studentFullName}`, `Parent/guardian: ${request.parentGuardianName}`, `Requested dance style: ${request.requestedDanceStyle ?? "Not selected"}`],
+    lines: ["A new registration is ready for review.", "", `Student: ${request.studentFullName}`, `Parent/guardian: ${request.parentGuardianName}`, `Requested dance program: ${offeredProgram.name}`],
   });
 
   return request;
@@ -156,6 +163,9 @@ export async function approveRegistrationRequest(id: string, classId: string, fa
     }
     const requestedClass = await tx.class.findUniqueOrThrow({ where: { id: classId } });
     if (!requestedClass.isActive) throw new Error("This class is inactive. Update the registration before approving it.");
+    if (request.requestedProgramId && requestedClass.programId !== request.requestedProgramId) {
+      throw new Error("Select a class from the dance program requested by the parent.");
+    }
     const plan = await resolveMatchPlan(tx, request, familyId);
 
     const family =
@@ -179,6 +189,7 @@ export async function approveRegistrationRequest(id: string, classId: string, fa
               familyId: family.id,
               dob: request.dob,
               gender: request.gender,
+              joinDate: request.createdAt,
               emergencyContactName: request.emergencyContactName,
               emergencyContactRelationship: request.emergencyContactRelationship,
               emergencyPhone: request.emergencyPhone,

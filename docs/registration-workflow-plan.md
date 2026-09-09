@@ -2,8 +2,8 @@
 
 ## Current workflow
 
-1. The public form lists every active class, including its dance style, and requires the parent to
-   choose one specific class.
+1. The public form lists each active dance program that currently has an active class. The parent
+   chooses a program, not a class, level, or batch.
 2. Submission creates a pending registration and sends the registration-received email.
 3. In Registration Requests, staff reviews family matching and clicks **Approve & Process**.
 4. Approval creates or matches the family and student, immediately enrolls the student in the class
@@ -12,8 +12,8 @@
 
 ## Workflow requested by Varsha
 
-1. The public form lists only distinct dance styles/programs currently represented by active
-   classes. Parents do not choose a level, batch, or specific class.
+1. The public form lists active Dance Programs that currently have an active class. Parents do not
+   choose a level, batch, or specific class.
 2. Submission remains pending and sends only the registration-received acknowledgement.
 3. Staff reviews the request, evaluates the student, verifies the family match, and selects the
    final active class. The class remains the source of its own fee, so levels may share a fee today
@@ -26,7 +26,7 @@
 ## Compatibility and data migration
 
 - Existing registration requests keep their class association.
-- Existing requests receive a dance style derived from their associated class where possible.
+- Existing class styles and registration requests are preserved as linked Dance Programs.
 - Previously processed class registrations are marked as already notified at their processing time,
   reflecting the old workflow and preventing an accidental duplicate email.
 - Imported historical requests without a class remain viewable but cannot send an enrollment email

@@ -2,9 +2,14 @@ import { z } from "zod";
 
 import { phoneSchema } from "@/actions/validation.schema";
 
+const joinDateSchema = z
+  .iso.date("Enter a valid joining date")
+  .refine((value) => new Date(`${value}T00:00:00.000Z`) <= new Date(), "Joining date cannot be in the future");
+
 export const studentCreateSchema = z.object({
   fullName: z.string().min(1, "Student name is required"),
   familyId: z.string().min(1, "Family is required"),
+  joinDate: joinDateSchema,
   dob: z.iso.date().or(z.literal("")).optional(),
   gender: z.enum(["MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"]).optional(),
   medicalNotes: z.string().or(z.literal("")).optional(),
@@ -29,6 +34,7 @@ export const studentImportRowSchema = z.object({
   parentPhone: z.string().max(50).optional(),
   dob: z.string().max(50).optional(),
   gender: z.string().max(50).optional(),
+  joinDate: z.string().max(50).optional(),
   isActive: z.boolean().optional(),
 });
 

@@ -133,10 +133,22 @@ enum DayOfWeek {
   SUNDAY
 }
 
+model DanceProgram {
+  id                   String                @id @default(cuid())
+  name                 String                @unique
+  description          String?
+  isActive             Boolean               @default(true)
+  classes              Class[]
+  registrationRequests RegistrationRequest[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+}
+
 model Class {
   id            String       @id @default(cuid())
   name          String
-  danceStyle    String
+  programId     String
+  program       DanceProgram @relation(fields: [programId], references: [id], onDelete: Restrict)
   level         String?
   teacherId     String?
   teacher       Teacher?     @relation(fields: [teacherId], references: [id])
@@ -154,6 +166,7 @@ model Class {
   updatedAt     DateTime     @updatedAt
 
   @@index([isActive])
+  @@index([programId])
 }
 
 enum EnrollmentStatus {

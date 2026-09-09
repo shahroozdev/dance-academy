@@ -17,6 +17,7 @@ import {
 import { markFamilyNotificationSent, sendFamilyNotificationEmail, sendFamilyPaymentReminder } from "@/actions/notifications";
 import { createOtherIncome, deleteOtherIncome, updateOtherIncome } from "@/actions/other-income";
 import { createPayment, createRefund } from "@/actions/payments";
+import { createProgram, toggleProgramActive, updateProgram } from "@/actions/programs";
 import {
   approveRegistrationRequest,
   createRegistrationRequest,
@@ -62,6 +63,9 @@ export const mutationRegistry = {
   finalizeAllClassMonthlyFeesForMonth,
   createPayment,
   createRefund,
+  createProgram,
+  updateProgram,
+  toggleProgramActive,
   createExpense,
   updateExpense,
   deleteExpense,

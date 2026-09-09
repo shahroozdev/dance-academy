@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
     family: { findMany: vi.fn(), findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), create: vi.fn() },
     student: { findFirst: vi.fn(), findUniqueOrThrow: vi.fn(), create: vi.fn(), update: vi.fn() },
     class: { findFirst: vi.fn(), findUniqueOrThrow: vi.fn(), findUnique: vi.fn() },
+    danceProgram: { findFirst: vi.fn() },
     enrollment: { findFirst: vi.fn(), create: vi.fn() },
   },
 }));
@@ -19,7 +20,7 @@ vi.mock("@/actions/email", () => ({ sendTemplatedEmail: mocks.sendEmail, sendAdm
 import { approveRegistrationRequest, createRegistrationRequest, getRegistrationFamilyOptions, previewRegistrationApproval, sendRegistrationEnrollmentConfirmation } from "@/actions/registrations";
 
 const family = { id: "family", familyName: "Sharma Family", parentGuardianName: "Mother Sharma", phone: "5551234567", email: "mother@example.test", isActive: true };
-const request = { id: "request", status: "PENDING", parentGuardianName: "Father Sharma", parentPhone: "5559998888", parentEmail: "father@example.test", studentFullName: "Leia Sharma", requestedClassId: "class", emergencyContactName: "Father Sharma" };
+const request = { id: "request", status: "PENDING", parentGuardianName: "Father Sharma", parentPhone: "5559998888", parentEmail: "father@example.test", studentFullName: "Leia Sharma", requestedProgramId: "program", requestedClassId: "class", emergencyContactName: "Father Sharma" };
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -31,14 +32,14 @@ beforeEach(() => {
   mocks.db.family.findUniqueOrThrow.mockResolvedValue(family);
   mocks.db.student.findFirst.mockResolvedValue(null);
   mocks.db.student.create.mockResolvedValue({ id: "new-student", fullName: request.studentFullName, isActive: true });
-  mocks.db.class.findUniqueOrThrow.mockResolvedValue({ id: "class", isActive: true });
+  mocks.db.class.findUniqueOrThrow.mockResolvedValue({ id: "class", programId: "program", isActive: true });
   mocks.db.class.findUnique.mockResolvedValue({ name: "Kathak" });
-  mocks.db.class.findFirst.mockResolvedValue({ danceStyle: "Kathak" });
+  mocks.db.danceProgram.findFirst.mockResolvedValue({ id: "program", name: "Kathak" });
   mocks.db.enrollment.findFirst.mockResolvedValue(null);
 });
 
-describe("public style-only registration", () => {
-  it("stores the requested dance style without assigning a class", async () => {
+describe("public program-only registration", () => {
+  it("stores the requested program without assigning a class", async () => {
     mocks.db.registrationRequest.create.mockImplementation(async ({ data }) => ({
       id: "new-request",
       ...data,
@@ -52,7 +53,7 @@ describe("public style-only registration", () => {
       studentFullName: "Nia Sharma",
       dob: "2018-01-02",
       gender: "FEMALE",
-      requestedDanceStyle: "Kathak",
+      requestedProgramId: "program",
       previousDanceExperience: "Beginner",
       emergencyContactName: "Father Sharma",
       emergencyContactRelationship: "Father",
@@ -62,7 +63,7 @@ describe("public style-only registration", () => {
     });
 
     expect(mocks.db.registrationRequest.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ requestedDanceStyle: "Kathak" }),
+      data: expect.objectContaining({ requestedProgramId: "program" }),
     });
     expect(mocks.db.registrationRequest.create.mock.calls[0][0].data).not.toHaveProperty("requestedClassId");
     expect(mocks.sendEmail).toHaveBeenCalledWith(
@@ -136,6 +137,16 @@ describe("registration family selection", () => {
   it("rejects repeated approval", async () => {
     mocks.db.registrationRequest.findUniqueOrThrow.mockResolvedValue({ ...request, status: "PROCESSED" });
     await expect(approveRegistrationRequest("request", "class", family.id)).rejects.toThrow("already been processed");
+  });
+
+  it("rejects a final class outside the program selected by the parent", async () => {
+    mocks.db.class.findUniqueOrThrow.mockResolvedValue({ id: "other-class", programId: "other-program", isActive: true });
+
+    await expect(approveRegistrationRequest("request", "other-class", family.id)).rejects.toThrow(
+      "Select a class from the dance program requested by the parent.",
+    );
+    expect(mocks.db.student.create).not.toHaveBeenCalled();
+    expect(mocks.db.enrollment.create).not.toHaveBeenCalled();
   });
 
   it("validates the family ID instead of treating an empty selection as automatic", async () => {

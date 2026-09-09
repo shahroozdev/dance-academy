@@ -16,7 +16,7 @@ const selectionSchema = z.object({
 });
 const defaults = { familyId: AUTO, classId: "" };
 
-export function RegistrationApprovalForm({ id, onClose }: { id: string; onClose: () => void }) {
+export function RegistrationApprovalForm({ id, requestedProgramId, onClose }: { id: string; requestedProgramId: string | null; onClose: () => void }) {
   const { data: families, isLoading, error } = useQuery("getRegistrationFamilyOptions", []);
   const { data: classes, isLoading: classesLoading, error: classesError } = useQuery("getRegistrationAssignmentClasses", []);
   const options = useMemo(() => [
@@ -26,10 +26,12 @@ export function RegistrationApprovalForm({ id, onClose }: { id: string; onClose:
       label: `${family.familyName} — ${family.parentGuardianName} · ${family.phone}${family.email ? ` · ${family.email}` : ""}`,
     })),
   ], [families]);
-  const classOptions = useMemo(() => (classes ?? []).map(item => ({
+  const classOptions = useMemo(() => (classes ?? [])
+    .filter(item => !requestedProgramId || item.program.id === requestedProgramId)
+    .map(item => ({
     value: item.id,
-    label: `${item.danceStyle} — ${item.name}`,
-  })), [classes]);
+    label: `${item.program.name} — ${item.name}`,
+  })), [classes, requestedProgramId]);
   const { mutate: approve, isLoading: isApproving, error: approveError } = useMutate("approveRegistrationRequest", {
     invalidateKeys: ["getRegistrationRequests", "getRegistrationFamilyOptions", "getFamilies", "getStudents", "getEnrollments"],
     onSuccess: onClose,

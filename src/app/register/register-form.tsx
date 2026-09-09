@@ -24,10 +24,10 @@ const GENDER_OPTIONS = [
 ];
 
 type RegisterFormProps = {
-  danceStyleOptions: { label: string; value: string }[];
+  programOptions: { label: string; value: string }[];
 };
 
-export function RegisterForm({ danceStyleOptions }: RegisterFormProps) {
+export function RegisterForm({ programOptions }: RegisterFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { mutate: submitRegistration, isLoading: isSubmitting } = useMutate("createRegistrationRequest");
@@ -88,7 +88,7 @@ export function RegisterForm({ danceStyleOptions }: RegisterFormProps) {
           studentFullName: "",
           dob: "",
           gender: undefined,
-          requestedDanceStyle: "",
+          requestedProgramId: "",
           previousDanceExperience: "",
           emergencyContactName: "",
           emergencyContactRelationship: "",
@@ -155,16 +155,16 @@ export function RegisterForm({ danceStyleOptions }: RegisterFormProps) {
                 />
               </div>
               <FormFeilds
-                name="requestedDanceStyle"
+                name="requestedProgramId"
                 label="Dance Style / Program"
                 type="select"
-                options={danceStyleOptions}
+                options={programOptions}
                 placeholder={
-                  danceStyleOptions.length
-                    ? "Select a dance style..."
-                    : "No dance styles available yet"
+                  programOptions.length
+                    ? "Select a program..."
+                    : "No programs available yet"
                 }
-                disabled={danceStyleOptions.length === 0}
+                disabled={programOptions.length === 0}
                 required
               />
               <FormFeilds

@@ -94,7 +94,20 @@ model Teacher {
   @@index([isActive])
 }
 
-// ---------- Classes & Enrollments ----------
+// ---------- Programs, Classes & Enrollments ----------
+
+model DanceProgram {
+  id                   String                @id @default(cuid())
+  name                 String                @unique
+  description          String?
+  isActive             Boolean               @default(true)
+  classes              Class[]
+  registrationRequests RegistrationRequest[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  @@index([isActive])
+}
 
 enum PricingType {
   REGULAR
@@ -114,7 +127,8 @@ enum DayOfWeek {
 model Class {
   id                   String                @id @default(cuid())
   name                 String
-  danceStyle           String
+  programId            String
+  program              DanceProgram          @relation(fields: [programId], references: [id], onDelete: Restrict)
   level                String?
   teacherId            String?
   teacher              Teacher?              @relation(fields: [teacherId], references: [id])
@@ -137,6 +151,7 @@ model Class {
   updatedAt            DateTime              @updatedAt
 
   @@index([isActive])
+  @@index([programId])
   @@index([teacherId])
 }
 
@@ -289,7 +304,8 @@ model RegistrationRequest {
   studentFullName              String
   dob                          DateTime?
   gender                       Gender?
-  requestedDanceStyle          String?
+  requestedProgramId           String?
+  requestedProgram             DanceProgram?      @relation(fields: [requestedProgramId], references: [id], onDelete: Restrict)
   requestedClassId             String?
   requestedClass               Class?             @relation(fields: [requestedClassId], references: [id])
   previousDanceExperience      String?
@@ -308,6 +324,7 @@ model RegistrationRequest {
   createdAt                    DateTime           @default(now())
 
   @@index([status])
+  @@index([requestedProgramId])
 }
 
 // ---------- Expenses & Other Income ----------

@@ -9,6 +9,7 @@ import {
   ListChecks,
   Receipt,
   ReceiptText,
+  Shapes,
   Settings,
   TrendingUp,
   UserCog,
@@ -44,6 +45,7 @@ export const navGroups: NavGroup[] = [
   {
     label: "Programs",
     items: [
+      { label: "Dance Programs", href: "/admin/programs", icon: Shapes },
       { label: "Teachers", href: "/admin/teachers", icon: UserCog },
       { label: "Classes", href: "/admin/classes", icon: CalendarDays },
       { label: "Enrollments", href: "/admin/enrollments", icon: ListChecks },

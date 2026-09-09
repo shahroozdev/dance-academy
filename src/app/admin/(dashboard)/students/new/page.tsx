@@ -52,6 +52,7 @@ export default function NewStudentPage() {
           defaultValues={{
             fullName: "",
             familyId: familyId,
+            joinDate: todayIsoDate(),
             dob: "",
             gender: undefined,
             medicalNotes: "",
@@ -91,6 +92,13 @@ export default function NewStudentPage() {
                   placeholder="Select..."
                 />
               </div>
+              <FormFeilds
+                name="joinDate"
+                label="Original Joining Date"
+                type="date"
+                max={todayIsoDate()}
+                required
+              />
               <FormFeilds name="medicalNotes" label="Medical/Allergy Notes" type="textarea" placeholder="Any medical or allergy information..." />
               <FormFeilds name="generalNotes" label="General Notes" type="textarea" placeholder="Any additional notes..." />
               <div className="grid gap-4 sm:grid-cols-2">

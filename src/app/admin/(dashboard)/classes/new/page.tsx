@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 import { classCreateSchema, type ClassCreateInput } from "@/actions/classes.schema";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
@@ -27,12 +29,15 @@ const PRICING_OPTIONS = [
 
 export default function NewClassPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { mutate, isLoading } = useMutate("createClass", {
     invalidateKeys: ["getClasses"],
     onSuccess: (cls) => router.push(`/admin/classes/${cls.id}`),
   });
   const { data: teachers } = useQuery("getTeachers", [{ isActive: true, pageSize: 100, sortBy: "name" }]);
+  const { data: programs } = useQuery("getActivePrograms", []);
   const teacherOptions = teachers?.data.map((t) => ({ label: t.name, value: t.id })) ?? [];
+  const programOptions = programs?.map((program) => ({ label: program.name, value: program.id })) ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -53,7 +58,7 @@ export default function NewClassPage() {
           schema={classCreateSchema}
           defaultValues={{
             name: "",
-            danceStyle: "",
+            programId: searchParams.get("programId") ?? "",
             level: "",
             teacherId: "",
             dayOfWeek: undefined,
@@ -74,7 +79,18 @@ export default function NewClassPage() {
             <div className="space-y-4 p-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="name" label="Class Name" placeholder="e.g. Bharatanatyam Beginner" />
-                <FormFeilds name="danceStyle" label="Dance Style" placeholder="e.g. Bharatanatyam" />
+                <div className="space-y-1">
+                  <FormFeilds
+                    name="programId"
+                    label="Dance Program"
+                    type="select"
+                    options={programOptions}
+                    placeholder={programOptions.length ? "Select a program..." : "No active programs yet"}
+                  />
+                  <Link href="/admin/programs/new" className="text-xs text-muted-foreground hover:underline">
+                    + Add a new dance program
+                  </Link>
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="level" label="Level" placeholder="e.g. Beginner" />

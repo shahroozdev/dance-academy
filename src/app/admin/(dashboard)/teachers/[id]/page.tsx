@@ -149,7 +149,7 @@ export default function TeacherDetailPage() {
                 <div>
                   <p className="font-medium">{cls.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {cls.danceStyle}
+                    {cls.program.name}
                     {cls.dayOfWeek && ` · ${cls.dayOfWeek.replace("_", " ")}`}
                     {cls.startTime && ` at ${cls.startTime}`}
                   </p>

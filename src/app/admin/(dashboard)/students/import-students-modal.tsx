@@ -20,6 +20,7 @@ const TEMPLATE_HEADERS = [
   "Parent Phone",
   "Date of Birth",
   "Gender",
+  "Original Joining Date",
   "Status",
 ];
 
@@ -31,6 +32,7 @@ const TEMPLATE_EXAMPLE: Record<string, string> = {
   "Parent Phone": "555-123-4567",
   "Date of Birth": "2015-06-12",
   Gender: "Female",
+  "Original Joining Date": "2024-10-03",
   Status: "Active",
 };
 
@@ -54,6 +56,7 @@ function toImportRow(obj: Record<string, string>): StudentImportRow {
     parentPhone: obj["Parent Phone"] || undefined,
     dob: obj["Date of Birth"] || undefined,
     gender: obj["Gender"] || undefined,
+    joinDate: obj["Original Joining Date"] || undefined,
     isActive: status === "inactive" ? false : true,
   };
 }

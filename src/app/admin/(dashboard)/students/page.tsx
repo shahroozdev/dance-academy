@@ -6,6 +6,7 @@ import { useState } from "react";
 import { getStudents } from "@/actions/students";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
+import { Input } from "@/components/common/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
 import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { Link } from "@/components/Link";
@@ -16,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
 import { downloadCsv, toCsv } from "@/lib/csv";
+import { formatStudentDuration, formatStudentJoinDate } from "@/lib/student-duration";
 
 import { ImportStudentsModal } from "./import-students-modal";
 
@@ -40,6 +42,8 @@ export default function StudentsPage() {
         { label: "Family", value: (s) => s.familyName },
         { label: "Date of Birth", value: (s) => (s.dob ? new Date(s.dob).toLocaleDateString() : "") },
         { label: "Gender", value: (s) => s.gender ?? "" },
+        { label: "Original Joining Date", value: (s) => formatStudentJoinDate(s.joinDate) },
+        { label: "Time with Malhaar", value: (s) => formatStudentDuration(s.joinDate) },
         { label: "Status", value: (s) => (s.isActive ? "Active" : "Inactive") },
         { label: "Active Classes", value: (s) => s.enrollments.map((e) => e.className).join("; ") },
       ]);
@@ -89,11 +93,11 @@ export default function StudentsPage() {
         contentClassName="flex min-h-0 flex-1 flex-col p-2"
       >
         <div className="flex items-center gap-2 p-2">
-          <input
+          <Input
             type="text"
             placeholder="Search students..."
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(value) => { setSearch(value); setPage(1); }}
             className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
         </div>
@@ -118,6 +122,8 @@ export default function StudentsPage() {
                 <TableHead>Name</TableHead>
                 <TableHead>Family</TableHead>
                 <TableHead>Active Classes</TableHead>
+                <TableHead>Joined Date</TableHead>
+                <TableHead>Time with Malhaar</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -143,6 +149,8 @@ export default function StudentsPage() {
                       <span className="text-muted-foreground text-sm">None</span>
                     )}
                   </TableCell>
+                  <TableCell className="whitespace-nowrap">{formatStudentJoinDate(student.joinDate)}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatStudentDuration(student.joinDate)}</TableCell>
                   <TableCell>
                     <Badge variant={student.isActive ? "default" : "secondary"}>
                       {student.isActive ? "Active" : "Inactive"}

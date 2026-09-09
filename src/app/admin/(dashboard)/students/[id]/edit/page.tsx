@@ -73,6 +73,7 @@ export default function EditStudentPage() {
           defaultValues={{
             fullName: student.fullName,
             familyId: student.familyId,
+            joinDate: new Date(student.joinDate).toISOString().split("T")[0],
             dob: student.dob ? new Date(student.dob).toISOString().split("T")[0] : "",
             gender: student.gender ?? undefined,
             medicalNotes: student.medicalNotes ?? "",
@@ -97,6 +98,13 @@ export default function EditStudentPage() {
                   placeholder="Select family..."
                 />
               </div>
+              <FormFeilds
+                name="joinDate"
+                label="Original Joining Date"
+                type="date"
+                max={todayIsoDate()}
+                required
+              />
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="dob" label="Date of Birth" type="date" max={todayIsoDate()} />
                 <FormFeilds

@@ -5,6 +5,8 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
+Nothing currently in progress.
+
 ## Next / Blocked
 
 - **Local dev database is schema-drifted.** The local Postgres instance (`LOCAL_DATABASE_URL`,
@@ -26,6 +28,25 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-09-10: Added joining information to the Students table.** The roster now has separate
+  Joined Date and Time with Malhaar columns. Joining dates use the saved calendar date without
+  timezone shifting, and the duration remains automatically calculated. Six focused date tests,
+  TypeScript, and changed-file lint pass.
+
+- **2026-09-10: Added first-class Dance Programs.** Staff can manage each parent-facing program
+  once and place multiple independently priced levels or batches beneath it. Classes and registration
+  requests now link to programs, registration review is restricted to classes in the requested
+  program, and all existing style values were preserved during the successfully applied database
+  update. All 201 tests, TypeScript, lint, and the production build pass; lint retains only 16
+  existing warnings in temporary scripts.
+
+- **2026-09-10: Added automatic Student Duration with Malhaar.** Student profiles and the roster
+  now calculate completed years and months from the original joining date. Staff can set or correct
+  that date when adding/editing a student, registration approval uses the original submission date,
+  and student CSV import/export includes the source date and calculated duration. Added four date
+  calculation tests; all 194 tests, lint, TypeScript, and the production build pass. Lint retains
+  only 16 existing warnings in temporary scripts.
 
 - **2026-09-09: Implemented Varsha's style-first registration workflow.** The public form now asks
   only for a dance style, registration review requires staff to select the final active class, and

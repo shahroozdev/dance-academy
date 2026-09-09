@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
+import { formatStudentDuration, formatStudentJoinDate } from "@/lib/student-duration";
 
 const BILLING_STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   PAID: "default",
@@ -138,7 +139,11 @@ export default function StudentDetailPage() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Join Date</p>
-            <p className="font-medium">{new Date(student.joinDate).toLocaleDateString()}</p>
+            <p className="font-medium">{formatStudentJoinDate(student.joinDate)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Time with Malhaar</p>
+            <p className="font-medium">{formatStudentDuration(student.joinDate)}</p>
           </div>
           {student.medicalNotes && (
             <div className="sm:col-span-2">

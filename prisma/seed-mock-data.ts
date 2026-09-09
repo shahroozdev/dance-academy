@@ -43,11 +43,18 @@ async function main() {
     db.teacher.create({ data: { name: "Guest Choreographer" } }),
   ]);
 
+  const [bharatanatyamProgram, kathakProgram, bollywoodProgram, mixedProgram] = await Promise.all([
+    db.danceProgram.create({ data: { name: "Bharatanatyam" } }),
+    db.danceProgram.create({ data: { name: "Kathak" } }),
+    db.danceProgram.create({ data: { name: "Bollywood" } }),
+    db.danceProgram.create({ data: { name: "Mixed" } }),
+  ]);
+
   const [bharatBeg, bharatInt, kathakBeg, kathakInt, bollywood, summerIntensive] = await Promise.all([
     db.class.create({
       data: {
         name: "Bharatanatyam Beginner",
-        danceStyle: "Bharatanatyam",
+        programId: bharatanatyamProgram.id,
         level: "Beginner",
         teacherId: meeraIyer.id,
         dayOfWeek: "MONDAY",
@@ -61,7 +68,7 @@ async function main() {
     db.class.create({
       data: {
         name: "Bharatanatyam Intermediate",
-        danceStyle: "Bharatanatyam",
+        programId: bharatanatyamProgram.id,
         level: "Intermediate",
         teacherId: meeraIyer.id,
         dayOfWeek: "WEDNESDAY",
@@ -75,7 +82,7 @@ async function main() {
     db.class.create({
       data: {
         name: "Kathak Beginner",
-        danceStyle: "Kathak",
+        programId: kathakProgram.id,
         level: "Beginner",
         teacherId: rohanVerma.id,
         dayOfWeek: "TUESDAY",
@@ -89,7 +96,7 @@ async function main() {
     db.class.create({
       data: {
         name: "Kathak Intermediate",
-        danceStyle: "Kathak",
+        programId: kathakProgram.id,
         level: "Intermediate",
         teacherId: rohanVerma.id,
         dayOfWeek: "THURSDAY",
@@ -103,7 +110,7 @@ async function main() {
     db.class.create({
       data: {
         name: "Bollywood Fusion",
-        danceStyle: "Bollywood",
+        programId: bollywoodProgram.id,
         level: "All Levels",
         teacherId: simranKaur.id,
         dayOfWeek: "SATURDAY",
@@ -117,7 +124,7 @@ async function main() {
     db.class.create({
       data: {
         name: "Summer Intensive Workshop",
-        danceStyle: "Mixed",
+        programId: mixedProgram.id,
         level: "All Levels",
         teacherId: guestChoreographer.id,
         standardRate: 150,

@@ -13,7 +13,8 @@ import { db } from "@/lib/db";
 export type ClassListItem = {
   id: string;
   name: string;
-  danceStyle: string;
+  programId: string;
+  programName: string;
   level: string | null;
   teacherId: string | null;
   teacherName: string | null;
@@ -38,14 +39,14 @@ export async function getClasses(params?: {
   sortOrder?: "asc" | "desc";
 }): Promise<{ data: ClassListItem[]; total: number; pages: number }> {
   await requireAdmin();
-  validateListQuery(params, ["name","danceStyle","level","standardRate","pricingType","isActive","createdAt","dayOfWeek","startTime"]);
+  validateListQuery(params, ["name","level","standardRate","pricingType","isActive","createdAt","dayOfWeek","startTime"]);
   const { search, isActive, page = 1, pageSize = 20, sortBy = "name", sortOrder = "asc" } = params ?? {};
 
   const where: Prisma.ClassWhereInput = {};
   if (search) {
     where.OR = [
       { name: { contains: search, mode: "insensitive" } },
-      { danceStyle: { contains: search, mode: "insensitive" } },
+      { program: { name: { contains: search, mode: "insensitive" } } },
       { teacher: { name: { contains: search, mode: "insensitive" } } },
     ];
   }
@@ -57,6 +58,7 @@ export async function getClasses(params?: {
       include: {
         enrollments: { where: { status: "ACTIVE" }, select: { id: true } },
         teacher: { select: { id: true, name: true } },
+        program: { select: { id: true, name: true } },
       },
       orderBy: { [sortBy]: sortOrder },
       skip: (page - 1) * pageSize,
@@ -69,7 +71,8 @@ export async function getClasses(params?: {
     data: data.map((c) => ({
       id: c.id,
       name: c.name,
-      danceStyle: c.danceStyle,
+      programId: c.program.id,
+      programName: c.program.name,
       level: c.level,
       teacherId: c.teacher?.id ?? null,
       teacherName: c.teacher?.name ?? null,
@@ -98,6 +101,7 @@ export async function getClassById(id: string) {
     where: { id },
     include: {
       teacher: { select: { id: true, name: true } },
+      program: { select: { id: true, name: true, isActive: true } },
       enrollments: {
         where: { status: "ACTIVE" },
         include: {
@@ -131,10 +135,12 @@ export async function getClassById(id: string) {
 export async function createClass(data: ClassCreateInput) {
   await requireAdmin();
   data = classCreateSchema.parse(data);
+  const program = await db.danceProgram.findUnique({ where: { id: data.programId }, select: { isActive: true } });
+  if (!program?.isActive) throw new Error("Select an active dance program.");
   const cls = await db.class.create({
     data: {
       name: data.name,
-      danceStyle: data.danceStyle,
+      programId: data.programId,
       level: data.level || null,
       teacherId: data.teacherId || null,
       dayOfWeek: data.dayOfWeek ?? null,
@@ -155,11 +161,20 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
   await requireAdmin();
   id = idSchema.parse(id);
   data = classUpdateSchema.parse(data);
+  if (data.programId !== undefined) {
+    const [currentClass, program] = await Promise.all([
+      db.class.findUniqueOrThrow({ where: { id }, select: { programId: true } }),
+      db.danceProgram.findUnique({ where: { id: data.programId }, select: { isActive: true } }),
+    ]);
+    if (!program || (!program.isActive && currentClass.programId !== data.programId)) {
+      throw new Error("Select an active dance program.");
+    }
+  }
   const cls = await db.class.update({
     where: { id },
     data: {
       ...(data.name !== undefined && { name: data.name }),
-      ...(data.danceStyle !== undefined && { danceStyle: data.danceStyle }),
+      ...(data.programId !== undefined && { programId: data.programId }),
       ...(data.level !== undefined && { level: data.level || null }),
       ...(data.teacherId !== undefined && { teacherId: data.teacherId || null }),
       ...(data.dayOfWeek !== undefined && { dayOfWeek: data.dayOfWeek ?? null }),
@@ -200,8 +215,4 @@ export async function getClassRoster(classId: string) {
     },
     orderBy: { student: { fullName: "asc" } },
   });
-}
-
-export async function getRegistrationClasses() {
-  return db.class.findMany({ where: { isActive: true }, select: { id: true, name: true, danceStyle: true }, orderBy: { name: "asc" } });
 }

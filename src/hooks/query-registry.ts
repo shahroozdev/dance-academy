@@ -15,6 +15,7 @@ import {
 } from "@/actions/notifications";
 import { getOtherIncomeById, getOtherIncome } from "@/actions/other-income";
 import { getPayments } from "@/actions/payments";
+import { getActivePrograms, getProgramById, getPrograms } from "@/actions/programs";
 import {
   getRegistrationRequests,
   getRegistrationRequestById,
@@ -47,6 +48,9 @@ export const queryRegistry = {
   getClassMonthlyFees,
   getClassMonthlyFeeById,
   getPayments,
+  getPrograms,
+  getProgramById,
+  getActivePrograms,
   getExpenses,
   getExpenseById,
   getOtherIncome,

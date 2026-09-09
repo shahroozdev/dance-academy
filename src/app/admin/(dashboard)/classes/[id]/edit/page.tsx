@@ -39,11 +39,16 @@ export default function EditClassPage() {
     onSuccess: () => router.push(`/admin/classes/${id}`),
   });
   const { data: teachers } = useQuery("getTeachers", [{ isActive: true, pageSize: 100, sortBy: "name" }]);
+  const { data: programs } = useQuery("getActivePrograms", []);
   const teacherOptions = teachers?.data.map((t) => ({ label: t.name, value: t.id })) ?? [];
+  const programOptions = programs?.map((program) => ({ label: program.name, value: program.id })) ?? [];
   // Keep the currently-assigned teacher selectable even if they've since been deactivated —
   // otherwise saving the form with no other changes would silently unassign them.
   if (cls?.teacher && !teacherOptions.some((o) => o.value === cls.teacher!.id)) {
     teacherOptions.push({ label: `${cls.teacher.name} (inactive)`, value: cls.teacher.id });
+  }
+  if (cls?.program && !programOptions.some((option) => option.value === cls.program.id)) {
+    programOptions.push({ label: `${cls.program.name} (inactive)`, value: cls.program.id });
   }
 
   if (isLoading) {
@@ -85,7 +90,7 @@ export default function EditClassPage() {
           schema={classCreateSchema}
           defaultValues={{
             name: cls.name,
-            danceStyle: cls.danceStyle,
+            programId: cls.programId,
             level: cls.level ?? "",
             teacherId: cls.teacher?.id ?? "",
             dayOfWeek: cls.dayOfWeek ?? undefined,
@@ -106,7 +111,13 @@ export default function EditClassPage() {
             <div className="space-y-4 p-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="name" label="Class Name" placeholder="e.g. Bharatanatyam Beginner" />
-                <FormFeilds name="danceStyle" label="Dance Style" placeholder="e.g. Bharatanatyam" />
+                <FormFeilds
+                  name="programId"
+                  label="Dance Program"
+                  type="select"
+                  options={programOptions}
+                  placeholder="Select a program..."
+                />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="level" label="Level" placeholder="e.g. Beginner" />

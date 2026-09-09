@@ -25,7 +25,7 @@ export async function getClassMonthlyFees(params?: {
   const [data, total] = await Promise.all([
     db.classMonthlyFee.findMany({
       where,
-      include: { class: { select: { id: true, name: true, danceStyle: true, pricingType: true } } },
+      include: { class: { select: { id: true, name: true, pricingType: true, program: { select: { name: true } } } } },
       orderBy: [{ month: "desc" }, { class: { name: "asc" } }],
       skip: (page - 1) * pageSize,
       take: pageSize,

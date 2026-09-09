@@ -40,11 +40,24 @@ async function setup(payload: SetupPayload) {
     },
   });
 
+  const [programA, programB] = await Promise.all([
+    db.danceProgram.upsert({
+      where: { name: payload.classADanceStyle },
+      update: { isActive: true },
+      create: { name: payload.classADanceStyle },
+    }),
+    db.danceProgram.upsert({
+      where: { name: payload.classBDanceStyle },
+      update: { isActive: true },
+      create: { name: payload.classBDanceStyle },
+    }),
+  ]);
+
   const [classA, classB] = await Promise.all([
     db.class.create({
       data: {
         name: payload.classAName,
-        danceStyle: payload.classADanceStyle,
+        programId: programA.id,
         standardRate: payload.classARate,
         isActive: true,
       },
@@ -52,7 +65,7 @@ async function setup(payload: SetupPayload) {
     db.class.create({
       data: {
         name: payload.classBName,
-        danceStyle: payload.classBDanceStyle,
+        programId: programB.id,
         standardRate: payload.classBRate,
         isActive: true,
       },

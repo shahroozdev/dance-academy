@@ -20,7 +20,7 @@ export const registrationRequestCreateSchema = z.object({
   studentFullName: z.string().trim().min(1, "Student name is required").max(200),
   dob: dobSchema,
   gender: z.enum(["MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"]).optional(),
-  requestedDanceStyle: z.string().trim().min(1, "Please select a dance style").max(100),
+  requestedProgramId: z.string().min(1, "Please select a dance program"),
   previousDanceExperience: z.string().or(z.literal("")).optional(),
   emergencyContactName: z.string().min(1, "Emergency contact name is required"),
   emergencyContactRelationship: z.string().min(1, "Relationship is required"),

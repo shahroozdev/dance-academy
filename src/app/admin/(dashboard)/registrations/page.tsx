@@ -100,7 +100,7 @@ export default function RegistrationsPage() {
                 <TableRow key={request.id}>
                   <TableCell className="font-medium">{request.parentGuardianName}</TableCell>
                   <TableCell>{request.studentFullName}</TableCell>
-                  <TableCell>{request.requestedDanceStyle ?? request.requestedClass?.danceStyle ?? "—"}</TableCell>
+                  <TableCell>{request.requestedProgram?.name ?? request.requestedClass?.program.name ?? "—"}</TableCell>
                   <TableCell>{request.status === "PROCESSED" ? request.requestedClass?.name ?? "—" : "Not finalized"}</TableCell>
                   <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
@@ -180,7 +180,7 @@ function ReviewModal({ id, onClose }: { id: string; onClose: () => void }) {
                   value={request.dob ? new Date(request.dob).toLocaleDateString() : "—"}
                 />
                 <Row label="Gender" value={request.gender?.replace("_", " ") ?? "—"} />
-                <Row label="Requested Dance Style" value={request.requestedDanceStyle ?? request.requestedClass?.danceStyle ?? "—"} />
+                <Row label="Requested Dance Program" value={request.requestedProgram?.name ?? request.requestedClass?.program.name ?? "—"} />
                 <Row label="Assigned Class" value={request.requestedClass?.name ?? "Not finalized"} />
                 <Row label="Previous Experience" value={request.previousDanceExperience || "—"} />
               </Section>
@@ -203,7 +203,7 @@ function ReviewModal({ id, onClose }: { id: string; onClose: () => void }) {
             </div>
           )}
 
-          {request && <RegistrationApprovalForm id={id} onClose={close} />}
+          {request && <RegistrationApprovalForm id={id} requestedProgramId={request.requestedProgramId} onClose={close} />}
         </div>
       )}
     </Modal>

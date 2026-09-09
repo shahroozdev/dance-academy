@@ -1,5 +1,15 @@
 # Updates Summary
 
+## 2026-09-10
+
+- The Students list now shows both the student's original Joined Date and their automatically calculated Time with Malhaar; joining dates are kept consistent across time zones.
+- Added a dedicated Dance Programs section where staff can manage parent-facing programs such as Bollywood and Bharatanatyam once, without creating duplicate program entries for every level.
+- Every class now belongs to a Dance Program while keeping its own level, batch name, schedule, teacher, and fee, so different levels can use the same fee today and different fees in the future.
+- The registration form now shows active Dance Programs that have an available class, and registration review only offers classes within the program selected by the parent.
+- Existing class and registration dance-style information has been preserved and converted into the new Dance Programs structure.
+- Student profiles and the Students list now automatically show each student's time with Malhaar in completed years and months, calculated from the original joining date.
+- Staff can set or correct the original joining date when adding or editing a student, and CSV student imports/exports now include it.
+
 ## 2026-09-09
 
 - The public registration form now asks parents only for a dance style or program; staff chooses the final level, batch, and class after evaluating the student.

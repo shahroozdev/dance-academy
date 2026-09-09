@@ -186,18 +186,21 @@ Classes (count), Status.
 **Create/Edit**: Name, Email, Phone, Notes, Active/Inactive.
 
 **Detail** (`/admin/teachers/[id]`): contact info panel; **Classes Taught** panel — every `Class`
-row with this teacher assigned, each showing dance style, day/time, current enrolled count, and its
+row with this teacher assigned, each showing dance program, day/time, current enrolled count, and its
 own Active/Inactive state, linking to `/admin/classes/[id]`. Deactivating a teacher only removes
 them from the picker on the Class form — it does not touch classes already assigned to them.
 
 ---
 
-## 3.7 Classes — `/admin/classes*`
+## 3.7 Dance Programs and Classes — `/admin/programs*`, `/admin/classes*`
 
-**List**: Name, Dance Style, Teacher, Day/Time, Standard Rate, Pricing Type, Active/Inactive,
+**Programs**: staff manage each parent-facing dance style/program once. A program can contain many
+levels and batches, and its detail page shows all associated classes.
+
+**Class list**: Name, Program, Teacher, Day/Time, Standard Rate, Pricing Type, Active/Inactive,
 current enrolled count.
 
-**Create/Edit**: all §4.3 fields — Class Name, Dance Style, Level, Teacher (a picker over active
+**Create/Edit**: all §4.3 fields — Class Name, Dance Program, Level, Teacher (a picker over active
 `Teacher` rows, with a shortcut to add a new one inline), Day, Start/End Time,
 Duration, Standard Rate, Pricing Type (Regular/Seasonal), Active/Inactive, plus
 `discountEligible` (defaults on; turned off for one-off seasonal programs like "Onam Dance 2026"

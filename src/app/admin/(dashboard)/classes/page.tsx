@@ -78,7 +78,7 @@ export default function ClassesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Dance Style</TableHead>
+                <TableHead>Program</TableHead>
                 <TableHead>Teacher</TableHead>
                 <TableHead>Day/Time</TableHead>
                 <TableHead>Rate</TableHead>
@@ -94,7 +94,7 @@ export default function ClassesPage() {
                   onClick={() => router.push(`/admin/classes/${cls.id}`)}
                 >
                   <TableCell className="font-medium">{cls.name}</TableCell>
-                  <TableCell>{cls.danceStyle}</TableCell>
+                  <TableCell>{cls.programName}</TableCell>
                   <TableCell>{cls.teacherName ?? "—"}</TableCell>
                   <TableCell>
                     {cls.dayOfWeek?.replace("_", " ")}

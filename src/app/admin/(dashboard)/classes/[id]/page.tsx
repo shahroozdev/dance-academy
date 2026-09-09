@@ -51,7 +51,7 @@ export default function ClassDetailPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title={cls.name}
-        subtitle={cls.danceStyle}
+        subtitle={cls.program.name}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" asChild>
