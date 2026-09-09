@@ -17,7 +17,12 @@ import {
 import { markFamilyNotificationSent, sendFamilyNotificationEmail, sendFamilyPaymentReminder } from "@/actions/notifications";
 import { createOtherIncome, deleteOtherIncome, updateOtherIncome } from "@/actions/other-income";
 import { createPayment, createRefund } from "@/actions/payments";
-import { approveRegistrationRequest, rejectRegistrationRequest } from "@/actions/registrations";
+import {
+  approveRegistrationRequest,
+  createRegistrationRequest,
+  rejectRegistrationRequest,
+  sendRegistrationEnrollmentConfirmation,
+} from "@/actions/registrations";
 import { updateStudioSettings, uploadLogo } from "@/actions/settings";
 import {
   createStudent,
@@ -44,8 +49,10 @@ export const mutationRegistry = {
   createEnrollment,
   endEnrollment,
   reactivateEnrollment,
+  createRegistrationRequest,
   approveRegistrationRequest,
   rejectRegistrationRequest,
+  sendRegistrationEnrollmentConfirmation,
   generateMonthlyBilling,
   setBillingAdjustment,
   recalculateBilling,

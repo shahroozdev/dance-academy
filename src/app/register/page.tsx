@@ -6,11 +6,12 @@ export const dynamic = "force-dynamic";
 
 export default async function RegisterPage() {
   const classes = await getRegistrationClasses();
+  const danceStyles = [...new Set(classes.map((item) => item.danceStyle))].sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-muted/30 p-4 py-10">
       <RegisterForm
-        classOptions={classes.map((c) => ({ label: `${c.name} (${c.danceStyle})`, value: c.id }))}
+        danceStyleOptions={danceStyles.map((danceStyle) => ({ label: danceStyle, value: danceStyle }))}
       />
     </div>
   );

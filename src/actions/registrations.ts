@@ -28,7 +28,7 @@ export async function getRegistrationRequests(params?: {
   const [data, total] = await Promise.all([
     db.registrationRequest.findMany({
       where,
-      include: { requestedClass: { select: { id: true, name: true } } },
+      include: { requestedClass: { select: { id: true, name: true, danceStyle: true } } },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -49,7 +49,7 @@ export async function getRegistrationRequestById(id: string) {
     // requestedClass is select-only (never `true`) — Class.standardRate is a Decimal, which
     // can't cross the server-action boundary to a Client Component un-serialized, and nothing
     // in the UI needs it here anyway (only the class name is displayed).
-    include: { requestedClass: { select: { id: true, name: true } }, matchedFamily: true },
+    include: { requestedClass: { select: { id: true, name: true, danceStyle: true } }, matchedFamily: true },
   });
 }
 
@@ -68,6 +68,15 @@ export async function getRegistrationFamilyOptions() {
   });
 }
 
+export async function getRegistrationAssignmentClasses() {
+  await requireAdmin();
+  return db.class.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, danceStyle: true },
+    orderBy: [{ danceStyle: "asc" }, { name: "asc" }],
+  });
+}
+
 export async function previewRegistrationApproval(id: string, familyId?: string): Promise<RegistrationMatchPlan> {
   await requireAdmin();
   id = idSchema.parse(id);
@@ -80,8 +89,11 @@ export async function previewRegistrationApproval(id: string, familyId?: string)
 
 export async function createRegistrationRequest(data: RegistrationRequestCreateInput) {
   data = registrationRequestCreateSchema.parse(data);
-  const requestedClass = await db.class.findUnique({ where: { id: data.requestedClassId, isActive: true }, select: { id: true } });
-  if (!requestedClass) throw new Error("This class is no longer accepting registration.");
+  const offeredStyle = await db.class.findFirst({
+    where: { isActive: true, danceStyle: data.requestedDanceStyle },
+    select: { danceStyle: true },
+  });
+  if (!offeredStyle) throw new Error("This dance style is no longer accepting registration.");
   const request = await db.registrationRequest.create({
     data: {
       parentGuardianName: data.parentGuardianName,
@@ -90,7 +102,7 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
       studentFullName: data.studentFullName,
       dob: data.dob ? new Date(data.dob) : null,
       gender: data.gender ?? null,
-      requestedClassId: data.requestedClassId,
+      requestedDanceStyle: offeredStyle.danceStyle,
       previousDanceExperience: data.previousDanceExperience || null,
       emergencyContactName: data.emergencyContactName,
       emergencyContactRelationship: data.emergencyContactRelationship,
@@ -98,19 +110,18 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
       studioPolicyAgreement: data.studioPolicyAgreement,
       photoVideoConsent: data.photoVideoConsent,
     },
-    include: { requestedClass: { select: { name: true } } },
   });
 
   // Best-effort — sendTemplatedEmail never throws, so a slow/misconfigured mail server can't fail
   // the registration itself. Awaited (not fire-and-forget) so it actually completes before this
   // server action returns, since a serverless runtime can suspend right after the response.
-  if (request.parentEmail && request.requestedClass) {
+  if (request.parentEmail) {
     await sendTemplatedEmail(
       "REGISTRATION_RECEIVED",
       {
         parentName: firstName(request.parentGuardianName),
         studentName: request.studentFullName,
-        className: request.requestedClass.name,
+        className: request.requestedDanceStyle ?? "the selected dance program",
       },
       request.parentEmail,
     );
@@ -118,7 +129,7 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
   await sendAdminOperationalAlert({
     setting: "registrationAlertEnabled",
     subject: `New registration received — ${request.studentFullName}`,
-    lines: ["A new registration is ready for review.", "", `Student: ${request.studentFullName}`, `Parent/guardian: ${request.parentGuardianName}`, `Requested class: ${request.requestedClass?.name ?? "Not selected"}`],
+    lines: ["A new registration is ready for review.", "", `Student: ${request.studentFullName}`, `Parent/guardian: ${request.parentGuardianName}`, `Requested dance style: ${request.requestedDanceStyle ?? "Not selected"}`],
   });
 
   return request;
@@ -133,20 +144,17 @@ export async function rejectRegistrationRequest(id: string) {
   });
 }
 
-export async function approveRegistrationRequest(id: string, familyId?: string) {
+export async function approveRegistrationRequest(id: string, classId: string, familyId?: string) {
   const admin = await requireAdmin();
   id = idSchema.parse(id);
+  classId = idSchema.parse(classId);
   familyId = idSchema.optional().parse(familyId);
-  const { processedRequest, familyEmail, studentFullName, classId } = await serializableTransaction(async (tx) => {
+  const processedRequest = await serializableTransaction(async (tx) => {
     const request = await tx.registrationRequest.findUniqueOrThrow({ where: { id } });
     if (request.status !== "PENDING") {
       throw new Error("This registration request has already been processed.");
     }
-    if (!request.requestedClassId) {
-      throw new Error("This registration request has no requested class.");
-    }
-
-    const requestedClass = await tx.class.findUniqueOrThrow({ where: { id: request.requestedClassId } });
+    const requestedClass = await tx.class.findUniqueOrThrow({ where: { id: classId } });
     if (!requestedClass.isActive) throw new Error("This class is inactive. Update the registration before approving it.");
     const plan = await resolveMatchPlan(tx, request, familyId);
 
@@ -193,11 +201,11 @@ export async function approveRegistrationRequest(id: string, familyId?: string) 
     if (!family.isActive || !student.isActive) throw new Error("Reactivate the matched family and student before approving this registration.");
 
     const existingEnrollment = await tx.enrollment.findFirst({
-      where: { studentId: student.id, classId: request.requestedClassId, status: "ACTIVE" },
+      where: { studentId: student.id, classId, status: "ACTIVE" },
     });
     if (!existingEnrollment) {
       await tx.enrollment.create({
-        data: { studentId: student.id, classId: request.requestedClassId },
+        data: { studentId: student.id, classId },
       });
     }
 
@@ -209,34 +217,51 @@ export async function approveRegistrationRequest(id: string, familyId?: string) 
         processedAt: new Date(),
         matchedFamilyId: family.id,
         matchedStudentId: student.id,
+        requestedClassId: classId,
       },
     });
 
-    return {
-      processedRequest,
-      familyEmail: family.email,
-      studentFullName: student.fullName,
-      classId: request.requestedClassId,
-    };
+    return processedRequest;
   });
 
-  // Sent after the transaction commits — an SMTP call has no business holding a DB transaction open.
-  if (familyEmail) {
-    const requestedClass = await db.class.findUnique({ where: { id: classId! }, select: { name: true } });
-    if (requestedClass) {
-      await sendTemplatedEmail(
-        "ENROLLMENT_CONFIRMED",
-        {
-          parentName: firstName(processedRequest.parentGuardianName),
-          studentName: studentFullName,
-          className: requestedClass.name,
-        },
-        familyEmail,
-      );
-    }
+  return processedRequest;
+}
+
+export async function sendRegistrationEnrollmentConfirmation(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  const request = await db.registrationRequest.findUniqueOrThrow({
+    where: { id },
+    include: {
+      requestedClass: { select: { name: true } },
+      matchedFamily: { select: { email: true } },
+    },
+  });
+  if (request.status !== "PROCESSED" || !request.requestedClass || !request.matchedFamilyId) {
+    throw new Error("Finalize the student's class enrollment before sending confirmation.");
+  }
+  if (request.enrollmentConfirmationSentAt) {
+    throw new Error("The enrollment confirmation has already been sent.");
+  }
+  if (!request.matchedFamily?.email) {
+    throw new Error("Add an email address to the family before sending confirmation.");
   }
 
-  return processedRequest;
+  const result = await sendTemplatedEmail(
+    "ENROLLMENT_CONFIRMED",
+    {
+      parentName: firstName(request.parentGuardianName),
+      studentName: request.studentFullName,
+      className: request.requestedClass.name,
+    },
+    request.matchedFamily.email,
+  );
+  if (!result.sent) throw new Error(result.error ?? "The enrollment confirmation email could not be sent.");
+
+  return db.registrationRequest.update({
+    where: { id },
+    data: { enrollmentConfirmationSentAt: new Date() },
+  });
 }
 
 function deriveFamilyName(parentGuardianName: string): string {

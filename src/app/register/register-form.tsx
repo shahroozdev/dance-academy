@@ -4,7 +4,6 @@ import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
-import { createRegistrationRequest } from "@/actions/registrations";
 import {
   registrationRequestCreateSchema,
   type RegistrationRequestCreateInput,
@@ -14,6 +13,7 @@ import { Card, CardDescription, CardTitle } from "@/components/common/card";
 import { FORM, FormFeilds } from "@/components/common/form";
 import { Logo } from "@/components/layout/logo";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { useMutate } from "@/hooks/useMutate";
 import { todayIsoDate } from "@/lib/utils";
 
 const GENDER_OPTIONS = [
@@ -24,13 +24,13 @@ const GENDER_OPTIONS = [
 ];
 
 type RegisterFormProps = {
-  classOptions: { label: string; value: string }[];
+  danceStyleOptions: { label: string; value: string }[];
 };
 
-export function RegisterForm({ classOptions }: RegisterFormProps) {
+export function RegisterForm({ danceStyleOptions }: RegisterFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate: submitRegistration, isLoading: isSubmitting } = useMutate("createRegistrationRequest");
 
   if (submitted) {
     return (
@@ -88,7 +88,7 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
           studentFullName: "",
           dob: "",
           gender: undefined,
-          requestedClassId: "",
+          requestedDanceStyle: "",
           previousDanceExperience: "",
           emergencyContactName: "",
           emergencyContactRelationship: "",
@@ -98,16 +98,13 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
         }}
         onSubmit={async (data: RegistrationRequestCreateInput) => {
           setError(null);
-          setIsSubmitting(true);
           try {
-            await createRegistrationRequest(data);
+            await submitRegistration(data);
             setSubmitted(true);
           } catch {
             setError(
               "Something went wrong submitting your registration. Please try again.",
             );
-          } finally {
-            setIsSubmitting(false);
           }
         }}
       >
@@ -158,16 +155,16 @@ export function RegisterForm({ classOptions }: RegisterFormProps) {
                 />
               </div>
               <FormFeilds
-                name="requestedClassId"
-                label="Requested Class"
+                name="requestedDanceStyle"
+                label="Dance Style / Program"
                 type="select"
-                options={classOptions}
+                options={danceStyleOptions}
                 placeholder={
-                  classOptions.length
-                    ? "Select a class..."
-                    : "No classes available yet"
+                  danceStyleOptions.length
+                    ? "Select a dance style..."
+                    : "No dance styles available yet"
                 }
-                disabled={classOptions.length === 0}
+                disabled={danceStyleOptions.length === 0}
                 required
               />
               <FormFeilds

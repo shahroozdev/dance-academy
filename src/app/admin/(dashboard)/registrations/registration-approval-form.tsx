@@ -10,11 +10,15 @@ import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 
 const AUTO = "AUTO";
-const selectionSchema = z.object({ familyId: z.string().min(1) });
-const defaults = { familyId: AUTO };
+const selectionSchema = z.object({
+  familyId: z.string().min(1),
+  classId: z.string().min(1, "Select the student's final class"),
+});
+const defaults = { familyId: AUTO, classId: "" };
 
 export function RegistrationApprovalForm({ id, onClose }: { id: string; onClose: () => void }) {
   const { data: families, isLoading, error } = useQuery("getRegistrationFamilyOptions", []);
+  const { data: classes, isLoading: classesLoading, error: classesError } = useQuery("getRegistrationAssignmentClasses", []);
   const options = useMemo(() => [
     { value: AUTO, label: "Automatic matching (phone or email)" },
     ...(families ?? []).map(family => ({
@@ -22,6 +26,10 @@ export function RegistrationApprovalForm({ id, onClose }: { id: string; onClose:
       label: `${family.familyName} — ${family.parentGuardianName} · ${family.phone}${family.email ? ` · ${family.email}` : ""}`,
     })),
   ], [families]);
+  const classOptions = useMemo(() => (classes ?? []).map(item => ({
+    value: item.id,
+    label: `${item.danceStyle} — ${item.name}`,
+  })), [classes]);
   const { mutate: approve, isLoading: isApproving, error: approveError } = useMutate("approveRegistrationRequest", {
     invalidateKeys: ["getRegistrationRequests", "getRegistrationFamilyOptions", "getFamilies", "getStudents", "getEnrollments"],
     onSuccess: onClose,
@@ -33,9 +41,9 @@ export function RegistrationApprovalForm({ id, onClose }: { id: string; onClose:
   const busy = isApproving || isRejecting;
 
   return (
-    <FORM schema={selectionSchema} defaultValues={defaults} onSubmit={async ({ familyId }) => {
+    <FORM schema={selectionSchema} defaultValues={defaults} onSubmit={async ({ familyId, classId }) => {
       if (busy) return;
-      try { await approve(id, familyId === AUTO ? undefined : familyId); } catch { /* Mutation error is shown below. */ }
+      try { await approve(id, classId, familyId === AUTO ? undefined : familyId); } catch { /* Mutation error is shown below. */ }
     }} className="space-y-4">
       {(form) => (
         <>
@@ -46,8 +54,29 @@ export function RegistrationApprovalForm({ id, onClose }: { id: string; onClose:
             Keep automatic matching, or select a verified family when siblings register with different contact details.
             Linking uses that family&apos;s saved contacts for fee messages; it does not replace them with this registration&apos;s contacts.
           </p>
+          {classesLoading ? <Skeleton className="h-16 w-full" /> : (
+            <FormFeilds
+              name="classId"
+              label="Final Level / Batch / Class"
+              type="select"
+              options={classOptions}
+              placeholder="Select the finalized class..."
+              disabled={busy || classOptions.length === 0}
+              required
+            />
+          )}
+          <p className="text-sm text-muted-foreground">
+            Select this only after the student&apos;s level and batch have been evaluated. Finalizing creates the enrollment but does not email the parent.
+          </p>
           {Boolean(error) && <p role="alert" className="text-sm text-destructive">Could not load the family list. Close and reopen this review to try again.</p>}
-          <ApprovalPreview key={form.watch("familyId")} id={id} familyId={form.watch("familyId")} busy={busy} />
+          {Boolean(classesError) && <p role="alert" className="text-sm text-destructive">Could not load active classes. Close and reopen this review to try again.</p>}
+          <ApprovalPreview
+            key={form.watch("familyId")}
+            id={id}
+            familyId={form.watch("familyId")}
+            busy={busy}
+            classSelectionAvailable={!classesLoading && !classesError && classOptions.length > 0}
+          />
           {Boolean(approveError) && <p role="alert" className="text-sm text-destructive">
             {approveError instanceof Error ? approveError.message : "Could not approve this registration. Please review the selected family and try again."}
           </p>}
@@ -64,7 +93,7 @@ export function RegistrationApprovalForm({ id, onClose }: { id: string; onClose:
   );
 }
 
-function ApprovalPreview({ id, familyId, busy }: { id: string; familyId: string; busy: boolean }) {
+function ApprovalPreview({ id, familyId, busy, classSelectionAvailable }: { id: string; familyId: string; busy: boolean; classSelectionAvailable: boolean }) {
   // Remount for each selection so an old family's preview can never enable approval for a new choice.
   const { data: plan, isLoading, error } = useQuery("previewRegistrationApproval", [id, familyId === AUTO ? undefined : familyId]);
   return (
@@ -75,13 +104,13 @@ function ApprovalPreview({ id, familyId, busy }: { id: string; familyId: string;
       </p>}
       {!isLoading && !error && plan && (
         <div className="space-y-1 rounded-md border bg-muted/30 p-3 text-sm" aria-live="polite">
-          <p className="font-medium">On approval:</p>
+          <p className="font-medium">On finalization:</p>
           <p>Family — {plan.family.action === "match" ? `link to existing "${plan.family.name}"` : `create new "${plan.family.name}"`}</p>
           <p>Student — {plan.student.action === "match" ? "match existing student in that family" : "create new student in that family"}</p>
         </div>
       )}
-      <Button type="submit" className="w-full" disabled={busy || isLoading || Boolean(error) || !plan}>
-        {busy ? "Processing..." : "Approve & Process"}
+      <Button type="submit" className="w-full" disabled={busy || isLoading || Boolean(error) || !plan || !classSelectionAvailable}>
+        {busy ? "Finalizing..." : "Finalize Enrollment"}
       </Button>
     </>
   );

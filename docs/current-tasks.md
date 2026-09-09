@@ -5,8 +5,6 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
-_Nothing currently in progress._
-
 ## Next / Blocked
 
 - **Local dev database is schema-drifted.** The local Postgres instance (`LOCAL_DATABASE_URL`,
@@ -28,6 +26,29 @@ _Nothing currently in progress._
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-09-09: Implemented Varsha's style-first registration workflow.** The public form now asks
+  only for a dance style, registration review requires staff to select the final active class, and
+  finalizing creates the enrollment without sending parent email. Processed requests now provide a
+  separately tracked enrollment-confirmation email action. Existing class requests and notification
+  history were preserved by the successfully applied data update. The requested billing sentence
+  was removed from the default and saved enrollment email. All 190 tests, TypeScript, lint, and the
+  production build pass; lint reports only 16 existing warnings in temporary scripts. A complete
+  browser test also passed against the configured test database: style-only submission, admin class
+  finalization, processed status, and the separate unsent email action were verified without sending
+  an email, and all temporary browser-test records were removed afterward.
+
+- **2026-09-09: Imported client-confirmed registration corrections.** Added 11 more students across
+  seven families using the contact, name, and joining-date corrections supplied by the client. Eight
+  include their original registration history; the three existing-class students were added with
+  their historical joining dates. No enrollments or bills were created, and repeat verification
+  created no duplicates. Hailyn and Aahil remain pending missing phone details.
+
+- **2026-09-09: Imported verified registration records.** Validated the 36-row source file,
+  imported 19 unambiguous students into 14 families with their original registration history,
+  emergency details, consent, and requested-program notes, and created no enrollments or bills.
+  A repeat verification created no duplicates. Invalid, test, superseded duplicate, and conflicting
+  records remain excluded pending corrected information from the client.
 
 - **2026-09-08: Added existing-family selection to registration review.** Automatic matching remains default; staff can choose an active family identified by parent/contact details. Preview remounts on selection to prevent stale matching UI; approval revalidates the family inside the transaction and preserves existing contact/student/enrollment rules. Added 12 regression tests. All 184 tests and changed-file lint pass. Browser verified manual selection, return to automatic, and 390px layout without approving live requests or sending messages. TypeScript still reports existing generated-Prisma notification-setting errors in email/settings actions. Updated the operating guide; the previously delivered PDF has not been regenerated for this feature.
 

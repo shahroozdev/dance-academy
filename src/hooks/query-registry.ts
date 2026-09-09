@@ -20,6 +20,7 @@ import {
   getRegistrationRequestById,
   previewRegistrationApproval,
   getRegistrationFamilyOptions,
+  getRegistrationAssignmentClasses,
 } from "@/actions/registrations";
 import { getStudioSettings } from "@/actions/settings";
 import { getStudents, getStudentById } from "@/actions/students";
@@ -40,6 +41,7 @@ export const queryRegistry = {
   getRegistrationRequestById,
   previewRegistrationApproval,
   getRegistrationFamilyOptions,
+  getRegistrationAssignmentClasses,
   getMonthlyBillings,
   getMonthlyBillingById,
   getClassMonthlyFees,

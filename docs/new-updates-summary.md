@@ -1,5 +1,12 @@
 # Updates Summary
 
+## 2026-09-09
+
+- The public registration form now asks parents only for a dance style or program; staff chooses the final level, batch, and class after evaluating the student.
+- Registration review now includes the active-class assignment and clearly explains that finalizing creates the enrollment without emailing the parent.
+- Enrollment confirmation is now a separate staff-controlled email action after finalization, and the registration list shows when it was sent.
+- The enrollment-confirmation email no longer says that a monthly fee notice will be sent after billing is generated.
+
 ## 2026-09-08
 
 - Tooltips now appear when hovering over icon-only buttons, table action buttons, and toolbar buttons across the admin — including the close button on pop-ups and side panels, the notification bell, and the Export/Import CSV buttons. Buttons that hide their label on smaller screens also show the tooltip at all sizes.

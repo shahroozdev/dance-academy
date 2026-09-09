@@ -47,14 +47,13 @@ export const EMAIL_TEMPLATES: Record<EmailTemplateKeyValue, EmailTemplateMeta> =
   ENROLLMENT_CONFIRMED: {
     key: "ENROLLMENT_CONFIRMED",
     label: "Enrollment Confirmed",
-    description: "Sent to a family once the admin approves a registration request.",
+    description: "Sent when staff manually confirms enrollment after finalizing the student's class.",
     placeholders: ["parentName", "studentName", "className", "studioName"],
     defaultSubject: "{{studentName}} is enrolled — {{studioName}}",
     defaultBody: [
       "Hi {{parentName}},",
       "",
       "Great news — {{studentName}} is now enrolled in {{className}} at {{studioName}}!",
-      "You'll receive a monthly fee notice once billing is generated each month.",
       "",
       "We're excited to have you dancing with us!",
       "",

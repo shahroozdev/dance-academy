@@ -46,7 +46,9 @@ beforeEach(() => {
 });
 
 describe("action access", () => {
-  for (const [name, action] of Object.entries({ ...queryRegistry, ...mutationRegistry })) {
+  const adminActions = Object.entries({ ...queryRegistry, ...mutationRegistry })
+    .filter(([name]) => name !== "createRegistrationRequest");
+  for (const [name, action] of adminActions) {
     it(`${name} rejects an unauthenticated call before inspecting arguments`, async () => {
       mocks.auth.mockResolvedValue(null);
       await expect((action as () => Promise<unknown>)()).rejects.toThrow("NEXT_REDIRECT");

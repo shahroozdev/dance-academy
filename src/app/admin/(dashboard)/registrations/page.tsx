@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { PageHeader } from "@/components/shared/page-header";
 import { TablePagination } from "@/components/shared/table-pagination";
+import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 
 const STATUS_TABS = [
@@ -87,7 +88,8 @@ export default function RegistrationsPage() {
               <TableRow>
                 <TableHead>Parent/Guardian</TableHead>
                 <TableHead>Student</TableHead>
-                <TableHead>Requested Class</TableHead>
+                <TableHead>Requested Style</TableHead>
+                <TableHead>Assigned Class</TableHead>
                 <TableHead>Submitted</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead />
@@ -98,7 +100,8 @@ export default function RegistrationsPage() {
                 <TableRow key={request.id}>
                   <TableCell className="font-medium">{request.parentGuardianName}</TableCell>
                   <TableCell>{request.studentFullName}</TableCell>
-                  <TableCell>{request.requestedClass?.name ?? "—"}</TableCell>
+                  <TableCell>{request.requestedDanceStyle ?? request.requestedClass?.danceStyle ?? "—"}</TableCell>
+                  <TableCell>{request.status === "PROCESSED" ? request.requestedClass?.name ?? "—" : "Not finalized"}</TableCell>
                   <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <Badge variant={STATUS_BADGE_VARIANT[request.status]}>{request.status}</Badge>
@@ -110,6 +113,12 @@ export default function RegistrationsPage() {
                           Review
                         </Button>
                       </TooltipWrapper>
+                    )}
+                    {request.status === "PROCESSED" && request.requestedClass && (
+                      <EnrollmentEmailButton
+                        id={request.id}
+                        sentAt={request.enrollmentConfirmationSentAt}
+                      />
                     )}
                   </TableCell>
                 </TableRow>
@@ -148,7 +157,7 @@ function ReviewModal({ id, onClose }: { id: string; onClose: () => void }) {
         <div>
           Review Registration
           <p className="text-sm font-normal text-muted-foreground">
-            Confirm the details before creating/matching family, student, and enrollment records.
+            Confirm the family and choose the final class after the student&apos;s evaluation.
           </p>
         </div>
       }
@@ -171,7 +180,8 @@ function ReviewModal({ id, onClose }: { id: string; onClose: () => void }) {
                   value={request.dob ? new Date(request.dob).toLocaleDateString() : "—"}
                 />
                 <Row label="Gender" value={request.gender?.replace("_", " ") ?? "—"} />
-                <Row label="Requested Class" value={request.requestedClass?.name ?? "—"} />
+                <Row label="Requested Dance Style" value={request.requestedDanceStyle ?? request.requestedClass?.danceStyle ?? "—"} />
+                <Row label="Assigned Class" value={request.requestedClass?.name ?? "Not finalized"} />
                 <Row label="Previous Experience" value={request.previousDanceExperience || "—"} />
               </Section>
               <Section title="Emergency Contact">
@@ -197,6 +207,35 @@ function ReviewModal({ id, onClose }: { id: string; onClose: () => void }) {
         </div>
       )}
     </Modal>
+  );
+}
+
+function EnrollmentEmailButton({ id, sentAt }: { id: string; sentAt: Date | null }) {
+  const { mutate: sendConfirmation, isLoading, error } = useMutate("sendRegistrationEnrollmentConfirmation", {
+    invalidateKeys: ["getRegistrationRequests", "getRegistrationRequestById"],
+  });
+
+  if (sentAt) {
+    return <span className="text-xs text-muted-foreground">Email sent {new Date(sentAt).toLocaleDateString()}</span>;
+  }
+
+  return (
+    <div className="space-y-1">
+      <Button
+        size="sm"
+        disabled={isLoading}
+        onClick={async () => {
+          try { await sendConfirmation(id); } catch { /* Mutation error is displayed below. */ }
+        }}
+      >
+        {isLoading ? "Sending..." : "Send Enrollment Email"}
+      </Button>
+      {Boolean(error) && (
+        <p role="alert" className="max-w-48 text-xs text-destructive">
+          {error instanceof Error ? error.message : "Could not send the enrollment email."}
+        </p>
+      )}
+    </div>
   );
 }
 
