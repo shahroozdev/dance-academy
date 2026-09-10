@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   sendEmail: vi.fn(),
   db: {
     registrationRequest: { findUniqueOrThrow: vi.fn(), create: vi.fn(), update: vi.fn() },
-    family: { findMany: vi.fn(), findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), create: vi.fn() },
+    family: { findMany: vi.fn(), count: vi.fn(), findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), create: vi.fn() },
     student: { findFirst: vi.fn(), findUniqueOrThrow: vi.fn(), create: vi.fn(), update: vi.fn() },
     class: { findFirst: vi.fn(), findUniqueOrThrow: vi.fn(), findUnique: vi.fn() },
     danceProgram: { findFirst: vi.fn() },
@@ -28,6 +28,7 @@ beforeEach(() => {
   mocks.db.registrationRequest.findUniqueOrThrow.mockResolvedValue(request);
   mocks.db.registrationRequest.update.mockImplementation(async ({ data }) => ({ ...request, ...data }));
   mocks.db.family.findMany.mockResolvedValue([family]);
+  mocks.db.family.count.mockResolvedValue(1);
   mocks.db.family.findUnique.mockResolvedValue(family);
   mocks.db.family.findUniqueOrThrow.mockResolvedValue(family);
   mocks.db.student.findFirst.mockResolvedValue(null);
@@ -118,6 +119,48 @@ describe("registration family selection", () => {
     expect(mocks.sendEmail).not.toHaveBeenCalled();
   });
 
+  it("sends and records the enrollment email when finalization requests it", async () => {
+    mocks.db.registrationRequest.findUniqueOrThrow
+      .mockResolvedValueOnce(request)
+      .mockResolvedValueOnce({
+        ...request,
+        status: "PROCESSED",
+        matchedFamilyId: family.id,
+        matchedFamily: { email: family.email },
+        requestedClass: { name: "Kathak" },
+        enrollmentConfirmationSentAt: null,
+      });
+    mocks.sendEmail.mockResolvedValue({ sent: true });
+
+    const result = await approveRegistrationRequest("request", "class", family.id, true);
+
+    expect(result.enrollmentEmail).toEqual({ requested: true, sent: true, error: null });
+    expect(mocks.sendEmail).toHaveBeenCalledWith("ENROLLMENT_CONFIRMED", expect.objectContaining({ className: "Kathak" }), family.email);
+    expect(mocks.db.registrationRequest.update).toHaveBeenLastCalledWith({
+      where: { id: "request" },
+      data: { enrollmentConfirmationSentAt: expect.any(Date) },
+    });
+  });
+
+  it("keeps enrollment finalized and offers a later retry when automatic email fails", async () => {
+    mocks.db.registrationRequest.findUniqueOrThrow
+      .mockResolvedValueOnce(request)
+      .mockResolvedValueOnce({
+        ...request,
+        status: "PROCESSED",
+        matchedFamilyId: family.id,
+        matchedFamily: { email: family.email },
+        requestedClass: { name: "Kathak" },
+        enrollmentConfirmationSentAt: null,
+      });
+    mocks.sendEmail.mockResolvedValue({ sent: false, error: "SMTP unavailable" });
+
+    const result = await approveRegistrationRequest("request", "class", family.id, true);
+
+    expect(result.enrollmentEmail).toEqual({ requested: true, sent: false, error: "SMTP unavailable" });
+    expect(mocks.db.enrollment.create).toHaveBeenCalled();
+  });
+
   it("reuses an existing student and active enrollment inside the chosen family", async () => {
     const student = { id: "existing-student", isActive: true, fullName: request.studentFullName, emergencyContactName: "Saved contact" };
     mocks.db.student.findFirst.mockResolvedValue(student);
@@ -155,8 +198,13 @@ describe("registration family selection", () => {
   });
 
   it("offers active families with identifying contact details", async () => {
-    await getRegistrationFamilyOptions();
-    expect(mocks.db.family.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { isActive: true }, select: expect.objectContaining({ id: true, phone: true, email: true }) }));
+    expect(await getRegistrationFamilyOptions({ search: "Sharma", page: 2, pageSize: 25 })).toMatchObject({ total: 1, page: 2, pages: 1 });
+    expect(mocks.db.family.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ isActive: true, OR: expect.any(Array) }),
+      select: expect.objectContaining({ id: true, phone: true, email: true }),
+      skip: 25,
+      take: 25,
+    }));
   });
 
   it("sends enrollment confirmation only through the separate staff action", async () => {

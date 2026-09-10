@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { forwardRef, useState, type ReactNode } from "react";
 
 import { PhoneInput } from "@/components/common/phone-input";
+import { SearchSelect } from "@/components/common/search-select";
 import { Input as UIInput } from "@/components/ui/input";
 import {
   Select,
@@ -25,7 +26,8 @@ export type InputType =
   | "tel"
   | "date"
   | "textarea"
-  | "select";
+  | "select"
+  | "search-select";
 
 type InputProps = {
   id?: string;
@@ -41,6 +43,12 @@ type InputProps = {
   "aria-invalid"?: boolean;
   min?: string;
   max?: string;
+  searchPlaceholder?: string;
+  emptyMessage?: string;
+  isLoading?: boolean;
+  hasMore?: boolean;
+  onSearchChange?: (value: string) => void;
+  onLoadMore?: () => void;
 };
 
 export const Input = forwardRef<
@@ -87,6 +95,29 @@ export const Input = forwardRef<
       </Select>
     ),
   };
+
+  if (type === "search-select") {
+    return (
+      <SearchSelect
+        id={props.id}
+        name={props.name}
+        value={props.value}
+        options={options}
+        placeholder={props.placeholder}
+        searchPlaceholder={props.searchPlaceholder}
+        emptyMessage={props.emptyMessage}
+        disabled={props.disabled}
+        isLoading={props.isLoading}
+        hasMore={props.hasMore}
+        className={props.className}
+        aria-invalid={props["aria-invalid"]}
+        onChange={onChange}
+        onBlur={props.onBlur}
+        onSearchChange={props.onSearchChange}
+        onLoadMore={props.onLoadMore}
+      />
+    );
+  }
 
   if (type === "textarea" || type === "select") {
     return renderers[type]();

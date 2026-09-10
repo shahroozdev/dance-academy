@@ -2,6 +2,8 @@
 
 ## 2026-09-10
 
+- Enrollment finalization now includes an enabled-by-default option to send the parent confirmation email immediately, with an information tooltip explaining that staff can turn it off and send later. If email delivery fails, the enrollment remains finalized and staff is guided to retry from Processed registrations.
+- Registration review now has a searchable family picker that loads active families in small batches as staff scroll, keeping the review window fast even with thousands of family records.
 - The Students list now shows both the student's original Joined Date and their automatically calculated Time with Malhaar; joining dates are kept consistent across time zones.
 - Added a dedicated Dance Programs section where staff can manage parent-facing programs such as Bollywood and Bharatanatyam once, without creating duplicate program entries for every level.
 - Every class now belongs to a Dance Program while keeping its own level, batch name, schedule, teacher, and fee, so different levels can use the same fee today and different fees in the future.

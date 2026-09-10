@@ -29,6 +29,16 @@ Nothing currently in progress.
 
 ## Done
 
+- **2026-09-10: Added optional email during enrollment finalization.** The email switch defaults
+  on and includes a tooltip explaining how to defer the message. Turning it off preserves the
+  Processed-list send action; a delivery failure does not undo enrollment and clearly guides staff
+  to retry later. All 205 tests, focused lint, TypeScript, and the production build pass.
+
+- **2026-09-10: Scaled the registration family picker.** Registration review now searches active
+  families by family, parent, phone, or email and fetches only 25 records at a time, loading the
+  next page on scroll. Automatic matching remains the default. All 203 tests, focused lint,
+  TypeScript, and the production build pass.
+
 - **2026-09-10: Added joining information to the Students table.** The roster now has separate
   Joined Date and Time with Malhaar columns. Joining dates use the saved calendar date without
   timezone shifting, and the duration remains automatically calculated. Six focused date tests,

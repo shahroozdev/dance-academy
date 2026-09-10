@@ -5,7 +5,7 @@ import { sendAdminOperationalAlert, sendTemplatedEmail } from "@/actions/email";
 import { registrationRequestCreateSchema } from "@/actions/registrations.schema";
 import type { RegistrationRequestCreateInput } from "@/actions/registrations.schema";
 import { serializableTransaction } from "@/actions/transaction";
-import { idSchema , validateListQuery } from "@/actions/validation.schema";
+import { booleanSchema, idSchema , validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { matchRegistrationFamily } from "@/lib/family-matching";
@@ -66,13 +66,32 @@ export type RegistrationMatchPlan = {
 };
 
 // Read-only preview of what approval would do, so the admin can review before committing.
-export async function getRegistrationFamilyOptions() {
+export async function getRegistrationFamilyOptions(params?: { search?: string; page?: number; pageSize?: number }) {
   await requireAdmin();
-  return db.family.findMany({
-    where: { isActive: true },
-    select: { id: true, familyName: true, parentGuardianName: true, phone: true, email: true },
-    orderBy: [{ familyName: "asc" }, { id: "asc" }],
-  });
+  validateListQuery(params, []);
+  const { search, page = 1, pageSize = 25 } = params ?? {};
+  const where: Prisma.FamilyWhereInput = {
+    isActive: true,
+    ...(search && {
+      OR: [
+        { familyName: { contains: search, mode: "insensitive" } },
+        { parentGuardianName: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+      ],
+    }),
+  };
+  const [data, total] = await Promise.all([
+    db.family.findMany({
+      where,
+      select: { id: true, familyName: true, parentGuardianName: true, phone: true, email: true },
+      orderBy: [{ familyName: "asc" }, { id: "asc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    db.family.count({ where }),
+  ]);
+  return { data, total, page, pages: Math.ceil(total / pageSize) };
 }
 
 export async function getRegistrationAssignmentClasses() {
@@ -151,11 +170,12 @@ export async function rejectRegistrationRequest(id: string) {
   });
 }
 
-export async function approveRegistrationRequest(id: string, classId: string, familyId?: string) {
+export async function approveRegistrationRequest(id: string, classId: string, familyId?: string, sendEmailNow = false) {
   const admin = await requireAdmin();
   id = idSchema.parse(id);
   classId = idSchema.parse(classId);
   familyId = idSchema.optional().parse(familyId);
+  sendEmailNow = booleanSchema.parse(sendEmailNow);
   const processedRequest = await serializableTransaction(async (tx) => {
     const request = await tx.registrationRequest.findUniqueOrThrow({ where: { id } });
     if (request.status !== "PENDING") {
@@ -235,12 +255,30 @@ export async function approveRegistrationRequest(id: string, classId: string, fa
     return processedRequest;
   });
 
-  return processedRequest;
+  if (!sendEmailNow) return { ...processedRequest, enrollmentEmail: { requested: false, sent: false, error: null } };
+
+  try {
+    await sendEnrollmentConfirmation(id);
+    return { ...processedRequest, enrollmentEmail: { requested: true, sent: true, error: null } };
+  } catch (error) {
+    return {
+      ...processedRequest,
+      enrollmentEmail: {
+        requested: true,
+        sent: false,
+        error: error instanceof Error ? error.message : "The enrollment confirmation email could not be sent.",
+      },
+    };
+  }
 }
 
 export async function sendRegistrationEnrollmentConfirmation(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
+  return sendEnrollmentConfirmation(id);
+}
+
+async function sendEnrollmentConfirmation(id: string) {
   const request = await db.registrationRequest.findUniqueOrThrow({
     where: { id },
     include: {

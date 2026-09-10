@@ -82,6 +82,12 @@ type FormFeildsProps<T extends FieldValues> = {
   min?: string;
   max?: string;
   required?: boolean;
+  searchPlaceholder?: string;
+  emptyMessage?: string;
+  isLoading?: boolean;
+  hasMore?: boolean;
+  onSearchChange?: (value: string) => void;
+  onLoadMore?: () => void;
 };
 
 export function FormFeilds<T extends FieldValues = FieldValues>({
@@ -95,6 +101,12 @@ export function FormFeilds<T extends FieldValues = FieldValues>({
   min,
   max,
   required,
+  searchPlaceholder,
+  emptyMessage,
+  isLoading,
+  hasMore,
+  onSearchChange,
+  onLoadMore,
 }: FormFeildsProps<T>) {
   const { control } = useFormContext<T>();
 
@@ -123,6 +135,12 @@ export function FormFeilds<T extends FieldValues = FieldValues>({
             className={className}
             min={min}
             max={max}
+            searchPlaceholder={searchPlaceholder}
+            emptyMessage={emptyMessage}
+            isLoading={isLoading}
+            hasMore={hasMore}
+            onSearchChange={onSearchChange}
+            onLoadMore={onLoadMore}
             value={(field.value as string | undefined) ?? ""}
             name={field.name}
             onChange={field.onChange}
