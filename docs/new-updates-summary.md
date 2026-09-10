@@ -2,6 +2,8 @@
 
 ## 2026-09-10
 
+- Due Date & Payment Reminders now includes information icons explaining that bills are generated automatically on the first day of each month, how the due day is applied, and when the one-time overdue reminder is sent.
+- Every staff notification switch in Settings now has an information icon explaining what triggers the alert, who it informs, and what the notification is for before the admin turns it on or off.
 - Enrollment finalization now includes an enabled-by-default option to send the parent confirmation email immediately, with an information tooltip explaining that staff can turn it off and send later. If email delivery fails, the enrollment remains finalized and staff is guided to retry from Processed registrations.
 - Registration review now has a searchable family picker that loads active families in small batches as staff scroll, keeping the review window fast even with thousands of family records.
 - The Students list now shows both the student's original Joined Date and their automatically calculated Time with Malhaar; joining dates are kept consistent across time zones.

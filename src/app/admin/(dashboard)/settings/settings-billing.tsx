@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, Percent } from "lucide-react";
+import { CalendarClock, Info, Percent } from "lucide-react";
 
 import type { StudioSettingsData } from "@/actions/settings";
 import {
@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/common/button";
 import { Card, CardTitle } from "@/components/common/card";
 import { FORM, FormFeilds } from "@/components/common/form";
+import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { useMutate } from "@/hooks/useMutate";
 
 export function DiscountForm({ settings }: { settings: StudioSettingsData }) {
@@ -99,13 +100,23 @@ export function ReminderForm({ settings }: { settings: StudioSettingsData }) {
             <div className="grid gap-4 sm:grid-cols-2">
               <FormFeilds<ReminderSettingsInput>
                 name="dueDayOfMonth"
-                label="Due Day of Month"
+                label={
+                  <InfoLabel
+                    label="Due Day of Month"
+                    description="Monthly bills are generated automatically on the first day of each month and can also be generated manually from Billing. This setting chooses the calendar day that those bills are due; it does not change the bill-generation date."
+                  />
+                }
                 type="number"
                 placeholder="5"
               />
               <FormFeilds<ReminderSettingsInput>
                 name="paymentReminderDaysAfterDue"
-                label="Reminder Days After Due"
+                label={
+                  <InfoLabel
+                    label="Reminder Days After Due"
+                    description="A daily automatic check finds Unpaid or Partially Paid bills after this many days have passed since the due date. Each qualifying bill receives one reminder only, so families are not emailed every day."
+                  />
+                }
                 type="number"
                 placeholder="7"
               />
@@ -124,5 +135,22 @@ export function ReminderForm({ settings }: { settings: StudioSettingsData }) {
         </Card>
       )}
     </FORM>
+  );
+}
+
+function InfoLabel({ label, description }: { label: string; description: string }) {
+  return (
+    <span className="flex items-center gap-2">
+      {label}
+      <TooltipWrapper label={description}>
+        <button
+          type="button"
+          aria-label={`About ${label}`}
+          className="shrink-0 text-muted-foreground hover:text-foreground"
+        >
+          <Info className="size-4" />
+        </button>
+      </TooltipWrapper>
+    </span>
   );
 }

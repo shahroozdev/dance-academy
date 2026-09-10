@@ -73,7 +73,7 @@ export function FORM<T extends FieldValues>({
 
 type FormFeildsProps<T extends FieldValues> = {
   name: Path<T>;
-  label?: string;
+  label?: ReactNode;
   type?: InputType;
   options?: InputOption[];
   placeholder?: string;

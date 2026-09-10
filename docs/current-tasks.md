@@ -29,6 +29,14 @@ Nothing currently in progress.
 
 ## Done
 
+- **2026-09-10: Added billing schedule guidance.** Information icons beside the due-day and
+  reminder-delay fields now explain first-of-month automatic bill generation, manual generation,
+  how the due day is used, and the one-reminder-per-bill behavior. TypeScript and changed-file lint pass.
+
+- **2026-09-10: Added guidance to every notification setting.** Each staff notification switch
+  now has an accessible information icon explaining its trigger, recipient, and purpose. TypeScript
+  and changed-file lint pass.
+
 - **2026-09-10: Added optional email during enrollment finalization.** The email switch defaults
   on and includes a tooltip explaining how to defer the message. Turning it off preserves the
   Processed-list send action; a delivery failure does not undo enrollment and clearly guides staff
