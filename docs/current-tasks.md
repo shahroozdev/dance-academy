@@ -29,6 +29,16 @@ Nothing currently in progress.
 
 ## Done
 
+- **2026-09-11: Polished policy settings and added admin guidance.** Registration Policies now
+  guides owners through editing, previewing, and publishing; explains formatting and version history;
+  clearly labels unsaved previews; and clarifies how restoring defaults works. Changed-file lint,
+  TypeScript, and the production build pass.
+
+- **2026-09-11: Polished registration policy presentation.** The public form now presents the guide
+  as a clear Review & Consent step with readable policy cards, visual guidance, a refined scroll
+  area, and a distinct required-versus-optional consent panel. Changed-file lint, TypeScript, the
+  production build, and a desktop browser check pass.
+
 - **2026-09-11: Added admin-managed registration policies.** The supplied regular-class guide is
   now shown before the required agreement, owners can edit and preview it in Settings, and every
   new request preserves the exact accepted policy version and agreement time. All 206 tests,

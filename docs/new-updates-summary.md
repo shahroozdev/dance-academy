@@ -2,6 +2,8 @@
 
 ## 2026-09-11
 
+- Registration Policies in Settings now provides a guided three-step editing experience, formatting help, clearer version information, and explicit explanations of previews, publishing, and restoring defaults.
+- The registration form's policy area now appears as a polished Review & Consent step, with easier-to-scan policy cards and a clearly separated consent panel explaining which choice is required and which is optional.
 - Parents now see the Regular Class Guide directly before the required studio-policy agreement on the registration form, beside it on larger screens and above it on smaller screens.
 - Owners can edit the registration policy title, full policy text, and required agreement wording from a new Registration Policies section in Settings, with a live parent preview and an option to restore the supplied guide.
 - Every new registration preserves the exact policy version and wording accepted by the parent, along with the agreement date and time, which staff can review later even after policies change.

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
@@ -204,26 +204,46 @@ export function RegisterForm({ programOptions, policy }: RegisterFormProps) {
               />
             </div>
 
-            <div className="grid gap-5 border-t pt-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(16rem,0.65fr)]">
-              <div className="max-h-[32rem] overflow-y-auto rounded-lg border bg-muted/30 p-4">
-                <RegistrationPolicyContent
-                  title={policy.registrationPolicyTitle}
-                  content={policy.registrationPolicyContent}
-                  version={policy.registrationPolicyVersion}
-                />
-              </div>
-              <div className="space-y-4 lg:sticky lg:top-4 lg:self-start">
+            <div className="space-y-4 border-t pt-5">
+              <div className="space-y-1">
+                <p className="text-base font-semibold text-foreground">Review &amp; Consent</p>
                 <p className="text-sm text-muted-foreground">
-                  Please read the class policies before completing the required agreement.
+                  Please review the class guide, then confirm your choices to complete registration.
                 </p>
+              </div>
+              <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.6fr)]">
+                <div className="relative overflow-hidden rounded-xl border bg-muted/20 shadow-sm">
+                  <div className="max-h-[34rem] overflow-y-auto p-4 pr-3 sm:p-5 sm:pr-4">
+                    <RegistrationPolicyContent
+                      title={policy.registrationPolicyTitle}
+                      content={policy.registrationPolicyContent}
+                      version={policy.registrationPolicyVersion}
+                    />
+                  </div>
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-background/90 to-transparent" />
+                </div>
+                <div className="space-y-5 rounded-xl border bg-primary/5 p-4 shadow-sm lg:sticky lg:top-4">
+                  <div className="flex gap-3">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      <ShieldCheck className="size-4" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <p className="font-medium text-foreground">Your consent</p>
+                      <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
+                        The studio-policy agreement is required. Media consent is optional.
+                      </p>
+                    </div>
+                  </div>
                 <ConsentField
                   name="studioPolicyAgreement"
                   label={policy.registrationPolicyAgreementLabel}
+                  required
                 />
                 <ConsentField
                   name="photoVideoConsent"
                   label="I consent to my child being photographed/recorded for studio use (e.g. social media, promotional materials)."
                 />
+                </div>
               </div>
             </div>
 
@@ -242,9 +262,11 @@ export function RegisterForm({ programOptions, policy }: RegisterFormProps) {
 function ConsentField({
   name,
   label,
+  required = false,
 }: {
   name: "studioPolicyAgreement" | "photoVideoConsent";
   label: string;
+  required?: boolean;
 }) {
   const { control } = useFormContext<RegistrationRequestCreateInput>();
 
@@ -253,7 +275,10 @@ function ConsentField({
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.error ? "true" : undefined}>
+        <Field
+          data-invalid={fieldState.error ? "true" : undefined}
+          className="rounded-lg border bg-background p-3"
+        >
           <FieldLabel
             htmlFor={name}
             className="flex-row items-start gap-2 font-normal"
@@ -266,7 +291,10 @@ function ConsentField({
               onBlur={field.onBlur}
               className="mt-0.5 size-4 shrink-0 rounded border-input"
             />
-            <span className="text-sm">{label}</span>
+            <span className="text-sm leading-5">
+              {label}
+              {required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
+            </span>
           </FieldLabel>
           <FieldError errors={fieldState.error ? [fieldState.error] : []} />
         </Field>
