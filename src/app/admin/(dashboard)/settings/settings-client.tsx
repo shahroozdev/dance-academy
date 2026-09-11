@@ -1,6 +1,6 @@
 "use client";
 
-import { BellRing, FileText, Paintbrush, Plug, Wallet } from "lucide-react";
+import { BellRing, FileCheck2, FileText, Paintbrush, Plug, Wallet } from "lucide-react";
 
 import type { EmailTemplateData } from "@/actions/email-templates";
 import type { StudioSettingsData } from "@/actions/settings";
@@ -13,6 +13,7 @@ import { DiscountForm, ReminderForm } from "./settings-billing";
 import { EmailTemplatesTab } from "./settings-email-templates";
 import { SmtpForm } from "./settings-integrations";
 import { NotificationSettingsForm } from "./settings-notifications";
+import { RegistrationPolicyForm } from "./settings-registration-policy";
 
 export function SettingsClient({
   initialSettings,
@@ -52,6 +53,10 @@ export function SettingsClient({
             <FileText className="h-4 w-4" />
             Email Templates
           </TabsTrigger>
+          <TabsTrigger value="registration-policy">
+            <FileCheck2 className="h-4 w-4" />
+            Registration Policies
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="appearance" className="flex flex-col gap-6 pt-4">
           <AppearanceForm settings={settings} />
@@ -70,6 +75,9 @@ export function SettingsClient({
         </TabsContent>
         <TabsContent value="emails" className="flex flex-col gap-6 pt-4">
           <EmailTemplatesTab initialTemplates={initialEmailTemplates} />
+        </TabsContent>
+        <TabsContent value="registration-policy" className="pt-4">
+          <RegistrationPolicyForm settings={settings} />
         </TabsContent>
       </Tabs>
     </div>

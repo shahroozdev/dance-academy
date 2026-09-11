@@ -24,7 +24,7 @@ import {
   rejectRegistrationRequest,
   sendRegistrationEnrollmentConfirmation,
 } from "@/actions/registrations";
-import { updateStudioSettings, uploadLogo } from "@/actions/settings";
+import { updateRegistrationPolicy, updateStudioSettings, uploadLogo } from "@/actions/settings";
 import {
   createStudent,
   updateStudent,
@@ -74,6 +74,7 @@ export const mutationRegistry = {
   updateOtherIncome,
   deleteOtherIncome,
   updateStudioSettings,
+  updateRegistrationPolicy,
   uploadLogo,
   updateEmailTemplate,
   markFamilyNotificationSent,

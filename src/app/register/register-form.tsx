@@ -8,9 +8,11 @@ import {
   registrationRequestCreateSchema,
   type RegistrationRequestCreateInput,
 } from "@/actions/registrations.schema";
+import type { PublicRegistrationPolicy } from "@/actions/settings";
 import { Button } from "@/components/common/button";
 import { Card, CardDescription, CardTitle } from "@/components/common/card";
 import { FORM, FormFeilds } from "@/components/common/form";
+import { RegistrationPolicyContent } from "@/components/common/registration-policy-content";
 import { Logo } from "@/components/layout/logo";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { useMutate } from "@/hooks/useMutate";
@@ -25,9 +27,10 @@ const GENDER_OPTIONS = [
 
 type RegisterFormProps = {
   programOptions: { label: string; value: string }[];
+  policy: PublicRegistrationPolicy;
 };
 
-export function RegisterForm({ programOptions }: RegisterFormProps) {
+export function RegisterForm({ programOptions, policy }: RegisterFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { mutate: submitRegistration, isLoading: isSubmitting } = useMutate("createRegistrationRequest");
@@ -66,7 +69,7 @@ export function RegisterForm({ programOptions }: RegisterFormProps) {
 
   return (
     <Card
-      className="w-full max-w-2xl"
+      className="w-full max-w-5xl"
       header={
         <div className="flex  gap-3 items-center">
           <Logo size={56} />
@@ -201,15 +204,27 @@ export function RegisterForm({ programOptions }: RegisterFormProps) {
               />
             </div>
 
-            <div className="space-y-3 border-t pt-4">
-              <ConsentField
-                name="studioPolicyAgreement"
-                label="I agree to the studio's policies and procedures."
-              />
-              <ConsentField
-                name="photoVideoConsent"
-                label="I consent to my child being photographed/recorded for studio use (e.g. social media, promotional materials)."
-              />
+            <div className="grid gap-5 border-t pt-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(16rem,0.65fr)]">
+              <div className="max-h-[32rem] overflow-y-auto rounded-lg border bg-muted/30 p-4">
+                <RegistrationPolicyContent
+                  title={policy.registrationPolicyTitle}
+                  content={policy.registrationPolicyContent}
+                  version={policy.registrationPolicyVersion}
+                />
+              </div>
+              <div className="space-y-4 lg:sticky lg:top-4 lg:self-start">
+                <p className="text-sm text-muted-foreground">
+                  Please read the class policies before completing the required agreement.
+                </p>
+                <ConsentField
+                  name="studioPolicyAgreement"
+                  label={policy.registrationPolicyAgreementLabel}
+                />
+                <ConsentField
+                  name="photoVideoConsent"
+                  label="I consent to my child being photographed/recorded for studio use (e.g. social media, promotional materials)."
+                />
+              </div>
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}

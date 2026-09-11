@@ -321,6 +321,11 @@ model RegistrationRequest {
   processedByAdminId           String?
   processedAt                  DateTime?
   enrollmentConfirmationSentAt DateTime?
+  policyTitleSnapshot          String?
+  policyContentSnapshot        String?            @db.Text
+  policyAgreementLabelSnapshot String?
+  policyVersion                Int?
+  policyAgreedAt               DateTime?
   createdAt                    DateTime           @default(now())
 
   @@index([status])
@@ -405,6 +410,10 @@ model StudioSettings {
   fontSize       FontSize @default(MEDIUM)
   logoUrl        String?
   studioName     String?  @default("Malhaar Dance Company")
+  registrationPolicyTitle          String @default("Regular Class Guide — 2026–2027 Academic Year")
+  registrationPolicyContent        String @db.Text
+  registrationPolicyAgreementLabel String @default("I have read and agree to the studio's policies and procedures.")
+  registrationPolicyVersion        Int    @default(1)
 
   // Discount policy (§4.4) — was env-only (DISCOUNT_MULTI_CLASS_PCT/DISCOUNT_SIBLING_PCT), now admin-editable
   multiClassDiscountPct Decimal @default(0.05) @db.Decimal(5, 4)

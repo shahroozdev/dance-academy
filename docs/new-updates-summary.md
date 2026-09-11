@@ -1,5 +1,11 @@
 # Updates Summary
 
+## 2026-09-11
+
+- Parents now see the Regular Class Guide directly before the required studio-policy agreement on the registration form, beside it on larger screens and above it on smaller screens.
+- Owners can edit the registration policy title, full policy text, and required agreement wording from a new Registration Policies section in Settings, with a live parent preview and an option to restore the supplied guide.
+- Every new registration preserves the exact policy version and wording accepted by the parent, along with the agreement date and time, which staff can review later even after policies change.
+
 ## 2026-09-10
 
 - Due Date & Payment Reminders now includes information icons explaining that bills are generated automatically on the first day of each month, how the due day is applied, and when the one-time overdue reminder is sent.

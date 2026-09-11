@@ -3,11 +3,20 @@
 import { put } from "@vercel/blob";
 
 import { requireAdmin, requireOwner } from "@/actions/access";
-import type { StudioSettingsUpdateInput } from "@/actions/settings.schema";
-import { studioSettingsUpdateSchema } from "@/actions/settings.schema";
+import {
+  registrationPolicySettingsSchema,
+  studioSettingsUpdateSchema,
+  type RegistrationPolicySettingsInput,
+  type StudioSettingsUpdateInput,
+} from "@/actions/settings.schema";
 import type { StudioSettings } from "@/generated/prisma/client";
 import { encryptSecret } from "@/lib/crypto";
 import { db } from "@/lib/db";
+import {
+  DEFAULT_REGISTRATION_AGREEMENT_LABEL,
+  DEFAULT_REGISTRATION_POLICY_CONTENT,
+  DEFAULT_REGISTRATION_POLICY_TITLE,
+} from "@/lib/registration-policy";
 
 // ---------- Types ----------
 
@@ -21,6 +30,10 @@ export type StudioSettingsData = {
   fontSize: "SMALL" | "MEDIUM" | "LARGE";
   logoUrl: string | null;
   studioName: string | null;
+  registrationPolicyTitle: string;
+  registrationPolicyContent: string;
+  registrationPolicyAgreementLabel: string;
+  registrationPolicyVersion: number;
 
   multiClassDiscountPct: number;
   siblingDiscountPct: number;
@@ -58,6 +71,10 @@ const DEFAULT_SETTINGS = {
   fontSize: "MEDIUM" as const,
   logoUrl: null,
   studioName: "Malhaar Dance Company",
+  registrationPolicyTitle: DEFAULT_REGISTRATION_POLICY_TITLE,
+  registrationPolicyContent: DEFAULT_REGISTRATION_POLICY_CONTENT,
+  registrationPolicyAgreementLabel: DEFAULT_REGISTRATION_AGREEMENT_LABEL,
+  registrationPolicyVersion: 1,
 };
 
 function toClientSettings(settings: StudioSettings): StudioSettingsData {
@@ -97,6 +114,32 @@ export async function getStudioSettings(): Promise<StudioSettingsData> {
   return toClientSettings(created);
 }
 
+export type PublicRegistrationPolicy = Pick<
+  StudioSettingsData,
+  | "registrationPolicyTitle"
+  | "registrationPolicyContent"
+  | "registrationPolicyAgreementLabel"
+  | "registrationPolicyVersion"
+>;
+
+export async function getPublicRegistrationPolicy(): Promise<PublicRegistrationPolicy> {
+  const settings = await db.studioSettings.findUnique({
+    where: { id: "default" },
+    select: {
+      registrationPolicyTitle: true,
+      registrationPolicyContent: true,
+      registrationPolicyAgreementLabel: true,
+      registrationPolicyVersion: true,
+    },
+  });
+  return settings ?? {
+    registrationPolicyTitle: DEFAULT_REGISTRATION_POLICY_TITLE,
+    registrationPolicyContent: DEFAULT_REGISTRATION_POLICY_CONTENT,
+    registrationPolicyAgreementLabel: DEFAULT_REGISTRATION_AGREEMENT_LABEL,
+    registrationPolicyVersion: 1,
+  };
+}
+
 // ---------- Mutations ----------
 
 export async function updateStudioSettings(
@@ -111,6 +154,19 @@ export async function updateStudioSettings(
     update: data,
   });
 
+  return toClientSettings(settings);
+}
+
+export async function updateRegistrationPolicy(
+  input: RegistrationPolicySettingsInput,
+): Promise<StudioSettingsData> {
+  await requireOwner();
+  const data = registrationPolicySettingsSchema.parse(input);
+  const settings = await db.studioSettings.upsert({
+    where: { id: "default" },
+    create: { ...DEFAULT_SETTINGS, ...data },
+    update: { ...data, registrationPolicyVersion: { increment: 1 } },
+  });
   return toClientSettings(settings);
 }
 

@@ -29,6 +29,12 @@ Nothing currently in progress.
 
 ## Done
 
+- **2026-09-11: Added admin-managed registration policies.** The supplied regular-class guide is
+  now shown before the required agreement, owners can edit and preview it in Settings, and every
+  new request preserves the exact accepted policy version and agreement time. All 206 tests,
+  changed-file lint, TypeScript, the production build, and desktop/mobile browser checks pass; the
+  database update was applied successfully.
+
 - **2026-09-10: Added billing schedule guidance.** Information icons beside the due-day and
   reminder-delay fields now explain first-of-month automatic bill generation, manual generation,
   how the due day is used, and the one-reminder-per-bill behavior. TypeScript and changed-file lint pass.

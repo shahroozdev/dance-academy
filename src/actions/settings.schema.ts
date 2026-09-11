@@ -20,6 +20,14 @@ export const businessProfileSchema = z.object({
 
 export type BusinessProfileInput = z.infer<typeof businessProfileSchema>;
 
+export const registrationPolicySettingsSchema = z.object({
+  registrationPolicyTitle: z.string().trim().min(1, "Enter a policy title").max(200),
+  registrationPolicyContent: z.string().trim().min(1, "Enter the policy content").max(20000),
+  registrationPolicyAgreementLabel: z.string().trim().min(1, "Enter the agreement wording").max(500),
+});
+
+export type RegistrationPolicySettingsInput = z.infer<typeof registrationPolicySettingsSchema>;
+
 // Percentages are entered as a fraction (e.g. 0.05 = 5%).
 export const discountSettingsSchema = z.object({
   multiClassDiscountPct: z.coerce.number().min(0, "Must be 0 or greater").max(1, "Must be 1 or less (e.g. 0.05 for 5%)"),

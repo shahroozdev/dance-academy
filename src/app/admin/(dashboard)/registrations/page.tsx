@@ -195,9 +195,25 @@ function ReviewModal({ id, onClose }: { id: string; onClose: () => void }) {
                   value={request.studioPolicyAgreement ? "Agreed" : "Not agreed"}
                 />
                 <Row
+                  label="Policy Version"
+                  value={request.policyVersion ? `Version ${request.policyVersion}` : "Legacy submission"}
+                />
+                <Row
+                  label="Agreement Date"
+                  value={request.policyAgreedAt ? new Date(request.policyAgreedAt).toLocaleString() : "—"}
+                />
+                <Row
                   label="Photo/Video Consent"
                   value={request.photoVideoConsent ? "Consented" : "Not consented"}
                 />
+                {request.policyContentSnapshot && (
+                  <details className="mt-2 rounded-md border p-3">
+                    <summary className="cursor-pointer font-medium">View accepted policy</summary>
+                    <p className="mt-2 whitespace-pre-line text-muted-foreground">
+                      {request.policyContentSnapshot}
+                    </p>
+                  </details>
+                )}
               </Section>
 
             </div>

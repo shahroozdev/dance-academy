@@ -10,6 +10,11 @@ import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { matchRegistrationFamily } from "@/lib/family-matching";
 import { firstName } from "@/lib/notifications";
+import {
+  DEFAULT_REGISTRATION_AGREEMENT_LABEL,
+  DEFAULT_REGISTRATION_POLICY_CONTENT,
+  DEFAULT_REGISTRATION_POLICY_TITLE,
+} from "@/lib/registration-policy";
 
 // ---------- Queries ----------
 
@@ -115,11 +120,28 @@ export async function previewRegistrationApproval(id: string, familyId?: string)
 
 export async function createRegistrationRequest(data: RegistrationRequestCreateInput) {
   data = registrationRequestCreateSchema.parse(data);
-  const offeredProgram = await db.danceProgram.findFirst({
-    where: { id: data.requestedProgramId, isActive: true, classes: { some: { isActive: true } } },
-    select: { id: true, name: true },
-  });
+  const [offeredProgram, policy] = await Promise.all([
+    db.danceProgram.findFirst({
+      where: { id: data.requestedProgramId, isActive: true, classes: { some: { isActive: true } } },
+      select: { id: true, name: true },
+    }),
+    db.studioSettings.findUnique({
+      where: { id: "default" },
+      select: {
+        registrationPolicyTitle: true,
+        registrationPolicyContent: true,
+        registrationPolicyAgreementLabel: true,
+        registrationPolicyVersion: true,
+      },
+    }),
+  ]);
   if (!offeredProgram) throw new Error("This dance program is no longer accepting registration.");
+  const acceptedPolicy = policy ?? {
+    registrationPolicyTitle: DEFAULT_REGISTRATION_POLICY_TITLE,
+    registrationPolicyContent: DEFAULT_REGISTRATION_POLICY_CONTENT,
+    registrationPolicyAgreementLabel: DEFAULT_REGISTRATION_AGREEMENT_LABEL,
+    registrationPolicyVersion: 1,
+  };
   const request = await db.registrationRequest.create({
     data: {
       parentGuardianName: data.parentGuardianName,
@@ -135,6 +157,11 @@ export async function createRegistrationRequest(data: RegistrationRequestCreateI
       emergencyPhone: data.emergencyPhone,
       studioPolicyAgreement: data.studioPolicyAgreement,
       photoVideoConsent: data.photoVideoConsent,
+      policyTitleSnapshot: acceptedPolicy.registrationPolicyTitle,
+      policyContentSnapshot: acceptedPolicy.registrationPolicyContent,
+      policyAgreementLabelSnapshot: acceptedPolicy.registrationPolicyAgreementLabel,
+      policyVersion: acceptedPolicy.registrationPolicyVersion,
+      policyAgreedAt: new Date(),
     },
   });
 

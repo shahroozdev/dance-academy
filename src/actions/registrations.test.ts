@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     student: { findFirst: vi.fn(), findUniqueOrThrow: vi.fn(), create: vi.fn(), update: vi.fn() },
     class: { findFirst: vi.fn(), findUniqueOrThrow: vi.fn(), findUnique: vi.fn() },
     danceProgram: { findFirst: vi.fn() },
+    studioSettings: { findUnique: vi.fn() },
     enrollment: { findFirst: vi.fn(), create: vi.fn() },
   },
 }));
@@ -36,6 +37,12 @@ beforeEach(() => {
   mocks.db.class.findUniqueOrThrow.mockResolvedValue({ id: "class", programId: "program", isActive: true });
   mocks.db.class.findUnique.mockResolvedValue({ name: "Kathak" });
   mocks.db.danceProgram.findFirst.mockResolvedValue({ id: "program", name: "Kathak" });
+  mocks.db.studioSettings.findUnique.mockResolvedValue({
+    registrationPolicyTitle: "Current guide",
+    registrationPolicyContent: "Current policy text",
+    registrationPolicyAgreementLabel: "I agree",
+    registrationPolicyVersion: 3,
+  });
   mocks.db.enrollment.findFirst.mockResolvedValue(null);
 });
 
@@ -64,7 +71,14 @@ describe("public program-only registration", () => {
     });
 
     expect(mocks.db.registrationRequest.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ requestedProgramId: "program" }),
+      data: expect.objectContaining({
+        requestedProgramId: "program",
+        policyTitleSnapshot: "Current guide",
+        policyContentSnapshot: "Current policy text",
+        policyAgreementLabelSnapshot: "I agree",
+        policyVersion: 3,
+        policyAgreedAt: expect.any(Date),
+      }),
     });
     expect(mocks.db.registrationRequest.create.mock.calls[0][0].data).not.toHaveProperty("requestedClassId");
     expect(mocks.sendEmail).toHaveBeenCalledWith(
