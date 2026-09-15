@@ -1,5 +1,11 @@
 # Updates Summary
 
+## 2026-09-15
+
+- Student and family profiles now include a permanent delete option for administrators. To prevent accidental removal, the exact name must be entered before deletion; deleting a family also clearly warns that all connected students and history will be removed.
+- Staff can now enter the student's actual class start date when adding an enrollment and correct it later from the Enrollments page, so late data entry still produces accurate mid-month billing.
+- Enrollment date correction explains when to recalculate an affected unpaid bill and when to use a billing adjustment because payments already exist.
+
 ## 2026-09-11
 
 - Registration Policies in Settings now provides a guided three-step editing experience, formatting help, clearer version information, and explicit explanations of previews, publishing, and restoring defaults.

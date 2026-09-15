@@ -1,11 +1,14 @@
 "use client";
 
-import { ExternalLink, ListChecks, Plus } from "lucide-react";
+import { CalendarClock, ExternalLink, ListChecks, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { enrollmentStartDateUpdateSchema } from "@/actions/enrollments.schema";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
+import { FORM, FormFeilds } from "@/components/common/form";
+import { Input } from "@/components/common/input";
 import { Modal } from "@/components/common/modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
 import TooltipWrapper from "@/components/common/TooltipWrapper";
@@ -16,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { todayIsoDate } from "@/lib/utils";
 
 export default function EnrollmentsPage() {
   const searchParams = useSearchParams();
@@ -125,6 +129,13 @@ export default function EnrollmentsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
+                    <div className="flex flex-wrap gap-2">
+                    <EditEnrollmentStartDate
+                      id={enrollment.id}
+                      studentName={enrollment.student.fullName}
+                      className={enrollment.class.name}
+                      startDate={enrollment.startDate}
+                    />
                     {enrollment.status === "ACTIVE" && (
                       <Modal
                         trigger={
@@ -208,6 +219,7 @@ export default function EnrollmentsPage() {
                         )}
                       </Modal>
                     )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -233,6 +245,71 @@ export default function EnrollmentsPage() {
   );
 }
 
+function EditEnrollmentStartDate({
+  id,
+  studentName,
+  className,
+  startDate,
+}: {
+  id: string;
+  studentName: string;
+  className: string;
+  startDate: Date;
+}) {
+  const { mutate, isLoading, error } = useMutate("updateEnrollmentStartDate", {
+    invalidateKeys: ["getEnrollments", "getStudents", "getStudentById", "getMonthlyBillings"],
+  });
+
+  return (
+    <Modal
+      trigger={
+        <TooltipWrapper label="Correct the enrollment start date">
+          <Button variant="outline" size="sm">
+            <CalendarClock className="size-4" />
+            Edit Start Date
+          </Button>
+        </TooltipWrapper>
+      }
+      className="max-w-md"
+      title="Edit Enrollment Start Date"
+    >
+      {({ close }) => (
+        <FORM
+          schema={enrollmentStartDateUpdateSchema}
+          defaultValues={{ startDate: new Date(startDate).toISOString().split("T")[0] }}
+          onSubmit={async (data) => {
+            try {
+              await mutate(id, data);
+              close();
+            } catch {
+              // The mutation error is displayed below.
+            }
+          }}
+        >
+          {(form) => (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Correct when {studentName} actually started {className}. This date determines which class sessions are included in mid-month billing.
+              </p>
+              <FormFeilds name="startDate" label="Actual Enrollment Start Date" type="date" max={todayIsoDate()} required />
+              <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
+                After saving, open the student&apos;s affected monthly bill and select <strong>Recalculate</strong>. Bills that already have payments are protected and must be corrected with an adjustment instead.
+              </p>
+              {Boolean(error) && <p role="alert" className="text-sm text-destructive">{error instanceof Error ? error.message : "Could not update the enrollment start date."}</p>}
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={close}>Cancel</Button>
+                <Button type="submit" disabled={isLoading || !form.formState.isDirty || !form.formState.isValid}>
+                  {isLoading ? "Saving..." : "Save Start Date"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </FORM>
+      )}
+    </Modal>
+  );
+}
+
 function EnrollmentsCreateModal({
   open,
   onOpenChange,
@@ -244,6 +321,7 @@ function EnrollmentsCreateModal({
 }) {
   const [studentId, setStudentId] = useState("");
   const [classId, setClassId] = useState("");
+  const [startDate, setStartDate] = useState(todayIsoDate());
 
   const { data: studentsData } = useQuery("getStudents", [{ pageSize: 100 }]);
   const { data: classesData } = useQuery("getClasses", [{ pageSize: 100 }]);
@@ -255,6 +333,7 @@ function EnrollmentsCreateModal({
       onOpenChange(false);
       setStudentId("");
       setClassId("");
+      setStartDate(todayIsoDate());
     },
   });
 
@@ -306,6 +385,17 @@ function EnrollmentsCreateModal({
               </p>
             )}
           </div>
+          <div>
+            <label htmlFor="enrollment-start-date" className="text-sm font-medium">Actual Enrollment Start Date</label>
+            <Input
+              id="enrollment-start-date"
+              type="date"
+              value={startDate}
+              max={todayIsoDate()}
+              onChange={setStartDate}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Use the date the student actually started this class, even if the record is being entered later.</p>
+          </div>
         </div>
         {Boolean(error) && (
           <p className="text-sm text-destructive">
@@ -315,10 +405,10 @@ function EnrollmentsCreateModal({
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
-            disabled={!studentId || !classId || isLoading}
+            disabled={!studentId || !classId || !startDate || isLoading}
             onClick={async () => {
               try {
-                await createEnroll({ studentId, classId });
+                await createEnroll({ studentId, classId, startDate });
               } catch {
                 // Surfaced via the error message above — nothing further to do here.
               }

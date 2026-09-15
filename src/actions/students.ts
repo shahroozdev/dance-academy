@@ -1,15 +1,14 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
+import { deleteStudentRecords } from "@/actions/record-deletion";
 import { studentCreateSchema, studentImportSchema, studentUpdateSchema } from "@/actions/students.schema";
 import type { StudentCreateInput, StudentImportRow, StudentUpdateInput } from "@/actions/students.schema";
 import { serializableTransaction } from "@/actions/transaction";
-import { idSchema, booleanSchema , validateListQuery } from "@/actions/validation.schema";
+import { booleanSchema, idSchema, validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { matchRegistrationFamily } from "@/lib/family-matching";
-
-
 // ---------- Queries ----------
 
 export type StudentListItem = {
@@ -186,6 +185,34 @@ export async function toggleStudentActive(id: string, isActive: boolean) {
   id = idSchema.parse(id);
   isActive = booleanSchema.parse(isActive);
   return db.student.update({ where: { id }, data: { isActive } });
+}
+
+export async function deleteStudent(id: string, confirmationName: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  confirmationName = idSchema.parse(confirmationName);
+
+  return serializableTransaction(async (tx) => {
+    const student = await tx.student.findUniqueOrThrow({
+      where: { id },
+      select: { id: true, fullName: true, familyId: true },
+    });
+    if (confirmationName !== student.fullName) {
+      throw new Error("Type the student's exact name to confirm deletion.");
+    }
+
+    await deleteStudentRecords(tx, [student.id]);
+    const remainingStudents = await tx.student.count({ where: { familyId: student.familyId } });
+    let familyDeleted = false;
+    if (remainingStudents === 0) {
+      await tx.registrationRequest.deleteMany({ where: { matchedFamilyId: student.familyId } });
+      await tx.notificationLog.deleteMany({ where: { familyId: student.familyId } });
+      await tx.family.delete({ where: { id: student.familyId } });
+      familyDeleted = true;
+    }
+
+    return { studentId: student.id, familyDeleted };
+  });
 }
 
 // ---------- CSV import ----------

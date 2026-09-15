@@ -11,5 +11,10 @@ export const enrollmentUpdateSchema = z.object({
   status: z.enum(["ACTIVE", "ENDED"]).optional(),
 });
 
+export const enrollmentStartDateUpdateSchema = z.object({
+  startDate: z.iso.date("Enter a valid enrollment start date"),
+});
+
 export type EnrollmentCreateInput = z.infer<typeof enrollmentCreateSchema>;
 export type EnrollmentUpdateInput = z.infer<typeof enrollmentUpdateSchema>;
+export type EnrollmentStartDateUpdateInput = z.infer<typeof enrollmentStartDateUpdateSchema>;

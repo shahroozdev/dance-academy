@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
+import { PermanentDeleteModal } from "@/components/common/permanent-delete-modal";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,14 @@ export default function StudentDetailPage() {
   const { data: student, isLoading } = useQuery("getStudentById", [id]);
   const { mutate: toggleActive } = useMutate("toggleStudentActive", {
     invalidateKeys: ["getStudents", "getStudentById"],
+  });
+  const {
+    mutate: removeStudent,
+    isLoading: isDeleting,
+    error: deleteError,
+  } = useMutate("deleteStudent", {
+    invalidateKeys: ["getStudents", "getFamilies", "getStudentById", "getFamilyById"],
+    onSuccess: () => router.push("/admin/students"),
   });
 
   if (isLoading) {
@@ -102,6 +111,14 @@ export default function StudentDetailPage() {
                 </div>
               )}
             </Modal>
+            <PermanentDeleteModal
+              entityName={student.fullName}
+              entityLabel="student"
+              impact="This removes the student and their registration, enrollment, billing, and payment history. If this is the family's only student, the empty family record is also removed."
+              isLoading={isDeleting}
+              error={deleteError}
+              onConfirm={(confirmationName) => removeStudent(id, confirmationName)}
+            />
           </div>
         }
       />

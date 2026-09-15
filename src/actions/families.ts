@@ -3,11 +3,11 @@
 import { requireAdmin } from "@/actions/access";
 import { familyCreateSchema, familyUpdateSchema } from "@/actions/families.schema";
 import type { FamilyCreateInput, FamilyUpdateInput } from "@/actions/families.schema";
-import { idSchema, booleanSchema , validateListQuery } from "@/actions/validation.schema";
+import { deleteStudentRecords } from "@/actions/record-deletion";
+import { serializableTransaction } from "@/actions/transaction";
+import { booleanSchema, idSchema, validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-
-
 // ---------- Queries ----------
 
 export type FamilyListItem = {
@@ -129,4 +129,28 @@ export async function toggleFamilyActive(id: string, isActive: boolean) {
   id = idSchema.parse(id);
   isActive = booleanSchema.parse(isActive);
   return db.family.update({ where: { id }, data: { isActive } });
+}
+
+export async function deleteFamily(id: string, confirmationName: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  confirmationName = idSchema.parse(confirmationName);
+
+  return serializableTransaction(async (tx) => {
+    const family = await tx.family.findUniqueOrThrow({
+      where: { id },
+      select: { id: true, familyName: true, students: { select: { id: true } } },
+    });
+    if (confirmationName !== family.familyName) {
+      throw new Error("Type the family's exact name to confirm deletion.");
+    }
+
+    const studentIds = family.students.map((student) => student.id);
+    await deleteStudentRecords(tx, studentIds);
+    await tx.registrationRequest.deleteMany({ where: { matchedFamilyId: family.id } });
+    await tx.notificationLog.deleteMany({ where: { familyId: family.id } });
+    await tx.family.delete({ where: { id: family.id } });
+
+    return { familyId: family.id, studentsDeleted: studentIds.length };
+  });
 }

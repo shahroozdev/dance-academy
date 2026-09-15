@@ -7,10 +7,11 @@ import {
 } from "@/actions/class-fees";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
 import { updateEmailTemplate } from "@/actions/email-templates";
-import { createEnrollment, endEnrollment, reactivateEnrollment } from "@/actions/enrollments";
+import { createEnrollment, endEnrollment, reactivateEnrollment, updateEnrollmentStartDate } from "@/actions/enrollments";
 import { createExpense, deleteExpense, updateExpense, uploadExpenseReceipt } from "@/actions/expenses";
 import {
   createFamily,
+  deleteFamily,
   updateFamily,
   toggleFamilyActive,
 } from "@/actions/families";
@@ -27,6 +28,7 @@ import {
 import { updateRegistrationPolicy, updateStudioSettings, uploadLogo } from "@/actions/settings";
 import {
   createStudent,
+  deleteStudent,
   updateStudent,
   toggleStudentActive,
   importStudents,
@@ -35,9 +37,11 @@ import { createTeacher, updateTeacher, toggleTeacherActive } from "@/actions/tea
 
 export const mutationRegistry = {
   createFamily,
+  deleteFamily,
   updateFamily,
   toggleFamilyActive,
   createStudent,
+  deleteStudent,
   updateStudent,
   toggleStudentActive,
   importStudents,
@@ -50,6 +54,7 @@ export const mutationRegistry = {
   createEnrollment,
   endEnrollment,
   reactivateEnrollment,
+  updateEnrollmentStartDate,
   createRegistrationRequest,
   approveRegistrationRequest,
   rejectRegistrationRequest,

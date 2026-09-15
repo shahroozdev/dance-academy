@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
+import { PermanentDeleteModal } from "@/components/common/permanent-delete-modal";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,14 @@ export default function FamilyDetailPage() {
   const { data: family, isLoading } = useQuery("getFamilyById", [id]);
   const { mutate: toggleActive } = useMutate("toggleFamilyActive", {
     invalidateKeys: ["getFamilies", "getFamilyById"],
+  });
+  const {
+    mutate: removeFamily,
+    isLoading: isDeleting,
+    error: deleteError,
+  } = useMutate("deleteFamily", {
+    invalidateKeys: ["getFamilies", "getStudents", "getFamilyById", "getStudentById"],
+    onSuccess: () => router.push("/admin/families"),
   });
 
   if (isLoading) {
@@ -86,6 +95,14 @@ export default function FamilyDetailPage() {
                 </div>
               )}
             </Modal>
+            <PermanentDeleteModal
+              entityName={family.familyName}
+              entityLabel="family"
+              impact={`This removes the family, all ${family.students.length} student record(s), and their registration, enrollment, billing, payment, and notification history.`}
+              isLoading={isDeleting}
+              error={deleteError}
+              onConfirm={(confirmationName) => removeFamily(id, confirmationName)}
+            />
           </div>
         }
       />

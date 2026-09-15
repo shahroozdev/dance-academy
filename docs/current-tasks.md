@@ -5,7 +5,7 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
-Nothing currently in progress.
+- Nothing currently in progress.
 
 ## Next / Blocked
 
@@ -28,6 +28,18 @@ Nothing currently in progress.
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-09-15: Added permanent student and family deletion.** Admins can permanently delete an
+  individual student or an entire family from its profile after typing the exact record name. The
+  operation removes connected registrations, enrollments, bills, payments, and notifications in a
+  safe dependency order. An individual deletion preserves siblings and their family. All 214 tests,
+  focused lint, TypeScript, and the production build pass.
+
+- **2026-09-15: Added historical enrollment-date correction.** Staff can enter the actual class
+  start date while adding an enrollment and edit it later. The UI explains how to recalculate the
+  affected unpaid bill, while paid bills remain protected and use adjustments. Future dates and
+  dates after an enrollment ended are rejected. All 210 tests, focused lint, TypeScript, and the
+  production build pass.
 
 - **2026-09-11: Polished policy settings and added admin guidance.** Registration Policies now
   guides owners through editing, previewing, and publishing; explains formatting and version history;
