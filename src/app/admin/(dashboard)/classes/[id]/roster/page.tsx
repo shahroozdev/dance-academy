@@ -9,6 +9,7 @@ import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@/hooks/useQuery";
+import { formatEnrollmentCalendarDate } from "@/lib/enrollment-date";
 
 export default function ClassRosterPage() {
   const params = useParams();
@@ -74,7 +75,7 @@ export default function ClassRosterPage() {
                   </TableCell>
                   <TableCell>{enrollment.student.family.familyName}</TableCell>
                   <TableCell>{enrollment.student.family.phone}</TableCell>
-                  <TableCell>{new Date(enrollment.startDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatEnrollmentCalendarDate(enrollment.startDate)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

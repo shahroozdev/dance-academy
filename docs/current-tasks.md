@@ -29,6 +29,24 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Done
 
+- **2026-09-17: Made enrollment billing dates timezone-neutral.** Enrollment start/end boundaries
+  are database calendar dates, and staff must choose a guided First Billable Date during registration
+  approval or manual enrollment. Sessions before the selected date are excluded and sessions on or
+  after it are included. The legacy-data conversion is prepared but not yet applied to the live
+  database. All 226 tests, focused lint, TypeScript, and the production build pass.
+
+- **2026-09-17: Audited related enrollment-date billing cases.** Enrollment creation, approval,
+  reactivation, ending, monthly boundaries, every weekday, and all admin date displays now use the
+  same studio calendar-date rules. The live read-only audit found nine unpaid September bills with
+  the same $40-to-$60 discrepancy, no invalid enrollment ranges, and no regular classes missing a
+  schedule. All 227 tests, focused lint, TypeScript, and the production build pass.
+
+- **2026-09-17: Fixed same-day enrollment billing recalculation.** Older enrollment timestamps now
+  resolve to the studio's calendar date consistently across billing and admin displays. Hannah's
+  reported September 10 Thursday enrollment is covered by a regression test and recalculates as
+  three sessions ($60 at $20 per session). All 217 tests, focused lint, TypeScript, and the
+  production build pass.
+
 - **2026-09-15: Added permanent student and family deletion.** Admins can permanently delete an
   individual student or an entire family from its profile after typing the exact record name. The
   operation removes connected registrations, enrollments, bills, payments, and notifications in a

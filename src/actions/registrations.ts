@@ -2,6 +2,7 @@
 
 import { requireAdmin } from "@/actions/access";
 import { sendAdminOperationalAlert, sendTemplatedEmail } from "@/actions/email";
+import { enrollmentStartDateUpdateSchema } from "@/actions/enrollments.schema";
 import { registrationRequestCreateSchema } from "@/actions/registrations.schema";
 import type { RegistrationRequestCreateInput } from "@/actions/registrations.schema";
 import { serializableTransaction } from "@/actions/transaction";
@@ -197,10 +198,18 @@ export async function rejectRegistrationRequest(id: string) {
   });
 }
 
-export async function approveRegistrationRequest(id: string, classId: string, familyId?: string, sendEmailNow = false) {
+export async function approveRegistrationRequest(
+  id: string,
+  classId: string,
+  firstBillableDate: string,
+  familyId?: string,
+  sendEmailNow = false,
+) {
   const admin = await requireAdmin();
   id = idSchema.parse(id);
   classId = idSchema.parse(classId);
+  const { startDate } = enrollmentStartDateUpdateSchema.parse({ startDate: firstBillableDate });
+  const enrollmentStartDate = new Date(`${startDate}T00:00:00.000Z`);
   familyId = idSchema.optional().parse(familyId);
   sendEmailNow = booleanSchema.parse(sendEmailNow);
   const processedRequest = await serializableTransaction(async (tx) => {
@@ -263,7 +272,7 @@ export async function approveRegistrationRequest(id: string, classId: string, fa
     });
     if (!existingEnrollment) {
       await tx.enrollment.create({
-        data: { studentId: student.id, classId },
+        data: { studentId: student.id, classId, startDate: enrollmentStartDate },
       });
     }
 

@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { enrollmentDateInputValue, formatEnrollmentCalendarDate } from "@/lib/enrollment-date";
 import { todayIsoDate } from "@/lib/utils";
 
 export default function EnrollmentsPage() {
@@ -122,7 +123,7 @@ export default function EnrollmentsPage() {
                     {enrollment.class.dayOfWeek?.replace("_", " ")}
                     {enrollment.class.startTime && ` at ${enrollment.class.startTime}`}
                   </TableCell>
-                  <TableCell>{new Date(enrollment.startDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatEnrollmentCalendarDate(enrollment.startDate)}</TableCell>
                   <TableCell>
                     <Badge variant={enrollment.status === "ACTIVE" ? "default" : "secondary"}>
                       {enrollment.status}
@@ -159,7 +160,7 @@ export default function EnrollmentsPage() {
                             <Button
                               variant="destructive"
                               onClick={async () => {
-                                await endEnroll(enrollment.id);
+                                await endEnroll(enrollment.id, todayIsoDate());
                                 close();
                               }}
                             >
@@ -205,7 +206,7 @@ export default function EnrollmentsPage() {
                               <Button
                                 onClick={async () => {
                                   try {
-                                    await reactivateEnroll(enrollment.id);
+                                    await reactivateEnroll(enrollment.id, todayIsoDate());
                                     close();
                                   } catch {
                                     // Surfaced via the error message above — nothing further to do here.
@@ -276,7 +277,7 @@ function EditEnrollmentStartDate({
       {({ close }) => (
         <FORM
           schema={enrollmentStartDateUpdateSchema}
-          defaultValues={{ startDate: new Date(startDate).toISOString().split("T")[0] }}
+          defaultValues={{ startDate: enrollmentDateInputValue(startDate) }}
           onSubmit={async (data) => {
             try {
               await mutate(id, data);
@@ -291,7 +292,10 @@ function EditEnrollmentStartDate({
               <p className="text-sm text-muted-foreground">
                 Correct when {studentName} actually started {className}. This date determines which class sessions are included in mid-month billing.
               </p>
-              <FormFeilds name="startDate" label="Actual Enrollment Start Date" type="date" max={todayIsoDate()} required />
+              <FormFeilds name="startDate" label="First Billable Date" type="date" max={todayIsoDate()} required />
+              <p className="text-sm text-muted-foreground">
+                Sessions before this date are excluded. A class held on this date or later is included.
+              </p>
               <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
                 After saving, open the student&apos;s affected monthly bill and select <strong>Recalculate</strong>. Bills that already have payments are protected and must be corrected with an adjustment instead.
               </p>
@@ -386,7 +390,7 @@ function EnrollmentsCreateModal({
             )}
           </div>
           <div>
-            <label htmlFor="enrollment-start-date" className="text-sm font-medium">Actual Enrollment Start Date</label>
+            <label htmlFor="enrollment-start-date" className="text-sm font-medium">First Billable Date</label>
             <Input
               id="enrollment-start-date"
               type="date"
@@ -394,7 +398,7 @@ function EnrollmentsCreateModal({
               max={todayIsoDate()}
               onChange={setStartDate}
             />
-            <p className="mt-1 text-xs text-muted-foreground">Use the date the student actually started this class, even if the record is being entered later.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Sessions before this date are excluded. A class held on this date or later is included.</p>
           </div>
         </div>
         {Boolean(error) && (

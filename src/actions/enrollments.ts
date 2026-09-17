@@ -6,6 +6,7 @@ import type { EnrollmentCreateInput, EnrollmentStartDateUpdateInput } from "@/ac
 import { serializableTransaction } from "@/actions/transaction";
 import { idSchema , validateListQuery } from "@/actions/validation.schema";
 import { db } from "@/lib/db";
+import { enrollmentCalendarDate } from "@/lib/enrollment-date";
 
 
 // ---------- Queries ----------
@@ -63,12 +64,13 @@ export async function createEnrollment(data: EnrollmentCreateInput) {
   });
 }
 
-export async function endEnrollment(id: string) {
+export async function endEnrollment(id: string, endDateInput: string) {
   await requireAdmin();
   id = idSchema.parse(id);
+  const { startDate: endDate } = enrollmentStartDateUpdateSchema.parse({ startDate: endDateInput });
   return db.enrollment.update({
     where: { id, status: "ACTIVE" },
-    data: { status: "ENDED", endDate: new Date() },
+    data: { status: "ENDED", endDate: new Date(`${endDate}T00:00:00.000Z`) },
   });
 }
 
@@ -79,7 +81,7 @@ export async function updateEnrollmentStartDate(id: string, data: EnrollmentStar
   const startDate = parseEnrollmentStartDate(data.startDate);
 
   const enrollment = await db.enrollment.findUniqueOrThrow({ where: { id }, select: { endDate: true } });
-  if (enrollment.endDate && startDate > enrollment.endDate) {
+  if (enrollment.endDate && startDate > enrollmentCalendarDate(enrollment.endDate)) {
     throw new Error("Enrollment start date cannot be after its end date.");
   }
 
@@ -96,9 +98,10 @@ function parseEnrollmentStartDate(value?: string) {
 
 // Reactivates the same enrollment record (rather than creating a new one) so a student's
 // enrollment in a given class stays a single row across an end/re-enroll cycle.
-export async function reactivateEnrollment(id: string) {
+export async function reactivateEnrollment(id: string, firstBillableDate: string) {
   await requireAdmin();
   id = idSchema.parse(id);
+  const { startDate } = enrollmentStartDateUpdateSchema.parse({ startDate: firstBillableDate });
   return serializableTransaction(async (tx) => {
     const enrollment = await tx.enrollment.findUniqueOrThrow({ where: { id } });
     if (enrollment.status !== "ENDED") throw new Error("Only an ended enrollment can be re-enrolled.");
@@ -116,7 +119,7 @@ export async function reactivateEnrollment(id: string) {
 
     return tx.enrollment.update({
       where: { id },
-      data: { status: "ACTIVE", startDate: new Date(), endDate: null },
+      data: { status: "ACTIVE", startDate: new Date(`${startDate}T00:00:00.000Z`), endDate: null },
     });
   });
 }

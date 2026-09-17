@@ -119,16 +119,18 @@ describe("registration family selection", () => {
   it.each([null, { ...family, isActive: false }])("rejects unavailable selected families in preview and approval", async (selected) => {
     mocks.db.family.findUnique.mockResolvedValue(selected);
     await expect(previewRegistrationApproval("request", family.id)).rejects.toThrow("unavailable or inactive");
-    await expect(approveRegistrationRequest("request", "class", family.id)).rejects.toThrow("unavailable or inactive");
+    await expect(approveRegistrationRequest("request", "class", "2026-09-10", family.id)).rejects.toThrow("unavailable or inactive");
     expect(mocks.db.student.create).not.toHaveBeenCalled();
     expect(mocks.db.registrationRequest.update).not.toHaveBeenCalled();
   });
 
   it("creates the sibling in the chosen family and records the staff decision", async () => {
-    const result = await approveRegistrationRequest("request", "class", family.id);
+    const result = await approveRegistrationRequest("request", "class", "2026-09-10", family.id);
     expect(mocks.db.family.create).not.toHaveBeenCalled();
     expect(mocks.db.student.create).toHaveBeenCalledWith({ data: expect.objectContaining({ familyId: family.id, fullName: request.studentFullName }) });
-    expect(mocks.db.enrollment.create).toHaveBeenCalledWith({ data: { studentId: "new-student", classId: "class" } });
+    expect(mocks.db.enrollment.create).toHaveBeenCalledWith({
+      data: { studentId: "new-student", classId: "class", startDate: new Date("2026-09-10T00:00:00.000Z") },
+    });
     expect(result).toMatchObject({ matchedFamilyId: family.id, matchedStudentId: "new-student", processedByAdminId: "admin", status: "PROCESSED" });
     expect(mocks.sendEmail).not.toHaveBeenCalled();
   });
@@ -146,7 +148,7 @@ describe("registration family selection", () => {
       });
     mocks.sendEmail.mockResolvedValue({ sent: true });
 
-    const result = await approveRegistrationRequest("request", "class", family.id, true);
+    const result = await approveRegistrationRequest("request", "class", "2026-09-10", family.id, true);
 
     expect(result.enrollmentEmail).toEqual({ requested: true, sent: true, error: null });
     expect(mocks.sendEmail).toHaveBeenCalledWith("ENROLLMENT_CONFIRMED", expect.objectContaining({ className: "Kathak" }), family.email);
@@ -169,7 +171,7 @@ describe("registration family selection", () => {
       });
     mocks.sendEmail.mockResolvedValue({ sent: false, error: "SMTP unavailable" });
 
-    const result = await approveRegistrationRequest("request", "class", family.id, true);
+    const result = await approveRegistrationRequest("request", "class", "2026-09-10", family.id, true);
 
     expect(result.enrollmentEmail).toEqual({ requested: true, sent: false, error: "SMTP unavailable" });
     expect(mocks.db.enrollment.create).toHaveBeenCalled();
@@ -180,7 +182,7 @@ describe("registration family selection", () => {
     mocks.db.student.findFirst.mockResolvedValue(student);
     mocks.db.student.findUniqueOrThrow.mockResolvedValue(student);
     mocks.db.enrollment.findFirst.mockResolvedValue({ id: "existing-enrollment" });
-    await approveRegistrationRequest("request", "class", family.id);
+    await approveRegistrationRequest("request", "class", "2026-09-10", family.id);
     expect(mocks.db.student.create).not.toHaveBeenCalled();
     expect(mocks.db.enrollment.create).not.toHaveBeenCalled();
   });
@@ -188,18 +190,18 @@ describe("registration family selection", () => {
   it("checks again when a family becomes inactive after preview", async () => {
     await previewRegistrationApproval("request", family.id);
     mocks.db.family.findUnique.mockResolvedValue({ ...family, isActive: false });
-    await expect(approveRegistrationRequest("request", "class", family.id)).rejects.toThrow("inactive");
+    await expect(approveRegistrationRequest("request", "class", "2026-09-10", family.id)).rejects.toThrow("inactive");
   });
 
   it("rejects repeated approval", async () => {
     mocks.db.registrationRequest.findUniqueOrThrow.mockResolvedValue({ ...request, status: "PROCESSED" });
-    await expect(approveRegistrationRequest("request", "class", family.id)).rejects.toThrow("already been processed");
+    await expect(approveRegistrationRequest("request", "class", "2026-09-10", family.id)).rejects.toThrow("already been processed");
   });
 
   it("rejects a final class outside the program selected by the parent", async () => {
     mocks.db.class.findUniqueOrThrow.mockResolvedValue({ id: "other-class", programId: "other-program", isActive: true });
 
-    await expect(approveRegistrationRequest("request", "other-class", family.id)).rejects.toThrow(
+    await expect(approveRegistrationRequest("request", "other-class", "2026-09-10", family.id)).rejects.toThrow(
       "Select a class from the dance program requested by the parent.",
     );
     expect(mocks.db.student.create).not.toHaveBeenCalled();
@@ -207,7 +209,7 @@ describe("registration family selection", () => {
   });
 
   it("validates the family ID instead of treating an empty selection as automatic", async () => {
-    await expect(approveRegistrationRequest("request", "class", "")).rejects.toThrow();
+    await expect(approveRegistrationRequest("request", "class", "2026-09-10", "")).rejects.toThrow();
     expect(mocks.db.registrationRequest.findUniqueOrThrow).not.toHaveBeenCalled();
   });
 

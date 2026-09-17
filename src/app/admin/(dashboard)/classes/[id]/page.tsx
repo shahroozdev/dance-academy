@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
+import { formatEnrollmentCalendarDate } from "@/lib/enrollment-date";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
@@ -191,7 +192,7 @@ export default function ClassDetailPage() {
                   </p>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Since {new Date(enrollment.startDate).toLocaleDateString()}
+                  Since {formatEnrollmentCalendarDate(enrollment.startDate)}
                 </p>
               </div>
             ))}

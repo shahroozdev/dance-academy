@@ -11,14 +11,16 @@ import { Switch } from "@/components/common/switch";
 import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { todayIsoDate } from "@/lib/utils";
 
 const AUTO = "AUTO";
 const selectionSchema = z.object({
   familyId: z.string().min(1),
   classId: z.string().min(1, "Select the student's final class"),
+  firstBillableDate: z.iso.date("Select the first date this student should be billed"),
   sendEmailNow: z.boolean(),
 });
-const defaults = { familyId: AUTO, classId: "", sendEmailNow: true };
+const defaults = { familyId: AUTO, classId: "", firstBillableDate: todayIsoDate(), sendEmailNow: true };
 const FAMILY_PAGE_SIZE = 25;
 
 type FamilyOption = {
@@ -110,9 +112,9 @@ export function RegistrationApprovalForm({ id, requestedProgramId, onClose }: { 
   }
 
   return (
-    <FORM schema={selectionSchema} defaultValues={defaults} onSubmit={async ({ familyId, classId, sendEmailNow }) => {
+    <FORM schema={selectionSchema} defaultValues={defaults} onSubmit={async ({ familyId, classId, firstBillableDate, sendEmailNow }) => {
       if (busy) return;
-      try { await approve(id, classId, familyId === AUTO ? undefined : familyId, sendEmailNow); } catch { /* Mutation error is shown below. */ }
+      try { await approve(id, classId, firstBillableDate, familyId === AUTO ? undefined : familyId, sendEmailNow); } catch { /* Mutation error is shown below. */ }
     }} className="space-y-4">
       {(form) => (
         <>
@@ -146,6 +148,17 @@ export function RegistrationApprovalForm({ id, requestedProgramId, onClose }: { 
           )}
           <p className="text-sm text-muted-foreground">
             Select this only after the student&apos;s level and batch have been evaluated. Finalizing creates the enrollment in this class.
+          </p>
+          <FormFeilds
+            name="firstBillableDate"
+            label="First Billable Date"
+            type="date"
+            max={todayIsoDate()}
+            disabled={busy}
+            required
+          />
+          <p className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
+            Select the first class date this student should be charged for. Sessions before this date are excluded; a class held on this date or later is included.
           </p>
           <div className="flex items-center justify-between gap-4 rounded-md border p-3">
             <div className="flex min-w-0 items-center gap-2">

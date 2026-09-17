@@ -41,6 +41,16 @@ describe("updateEnrollmentStartDate", () => {
     expect(mocks.db.enrollment.update).not.toHaveBeenCalled();
   });
 
+  it("allows the first billable date to equal the enrollment end date", async () => {
+    mocks.db.enrollment.findUniqueOrThrow.mockResolvedValue({
+      endDate: new Date("2026-09-10T00:00:00.000Z"),
+    });
+
+    await updateEnrollmentStartDate("enrollment", { startDate: "2026-09-10" });
+
+    expect(mocks.db.enrollment.update).toHaveBeenCalled();
+  });
+
   it("rejects future start dates", async () => {
     await expect(updateEnrollmentStartDate("enrollment", { startDate: "2099-01-01" })).rejects.toThrow(
       "cannot be in the future",

@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
+import { formatEnrollmentCalendarDate } from "@/lib/enrollment-date";
 import { formatStudentDuration, formatStudentJoinDate } from "@/lib/student-duration";
 
 const BILLING_STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
@@ -222,7 +223,7 @@ export default function StudentDetailPage() {
                     </p>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Since {new Date(enrollment.startDate).toLocaleDateString()}
+                    Since {formatEnrollmentCalendarDate(enrollment.startDate)}
                   </p>
                 </div>
               ))}

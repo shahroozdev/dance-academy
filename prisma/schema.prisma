@@ -166,8 +166,8 @@ model Enrollment {
   student          Student                  @relation(fields: [studentId], references: [id], onDelete: Restrict)
   classId          String
   class            Class                    @relation(fields: [classId], references: [id], onDelete: Restrict)
-  startDate        DateTime                 @default(now())
-  endDate          DateTime?
+  startDate        DateTime                 @db.Date
+  endDate          DateTime?                @db.Date
   status           EnrollmentStatus         @default(ACTIVE)
   billingLineItems MonthlyBillingLineItem[]
   createdAt        DateTime                 @default(now())

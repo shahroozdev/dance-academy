@@ -199,6 +199,15 @@ describe("enrollmentOverlapsMonth", () => {
       true,
     );
   });
+
+  it("includes a date-only enrollment starting on the final day of the month", () => {
+    expect(
+      enrollmentOverlapsMonth(
+        { startDate: new Date("2026-09-30T00:00:00.000Z"), endDate: null },
+        sep2026,
+      ),
+    ).toBe(true);
+  });
 });
 
 describe("countWeekdayOccurrencesInMonth", () => {
@@ -221,6 +230,19 @@ describe("countWeekdayOccurrencesInRange", () => {
   it("returns 0 when no weekday is set", () => {
     expect(countWeekdayOccurrencesInRange("", new Date("2026-09-01"), new Date("2026-09-30"))).toBe(0);
   });
+
+  it.each([
+    ["SUNDAY", "2026-09-06"],
+    ["MONDAY", "2026-09-07"],
+    ["TUESDAY", "2026-09-08"],
+    ["WEDNESDAY", "2026-09-09"],
+    ["THURSDAY", "2026-09-10"],
+    ["FRIDAY", "2026-09-11"],
+    ["SATURDAY", "2026-09-12"],
+  ])("includes a same-day %s session", (dayOfWeek, date) => {
+    const start = new Date(`${date}T00:00:00.000Z`);
+    expect(countWeekdayOccurrencesInRange(dayOfWeek, start, start)).toBe(1);
+  });
 });
 
 describe("computeProratedLineItemAmount — mid-month enrollment billing (§4.7)", () => {
@@ -237,6 +259,19 @@ describe("computeProratedLineItemAmount — mid-month enrollment billing (§4.7)
     });
     // Only the 15th/22nd/29th fall on/after the 10th — 3 sessions, not 5.
     expect(amount).toBe(240);
+  });
+
+  it("includes the first class when the first billable date is the class date", () => {
+    const amount = computeProratedLineItemAmount({
+      month: september,
+      dayOfWeek: "THURSDAY",
+      fullMonthAmount: 80,
+      perSessionRate: 20,
+      enrollmentStart: new Date("2026-09-10T00:00:00.000Z"),
+      enrollmentEnd: null,
+    });
+
+    expect(amount).toBe(60);
   });
 
   it("returns the full-month amount unchanged when the enrollment covers the whole month", () => {
@@ -275,6 +310,19 @@ describe("computeProratedLineItemAmount — mid-month enrollment billing (§4.7)
     });
     // The 1st, 8th, and 15th fall on/before the 16th — 3 sessions, not 5.
     expect(amount).toBe(240);
+  });
+
+  it("includes a class held on the date-only enrollment end date", () => {
+    const amount = computeProratedLineItemAmount({
+      month: september,
+      dayOfWeek: "WEDNESDAY",
+      fullMonthAmount: 100,
+      perSessionRate: 20,
+      enrollmentStart: new Date("2026-08-01T00:00:00.000Z"),
+      enrollmentEnd: new Date("2026-09-30T00:00:00.000Z"),
+    });
+
+    expect(amount).toBe(100);
   });
 });
 

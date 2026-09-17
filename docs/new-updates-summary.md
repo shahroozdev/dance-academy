@@ -1,5 +1,12 @@
 # Updates Summary
 
+## 2026-09-17
+
+- Enrollment start and end boundaries are now stored as calendar dates without a time or timezone, preventing a browser or server location from changing which sessions are billed.
+- Registration approval, manual enrollment, and enrollment correction now use a clearly identified First Billable Date. Guidance explains that sessions before it are excluded and sessions on or after it are billed.
+- Existing enrollment timestamps are converted once to their previously displayed studio calendar dates, allowing affected September bills to calculate the first class correctly after recalculation.
+- Enrollment dates now display consistently in enrollment lists, student profiles, class profiles, rosters, and the date-correction form.
+
 ## 2026-09-15
 
 - Student and family profiles now include a permanent delete option for administrators. To prevent accidental removal, the exact name must be entered before deletion; deleting a family also clearly warns that all connected students and history will be removed.

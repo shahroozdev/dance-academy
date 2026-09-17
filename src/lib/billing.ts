@@ -1,5 +1,7 @@
 import { addDays, isAfter, isBefore } from "date-fns";
 
+import { enrollmentCalendarDate } from "@/lib/enrollment-date";
+
 export type BillingStatusValue = "UNPAID" | "PARTIAL" | "PAID" | "OVERPAID";
 
 export function round2(value: number): number {
@@ -34,8 +36,10 @@ export function enrollmentOverlapsMonth(
 ): boolean {
   const monthStart = startOfMonthUTC(month);
   const monthEnd = endOfMonthUTC(month);
-  const startsByMonthEnd = !isAfter(enrollment.startDate, monthEnd);
-  const endsNoEarlierThanMonthStart = enrollment.endDate === null || !isBefore(enrollment.endDate, monthStart);
+  const enrollmentStart = enrollmentCalendarDate(enrollment.startDate);
+  const enrollmentEnd = enrollment.endDate === null ? null : enrollmentCalendarDate(enrollment.endDate);
+  const startsByMonthEnd = !isAfter(enrollmentStart, monthEnd);
+  const endsNoEarlierThanMonthStart = enrollmentEnd === null || !isBefore(enrollmentEnd, monthStart);
   return startsByMonthEnd && endsNoEarlierThanMonthStart;
 }
 
@@ -104,6 +108,8 @@ export function computeProratedLineItemAmount({
 }: ProratedLineItemInput): number {
   const monthStart = startOfMonthUTC(month);
   const monthEnd = endOfMonthUTC(month);
+  enrollmentStart = enrollmentCalendarDate(enrollmentStart);
+  enrollmentEnd = enrollmentEnd === null ? null : enrollmentCalendarDate(enrollmentEnd);
   const coversFullMonth =
     !isAfter(enrollmentStart, monthStart) && (enrollmentEnd === null || !isBefore(enrollmentEnd, monthEnd));
   if (coversFullMonth) return fullMonthAmount;
