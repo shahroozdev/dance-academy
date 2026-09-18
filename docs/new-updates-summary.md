@@ -1,5 +1,14 @@
 # Updates Summary
 
+## 2026-09-19
+
+- Classes can now have summer-break or inactive month ranges scheduled in advance, so automatic billing excludes those months and resumes afterward without ending the class.
+- Staff can add each additional rehearsal or performance session separately from the class profile before or after billing, with its date, per-session or hourly quantity, rate, calculated charge, and notes.
+- Extra-session charges apply only to students whose enrollment includes the session date, and a seasonal program's one-time fee is not charged again when later rehearsals are added.
+- The Enrollments page now has a Remove option for accidental enrollments. Connected unpaid bills are recalculated automatically, while enrollments connected to payments remain protected.
+- Families can store multiple parents or guardians, while one contact is selected as the primary billing contact used by the existing notification workflow.
+- Staff can combine a duplicate family into the correct existing family, preserving guardian contacts and registration history, moving all students, recalculating unpaid sibling discounts, and removing the empty duplicate.
+
 ## 2026-09-18
 
 - Staff can mark an individual class as having no classes for a selected month, setting that class-month to zero sessions and $0 without deactivating the ongoing class.

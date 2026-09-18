@@ -24,7 +24,10 @@ export default function EditStudentPage() {
   const { data: familiesData } = useQuery("getFamilies", [{ pageSize: 100 }]);
 
   const familyOptions = useMemo(
-    () => familiesData?.data.map((f) => ({ label: f.familyName, value: f.id })) ?? [],
+    () => familiesData?.data.map((f) => ({
+      label: `${f.familyName} — ${f.parentGuardianName}${f.email ? ` · ${f.email}` : ""}`,
+      value: f.id,
+    })) ?? [],
     [familiesData],
   );
 
@@ -86,7 +89,7 @@ export default function EditStudentPage() {
             await mutate(id, data);
           }}
         >
-          {(form) => (
+          {() => (
             <div className="space-y-4 p-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormFeilds name="fullName" label="Student Name" placeholder="e.g. Nia Sharma" />
@@ -98,6 +101,9 @@ export default function EditStudentPage() {
                   placeholder="Select family..."
                 />
               </div>
+              <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
+                To combine siblings registered by different parents, select the same existing family here. The student moves under that family and all unpaid family bills are recalculated so the sibling discount is applied correctly. Parent contact details come from the selected family and can be edited on its Family page.
+              </p>
               <FormFeilds
                 name="joinDate"
                 label="Original Joining Date"
@@ -131,7 +137,7 @@ export default function EditStudentPage() {
                 <Button variant="outline" type="button" asChild>
                   <Link href={`/admin/students/${id}`}>Cancel</Link>
                 </Button>
-                <Button type="submit" disabled={isSaving || !form.formState.isValid}>
+                <Button type="submit" disabled={isSaving}>
                   {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
               </div>

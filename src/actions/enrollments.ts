@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
+import { recalculateBilling } from "@/actions/billing";
 import { enrollmentBillingPauseSchema, enrollmentCreateSchema, enrollmentStartDateUpdateSchema } from "@/actions/enrollments.schema";
 import type { EnrollmentBillingPauseInput, EnrollmentCreateInput, EnrollmentStartDateUpdateInput } from "@/actions/enrollments.schema";
 import { serializableTransaction } from "@/actions/transaction";
@@ -146,4 +147,37 @@ export async function deleteEnrollmentBillingPause(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
   return db.enrollmentBillingPause.delete({ where: { id } });
+}
+
+export async function deleteEnrollment(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  const billingIds = await serializableTransaction(async (tx) => {
+    const enrollment = await tx.enrollment.findUniqueOrThrow({
+      where: { id },
+      include: { student: { select: { familyId: true } } },
+    });
+    const lineItems = await tx.monthlyBillingLineItem.findMany({
+      where: { enrollmentId: enrollment.id },
+      select: { billing: { select: { id: true, month: true, payments: { select: { id: true } } } } },
+    });
+    if (lineItems.some((line) => line.billing.payments.length > 0)) {
+      throw new Error("This enrollment is connected to a bill with a payment. End the enrollment and use a bill adjustment instead.");
+    }
+    const affectedMonths = [...new Map(lineItems.map((line) => [line.billing.month.getTime(), line.billing.month])).values()];
+    await tx.monthlyBillingLineItem.deleteMany({ where: { enrollmentId: enrollment.id } });
+    await tx.enrollment.delete({ where: { id: enrollment.id } });
+    if (affectedMonths.length === 0) return [];
+    const familyBills = await tx.monthlyStudentBilling.findMany({
+      where: {
+        month: { in: affectedMonths },
+        student: { familyId: enrollment.student.familyId },
+        payments: { none: {} },
+      },
+      select: { id: true },
+    });
+    return familyBills.map((bill) => bill.id);
+  });
+  for (const billingId of billingIds) await recalculateBilling(billingId);
+  return { deleted: true, recalculatedBills: billingIds.length };
 }

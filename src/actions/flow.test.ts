@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => {
     class: { findUniqueOrThrow: vi.fn() },
     enrollment: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn() },
     classMonthlyFee: { findUnique: vi.fn() },
+    classExtraSession: { findMany: vi.fn() },
     monthlyBillingLineItem: { findFirst: vi.fn(), findMany: vi.fn() },
     monthlyStudentBilling: { findUniqueOrThrow: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     payment: { aggregate: vi.fn(), create: vi.fn() },
@@ -43,6 +44,7 @@ beforeEach(() => {
   mocks.transaction.mockImplementation((work: (tx: typeof mocks.tx) => Promise<unknown>) => work(mocks.tx));
   // Nothing unfinalized by default — individual tests override this to exercise the gate.
   mocks.tx.monthlyBillingLineItem.findMany.mockResolvedValue([]);
+  mocks.tx.classExtraSession.findMany.mockResolvedValue([]);
 });
 
 describe("action access", () => {
@@ -104,6 +106,37 @@ describe("historical enrollment billing", () => {
     expect(mocks.tx.classMonthlyFee.findUnique).not.toHaveBeenCalled();
   });
 
+  it("excludes every student from a class during a scheduled summer-break month", async () => {
+    mocks.tx.enrollment.findMany.mockResolvedValue([{
+      ...ended,
+      status: "ACTIVE",
+      endDate: null,
+      billingPauses: [],
+      class: {
+        ...ended.class,
+        billingPauses: [{ startMonth: new Date("2026-06-01"), endMonth: new Date("2026-08-01") }],
+      },
+    }]);
+    expect(await buildLineItemInputs(
+      mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0],
+      "student",
+      new Date("2026-08-01"),
+    )).toEqual([]);
+    expect(mocks.tx.classMonthlyFee.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("adds separately recorded rehearsals that fall within the student's enrollment", async () => {
+    mocks.tx.enrollment.findMany.mockResolvedValue([{ ...ended, status: "ACTIVE", endDate: null, billingPauses: [] }]);
+    mocks.tx.classMonthlyFee.findUnique.mockResolvedValue({ id: "fee", monthlyClassFee: 100, rate: 20 });
+    mocks.tx.classExtraSession.findMany.mockResolvedValue([{ amount: 20 }, { amount: 40 }]);
+
+    expect(await buildLineItemInputs(
+      mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0],
+      "student",
+      month,
+    )).toEqual([{ enrollmentId: "ended", classMonthlyFeeId: "fee", amount: 160, discountEligible: true }]);
+  });
+
   it("does not count a paused enrollment toward the sibling discount", async () => {
     mocks.tx.student.findMany.mockResolvedValue([
       { enrollments: [{ ...ended, billingPauses: [] }] },
@@ -115,6 +148,27 @@ describe("historical enrollment billing", () => {
       },
     ]);
 
+    expect(await familyQualifyingSiblingCount(
+      mocks.tx as unknown as Parameters<typeof familyQualifyingSiblingCount>[0],
+      "family",
+      month,
+    )).toBe(1);
+  });
+
+  it("does not count a class on break toward the sibling discount", async () => {
+    mocks.tx.student.findMany.mockResolvedValue([
+      { enrollments: [{ ...ended, billingPauses: [], class: { ...ended.class, billingPauses: [] } }] },
+      {
+        enrollments: [{
+          ...ended,
+          billingPauses: [],
+          class: {
+            ...ended.class,
+            billingPauses: [{ startMonth: new Date("2026-09-01"), endMonth: new Date("2026-09-01") }],
+          },
+        }],
+      },
+    ]);
     expect(await familyQualifyingSiblingCount(
       mocks.tx as unknown as Parameters<typeof familyQualifyingSiblingCount>[0],
       "family",
@@ -135,9 +189,20 @@ describe("seasonal charge-once billing", () => {
   it("skips a seasonal enrollment already billed in an earlier month", async () => {
     mocks.tx.enrollment.findMany.mockResolvedValue([seasonal]);
     mocks.tx.monthlyBillingLineItem.findFirst.mockResolvedValue({ id: "priorLineItem" });
+    mocks.tx.classMonthlyFee.findUnique.mockResolvedValue({ id: "seasonFee", monthlyClassFee: 45, rate: null });
     const result = await buildLineItemInputs(mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0], "student", month);
     expect(result).toEqual([]);
-    expect(mocks.tx.classMonthlyFee.findUnique).not.toHaveBeenCalled();
+  });
+  it("bills extra rehearsals for a seasonal program without repeating its one-time fee", async () => {
+    mocks.tx.enrollment.findMany.mockResolvedValue([seasonal]);
+    mocks.tx.monthlyBillingLineItem.findFirst.mockResolvedValue({ id: "priorLineItem" });
+    mocks.tx.classMonthlyFee.findUnique.mockResolvedValue({ id: "seasonFee", monthlyClassFee: 45, rate: null });
+    mocks.tx.classExtraSession.findMany.mockResolvedValue([{ amount: 30 }]);
+    expect(await buildLineItemInputs(
+      mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0],
+      "student",
+      month,
+    )).toEqual([{ enrollmentId: "sEnroll", classMonthlyFeeId: "seasonFee", amount: 30, discountEligible: false }]);
   });
   it("bills a seasonal enrollment the first month it overlaps, excluded from either discount", async () => {
     mocks.tx.enrollment.findMany.mockResolvedValue([seasonal]);

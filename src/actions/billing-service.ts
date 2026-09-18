@@ -13,6 +13,7 @@ import {
 } from "@/lib/billing";
 import type { ClassFeeLineItem } from "@/lib/billing";
 import { db } from "@/lib/db";
+import { enrollmentCalendarDate } from "@/lib/enrollment-date";
 import { getMultiClassDiscountPct, getSiblingDiscountPct } from "@/lib/settings";
 
 type LineItemInput = ClassFeeLineItem;
@@ -47,11 +48,18 @@ export async function familyQualifyingSiblingCount(
 ): Promise<number> {
   const students = await tx.student.findMany({
     where: { familyId, isActive: true },
-    include: { enrollments: { include: { billingPauses: true } } },
+    include: {
+      enrollments: {
+        include: { billingPauses: true, class: { include: { billingPauses: true } } },
+      },
+    },
   });
   return students.filter((s) =>
     s.enrollments.some(
-      (e) => enrollmentOverlapsMonth(e, month) && !enrollmentIsPausedForMonth(e.billingPauses, month),
+      (e) =>
+        enrollmentOverlapsMonth(e, month) &&
+        !enrollmentIsPausedForMonth(e.billingPauses, month) &&
+        !enrollmentIsPausedForMonth(e.class.billingPauses, month),
     ),
   ).length;
 }
@@ -63,11 +71,14 @@ export async function buildLineItemInputs(
 ): Promise<LineItemInput[]> {
   const enrollments = await tx.enrollment.findMany({
     where: { studentId },
-    include: { class: true, billingPauses: true },
+    include: { class: { include: { billingPauses: true } }, billingPauses: true },
     orderBy: { startDate: "asc" },
   });
   const overlapping = enrollments.filter(
-    (e) => enrollmentOverlapsMonth(e, month) && !enrollmentIsPausedForMonth(e.billingPauses, month),
+    (e) =>
+      enrollmentOverlapsMonth(e, month) &&
+      !enrollmentIsPausedForMonth(e.billingPauses, month) &&
+      !enrollmentIsPausedForMonth(e.class.billingPauses, month),
   );
 
   const lineItems: LineItemInput[] = [];
@@ -79,22 +90,23 @@ export async function buildLineItemInputs(
 
     // Seasonal/special-program fees are charged exactly once per enrollment, ever — never
     // recreated on a later month's run just because the enrollment still overlaps it.
+    let seasonalAlreadyCharged = false;
     if (enrollment.class.pricingType === "SEASONAL") {
-      const alreadyCharged = await tx.monthlyBillingLineItem.findFirst({
+      seasonalAlreadyCharged = Boolean(await tx.monthlyBillingLineItem.findFirst({
         where: {
           enrollmentId: enrollment.id,
           classMonthlyFee: { classId: enrollment.classId },
           billing: { month: { not: month } },
         },
-      });
-      if (alreadyCharged) continue;
+      }));
     }
 
     const fee = await getOrCreateClassMonthlyFee(tx, enrollment.class, month);
-    const amount =
-      enrollment.class.pricingType === "SEASONAL"
-        ? Number(fee.monthlyClassFee)
-        : computeProratedLineItemAmount({
+    let baseAmount = 0;
+    if (enrollment.class.pricingType === "SEASONAL") {
+      baseAmount = seasonalAlreadyCharged ? 0 : Number(fee.monthlyClassFee);
+    } else {
+      baseAmount = computeProratedLineItemAmount({
             month,
             dayOfWeek: enrollment.class.dayOfWeek,
             fullMonthAmount: Number(fee.monthlyClassFee),
@@ -102,6 +114,26 @@ export async function buildLineItemInputs(
             enrollmentStart: enrollment.startDate,
             enrollmentEnd: enrollment.endDate,
           });
+    }
+    const monthStart = normalizeMonth(month);
+    const monthEnd = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1));
+    const enrollmentStart = enrollmentCalendarDate(enrollment.startDate);
+    const enrollmentEnd = enrollment.endDate ? enrollmentCalendarDate(enrollment.endDate) : null;
+    const extraSessions = await tx.classExtraSession.findMany({
+      where: {
+        classId: enrollment.classId,
+        sessionDate: {
+          gte: enrollmentStart > monthStart ? enrollmentStart : monthStart,
+          lt: monthEnd,
+          ...(enrollmentEnd && { lte: enrollmentEnd }),
+        },
+      },
+      select: { amount: true },
+    });
+    const amount = round2(
+      baseAmount + extraSessions.reduce((sum, session) => sum + Number(session.amount), 0),
+    );
+    if (amount === 0) continue;
     lineItems.push({
       enrollmentId: enrollment.id,
       classMonthlyFeeId: fee.id,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useState } from "react";
 
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
@@ -14,14 +15,23 @@ import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
 import { formatEnrollmentCalendarDate } from "@/lib/enrollment-date";
 
+import { ClassBreaksModal } from "./class-breaks-modal";
+import { ExtraSessionsModal } from "../../class-fees/extra-sessions-modal";
+
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+}
+
+function currentMonthValue() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
 export default function ClassDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const [extraSessionMonth, setExtraSessionMonth] = useState(currentMonthValue());
 
   const { data: cls, isLoading } = useQuery("getClassById", [id]);
   const { mutate: toggleActive } = useMutate("toggleClassActive", {
@@ -58,6 +68,7 @@ export default function ClassDetailPage() {
             <Button variant="outline" asChild>
               <Link href={`/admin/classes/${id}/roster`}>Roster</Link>
             </Button>
+            <ClassBreaksModal classId={id} className={cls.name} breaks={cls.billingPauses} />
             <Button variant="outline" asChild>
               <Link href={`/admin/classes/${id}/edit`}>Edit</Link>
             </Button>
@@ -154,6 +165,31 @@ export default function ClassDetailPage() {
             <p className="font-medium">{cls.capacity ?? "Unlimited"}</p>
           </div>
         </div>
+      </Card>
+
+      <Card
+        header={
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium">Additional Rehearsals & Sessions</p>
+              <p className="text-xs text-muted-foreground">Add dated sessions before or after monthly bills are generated.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="month"
+                value={extraSessionMonth}
+                onChange={(event) => setExtraSessionMonth(event.target.value)}
+                className="flex h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm"
+              />
+              <ExtraSessionsModal classId={id} className={cls.name} month={extraSessionMonth} />
+            </div>
+          </div>
+        }
+        headerClassName="border-b"
+      >
+        <p className="p-4 text-sm text-muted-foreground">
+          Each extra session is billed only to students enrolled on its date. If bills already exist, recalculate them from Class Monthly Fees before finalizing and notifying parents.
+        </p>
       </Card>
 
       <Card

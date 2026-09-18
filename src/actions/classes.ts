@@ -115,6 +115,7 @@ export async function getClassById(id: string) {
         orderBy: { month: "desc" },
         take: 12,
       },
+      billingPauses: { orderBy: { startMonth: "desc" } },
     },
   });
 

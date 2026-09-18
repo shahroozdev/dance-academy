@@ -79,6 +79,7 @@ export async function getFamilyById(id: string) {
   return db.family.findUniqueOrThrow({
     where: { id },
     include: {
+      guardians: { orderBy: [{ isPrimary: "desc" }, { name: "asc" }] },
       students: {
         include: {
           enrollments: {
@@ -97,14 +98,27 @@ export async function getFamilyById(id: string) {
 export async function createFamily(data: FamilyCreateInput) {
   await requireAdmin();
   data = familyCreateSchema.parse(data);
-  return db.family.create({
-    data: {
-      familyName: data.familyName,
-      parentGuardianName: data.parentGuardianName,
-      email: data.email || null,
-      phone: data.phone,
-      notes: data.notes || null,
-    },
+  return serializableTransaction(async (tx) => {
+    const family = await tx.family.create({
+      data: {
+        familyName: data.familyName,
+        parentGuardianName: data.parentGuardianName,
+        email: data.email || null,
+        phone: data.phone,
+        notes: data.notes || null,
+      },
+    });
+    await tx.familyGuardian.create({
+      data: {
+        familyId: family.id,
+        name: data.parentGuardianName,
+        email: data.email || null,
+        phone: data.phone,
+        isPrimary: true,
+        receivesNotifications: true,
+      },
+    });
+    return family;
   });
 }
 
@@ -112,15 +126,29 @@ export async function updateFamily(id: string, data: FamilyUpdateInput) {
   await requireAdmin();
   id = idSchema.parse(id);
   data = familyUpdateSchema.parse(data);
-  return db.family.update({
-    where: { id },
-    data: {
-      ...(data.familyName !== undefined && { familyName: data.familyName }),
-      ...(data.parentGuardianName !== undefined && { parentGuardianName: data.parentGuardianName }),
-      ...(data.email !== undefined && { email: data.email || null }),
-      ...(data.phone !== undefined && { phone: data.phone }),
-      ...(data.notes !== undefined && { notes: data.notes || null }),
-    },
+  return serializableTransaction(async (tx) => {
+    const family = await tx.family.update({
+      where: { id },
+      data: {
+        ...(data.familyName !== undefined && { familyName: data.familyName }),
+        ...(data.parentGuardianName !== undefined && { parentGuardianName: data.parentGuardianName }),
+        ...(data.email !== undefined && { email: data.email || null }),
+        ...(data.phone !== undefined && { phone: data.phone }),
+        ...(data.notes !== undefined && { notes: data.notes || null }),
+      },
+    });
+    const primary = await tx.familyGuardian.findFirst({ where: { familyId: id, isPrimary: true } });
+    if (primary) {
+      await tx.familyGuardian.update({
+        where: { id: primary.id },
+        data: {
+          ...(data.parentGuardianName !== undefined && { name: data.parentGuardianName }),
+          ...(data.email !== undefined && { email: data.email || null }),
+          ...(data.phone !== undefined && { phone: data.phone }),
+        },
+      });
+    }
+    return family;
   });
 }
 

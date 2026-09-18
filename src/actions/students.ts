@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
+import { recalculateBilling } from "@/actions/billing";
 import { deleteStudentRecords } from "@/actions/record-deletion";
 import { studentCreateSchema, studentImportSchema, studentUpdateSchema } from "@/actions/students.schema";
 import type { StudentCreateInput, StudentImportRow, StudentUpdateInput } from "@/actions/students.schema";
@@ -159,7 +160,8 @@ export async function updateStudent(id: string, data: StudentUpdateInput) {
   await requireAdmin();
   id = idSchema.parse(id);
   data = studentUpdateSchema.parse(data);
-  return db.student.update({
+  const existing = await db.student.findUniqueOrThrow({ where: { id }, select: { familyId: true } });
+  const updated = await db.student.update({
     where: { id },
     data: {
       ...(data.fullName !== undefined && { fullName: data.fullName }),
@@ -178,6 +180,17 @@ export async function updateStudent(id: string, data: StudentUpdateInput) {
       ...(data.emergencyPhone !== undefined && { emergencyPhone: data.emergencyPhone || null }),
     },
   });
+  if (data.familyId && data.familyId !== existing.familyId) {
+    const bills = await db.monthlyStudentBilling.findMany({
+      where: {
+        student: { familyId: { in: [existing.familyId, data.familyId] } },
+        payments: { none: {} },
+      },
+      select: { id: true },
+    });
+    for (const bill of bills) await recalculateBilling(bill.id);
+  }
+  return updated;
 }
 
 export async function toggleStudentActive(id: string, isActive: boolean) {
@@ -280,7 +293,21 @@ export async function importStudents(rows: StudentImportRow[]): Promise<StudentI
             );
           }
           family = await tx.family.create({
-            data: { familyName, parentGuardianName, phone, email: email ?? null },
+            data: {
+              familyName,
+              parentGuardianName,
+              phone,
+              email: email ?? null,
+              guardians: {
+                create: {
+                  name: parentGuardianName,
+                  phone,
+                  email: email ?? null,
+                  isPrimary: true,
+                  receivesNotifications: true,
+                },
+              },
+            },
           });
         }
 

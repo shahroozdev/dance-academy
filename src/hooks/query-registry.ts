@@ -5,6 +5,7 @@ import { getDashboardSummary } from "@/actions/dashboard";
 import { getEmailTemplates } from "@/actions/email-templates";
 import { getEnrollments } from "@/actions/enrollments";
 import { getExpenseById, getExpenses } from "@/actions/expenses";
+import { getClassExtraSessions } from "@/actions/extra-sessions";
 import { getFamilies, getFamilyById } from "@/actions/families";
 import { getAvailableYears, getFinancialSummary, getMonthlyTrend } from "@/actions/financial-reports";
 import {
@@ -38,6 +39,7 @@ export const queryRegistry = {
   getTeachers,
   getTeacherById,
   getEnrollments,
+  getClassExtraSessions,
   getRegistrationRequests,
   getRegistrationRequestById,
   previewRegistrationApproval,

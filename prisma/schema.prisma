@@ -39,6 +39,7 @@ model Family {
   isActive           Boolean               @default(true)
   notes              String?
   students           Student[]
+  guardians          FamilyGuardian[]
   registrationReqs   RegistrationRequest[]
   createdAt          DateTime              @default(now())
   updatedAt          DateTime              @updatedAt
@@ -109,6 +110,22 @@ model DanceProgram {
   @@index([isActive])
 }
 
+model FamilyGuardian {
+  id                    String   @id @default(cuid())
+  familyId              String
+  family                Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  name                  String
+  relationship          String?
+  email                 String?
+  phone                 String?
+  isPrimary             Boolean  @default(false)
+  receivesNotifications Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([familyId])
+}
+
 enum PricingType {
   REGULAR
   SEASONAL
@@ -122,6 +139,11 @@ enum DayOfWeek {
   FRIDAY
   SATURDAY
   SUNDAY
+}
+
+enum ExtraSessionBillingUnit {
+  SESSION
+  HOUR
 }
 
 model Class {
@@ -146,6 +168,8 @@ model Class {
   isActive             Boolean               @default(true)
   enrollments          Enrollment[]
   monthlyFees          ClassMonthlyFee[]
+  extraSessions        ClassExtraSession[]
+  billingPauses        ClassBillingPause[]
   registrationRequests RegistrationRequest[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
@@ -153,6 +177,36 @@ model Class {
   @@index([isActive])
   @@index([programId])
   @@index([teacherId])
+}
+
+model ClassExtraSession {
+  id          String                  @id @default(cuid())
+  classId     String
+  class       Class                   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sessionDate DateTime                @db.Date
+  title       String
+  billingUnit ExtraSessionBillingUnit @default(SESSION)
+  quantity    Decimal                 @db.Decimal(8, 2)
+  rate        Decimal                 @db.Decimal(10, 2)
+  amount      Decimal                 @db.Decimal(10, 2)
+  notes       String?
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@index([classId, sessionDate])
+}
+
+model ClassBillingPause {
+  id         String   @id @default(cuid())
+  classId    String
+  class      Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  startMonth DateTime @db.Date
+  endMonth   DateTime @db.Date
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@index([classId])
+  @@index([startMonth, endMonth])
 }
 
 enum EnrollmentStatus {

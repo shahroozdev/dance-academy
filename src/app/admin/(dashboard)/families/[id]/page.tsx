@@ -14,6 +14,9 @@ import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
 
+import { CombineFamilyModal } from "./combine-family-modal";
+import { FamilyGuardiansCard } from "./family-guardians-card";
+
 export default function FamilyDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -62,6 +65,7 @@ export default function FamilyDetailPage() {
             <Button variant="outline" asChild>
               <Link href={`/admin/families/${id}/edit`}>Edit</Link>
             </Button>
+            <CombineFamilyModal sourceFamilyId={id} sourceFamilyName={family.familyName} />
             <Modal
               trigger={
                 <Button variant={family.isActive ? "destructive" : "default"}>
@@ -135,6 +139,8 @@ export default function FamilyDetailPage() {
           )}
         </div>
       </Card>
+
+      <FamilyGuardiansCard familyId={id} guardians={family.guardians} />
 
       <Card
         header={

@@ -233,6 +233,15 @@ export async function approveRegistrationRequest(
               parentGuardianName: request.parentGuardianName,
               email: request.parentEmail,
               phone: request.parentPhone,
+              guardians: {
+                create: {
+                  name: request.parentGuardianName,
+                  email: request.parentEmail,
+                  phone: request.parentPhone,
+                  isPrimary: true,
+                  receivesNotifications: true,
+                },
+              },
             },
           });
 

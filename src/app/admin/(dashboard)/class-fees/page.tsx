@@ -23,6 +23,7 @@ import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 
 import { ClassFeeEditModal } from "./class-fee-edit-modal";
+import { ExtraSessionsModal } from "./extra-sessions-modal";
 
 function formatCurrency(amount: number | null) {
   if (amount === null) return "—";
@@ -176,6 +177,7 @@ export default function ClassFeesPage() {
                           Edit
                         </Button>
                       </TooltipWrapper>
+                      <ExtraSessionsModal classId={fee.class.id} className={fee.class.name} month={month} />
                       <Modal
                         trigger={<Button size="sm" variant="outline">No Classes</Button>}
                         className="max-w-sm"

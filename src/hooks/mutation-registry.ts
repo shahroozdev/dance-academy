@@ -7,23 +7,27 @@ import {
   unfinalizeClassMonthlyFee,
   updateClassMonthlyFee,
 } from "@/actions/class-fees";
+import { createClassBillingPause, deleteClassBillingPause } from "@/actions/class-pauses";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
 import { updateEmailTemplate } from "@/actions/email-templates";
 import {
   createEnrollment,
   createEnrollmentBillingPause,
+  deleteEnrollment,
   deleteEnrollmentBillingPause,
   endEnrollment,
   reactivateEnrollment,
   updateEnrollmentStartDate,
 } from "@/actions/enrollments";
 import { createExpense, deleteExpense, updateExpense, uploadExpenseReceipt } from "@/actions/expenses";
+import { createClassExtraSession, deleteClassExtraSession } from "@/actions/extra-sessions";
 import {
   createFamily,
   deleteFamily,
   updateFamily,
   toggleFamilyActive,
 } from "@/actions/families";
+import { combineFamilies, createFamilyGuardian, deleteFamilyGuardian, setPrimaryFamilyGuardian, updateFamilyGuardian } from "@/actions/family-guardians";
 import { markFamilyNotificationSent, sendFamilyNotificationEmail, sendFamilyPaymentReminder } from "@/actions/notifications";
 import { createOtherIncome, deleteOtherIncome, updateOtherIncome } from "@/actions/other-income";
 import { createPayment, createRefund } from "@/actions/payments";
@@ -49,6 +53,11 @@ export const mutationRegistry = {
   deleteFamily,
   updateFamily,
   toggleFamilyActive,
+  createFamilyGuardian,
+  updateFamilyGuardian,
+  deleteFamilyGuardian,
+  setPrimaryFamilyGuardian,
+  combineFamilies,
   createStudent,
   deleteStudent,
   updateStudent,
@@ -57,15 +66,20 @@ export const mutationRegistry = {
   createClass,
   updateClass,
   toggleClassActive,
+  createClassBillingPause,
+  deleteClassBillingPause,
   createTeacher,
   updateTeacher,
   toggleTeacherActive,
   createEnrollment,
   createEnrollmentBillingPause,
+  deleteEnrollment,
   deleteEnrollmentBillingPause,
   endEnrollment,
   reactivateEnrollment,
   updateEnrollmentStartDate,
+  createClassExtraSession,
+  deleteClassExtraSession,
   createRegistrationRequest,
   approveRegistrationRequest,
   rejectRegistrationRequest,

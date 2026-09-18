@@ -41,6 +41,10 @@ export default function EnrollmentsPage() {
     invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
     onSuccess: () => refetch(),
   });
+  const { mutate: removeEnrollment, isLoading: isRemoving, error: removeError } = useMutate("deleteEnrollment", {
+    invalidateKeys: ["getEnrollments", "getStudents", "getClasses", "getMonthlyBillings"],
+    onSuccess: () => refetch(),
+  });
 
   // Best-effort dedupe check (limited to the current page) so an already-superseded ENDED row
   // doesn't offer a "Re-enroll" that the backend's active-duplicate guard would just reject.
@@ -144,6 +148,32 @@ export default function EnrollmentsPage() {
                       className={enrollment.class.name}
                       startDate={enrollment.startDate}
                     />
+                    <Modal
+                      trigger={<Button variant="destructive" size="sm">Remove</Button>}
+                      className="max-w-sm"
+                      title={
+                        <div>
+                          Remove Accidental Enrollment?
+                          <p className="text-sm font-normal text-muted-foreground">
+                            Permanently removes {enrollment.student.fullName} from {enrollment.class.name} and recalculates connected unpaid bills. Use End for a real enrollment that has finished.
+                          </p>
+                        </div>
+                      }
+                    >
+                      {({ close }) => (
+                        <div className="space-y-3">
+                          {Boolean(removeError) && <p className="text-sm text-destructive">{removeError instanceof Error ? removeError.message : "Could not remove enrollment."}</p>}
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={close}>Cancel</Button>
+                            <Button variant="destructive" disabled={isRemoving} onClick={async () => {
+                              try { await removeEnrollment(enrollment.id); close(); } catch { /* Error shown above. */ }
+                            }}>
+                              {isRemoving ? "Removing..." : "Remove Permanently"}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </Modal>
                     {enrollment.status === "ACTIVE" && (
                       <Modal
                         trigger={

@@ -29,6 +29,24 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Done
 
+- **2026-09-19: Completed Varsha-request verification.** Summer-break months can be scheduled before
+  billing and resume automatically; class breaks and accidental enrollment removal correctly update
+  sibling-discount qualification. All requested break, pause, adjustment, rehearsal, removal, and
+  family-combination paths pass together. All 264 tests, focused lint, TypeScript, and the production
+  build pass. The required database updates were applied successfully.
+
+- **2026-09-19: Added rehearsal, enrollment-removal, and family-combination controls.** Staff can
+  record separately dated extra sessions billed by session or hour, safely remove accidental
+  enrollments, and move siblings into an existing family with automatic unpaid-bill recalculation.
+  All 251 tests, focused lint, TypeScript, and the production build pass. The extra-session database
+  update was applied successfully.
+
+- **2026-09-19: Completed pre-billing rehearsal and guardian workflows.** Extra sessions can be
+  created directly from a class before billing, families can hold multiple editable guardian
+  contacts with a chosen primary billing contact, and duplicate families can be combined without
+  losing students, registrations, or contacts. All 258 tests, focused lint, TypeScript, and the
+  production build pass. The guardian database update was applied successfully.
+
 - **2026-09-18: Added billing exception controls.** Staff can set a no-class month, pause an
   individual enrollment for complete months with automatic resumption, enter one-student monthly
   adjustments, override class-month fees for extra rehearsals, and bulk-recalculate affected unpaid
