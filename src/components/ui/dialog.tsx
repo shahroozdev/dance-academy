@@ -71,7 +71,7 @@ function DialogContent({
         {...props}
       >
         {header && (
-          <div data-slot="dialog-header-fixed" className="shrink-0 border-b p-4 text-lg font-medium">
+          <div data-slot="dialog-header-fixed" className="shrink-0 border-b py-4 pr-14 pl-4 text-lg font-medium">
             {header}
           </div>
         )}

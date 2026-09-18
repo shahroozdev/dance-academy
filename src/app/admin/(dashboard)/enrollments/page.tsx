@@ -1,12 +1,19 @@
 "use client";
 
-import { CalendarClock, ExternalLink, ListChecks, Plus } from "lucide-react";
+import { CalendarClock, ChevronDown, ExternalLink, ListChecks, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { enrollmentStartDateUpdateSchema } from "@/actions/enrollments.schema";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/common/dropdown-menu";
 import { FORM, FormFeilds } from "@/components/common/form";
 import { Input } from "@/components/common/input";
 import { Modal } from "@/components/common/modal";
@@ -33,19 +40,6 @@ export default function EnrollmentsPage() {
   const [pageSize, setPageSize] = useState(20);
 
   const { data, isLoading, refetch } = useQuery("getEnrollments", [{ studentId, classId, page, pageSize }]);
-  const { mutate: endEnroll } = useMutate("endEnrollment", {
-    invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
-    onSuccess: () => refetch(),
-  });
-  const { mutate: reactivateEnroll, error: reactivateError } = useMutate("reactivateEnrollment", {
-    invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
-    onSuccess: () => refetch(),
-  });
-  const { mutate: removeEnrollment, isLoading: isRemoving, error: removeError } = useMutate("deleteEnrollment", {
-    invalidateKeys: ["getEnrollments", "getStudents", "getClasses", "getMonthlyBillings"],
-    onSuccess: () => refetch(),
-  });
-
   // Best-effort dedupe check (limited to the current page) so an already-superseded ENDED row
   // doesn't offer a "Re-enroll" that the backend's active-duplicate guard would just reject.
   const activeStudentClassPairs = useMemo(() => {
@@ -136,128 +130,16 @@ export default function EnrollmentsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap gap-2">
-                    <EnrollmentBillingPauseModal
-                      enrollmentId={enrollment.id}
-                      studentName={enrollment.student.fullName}
-                      pauses={enrollment.billingPauses}
-                    />
-                    <EditEnrollmentStartDate
+                    <EnrollmentActions
                       id={enrollment.id}
+                      status={enrollment.status}
+                      hasActiveDuplicate={activeStudentClassPairs.has(`${enrollment.studentId}|${enrollment.classId}`)}
                       studentName={enrollment.student.fullName}
                       className={enrollment.class.name}
                       startDate={enrollment.startDate}
+                      pauses={enrollment.billingPauses}
+                      onChanged={refetch}
                     />
-                    <Modal
-                      trigger={<Button variant="destructive" size="sm">Remove</Button>}
-                      className="max-w-sm"
-                      title={
-                        <div>
-                          Remove Accidental Enrollment?
-                          <p className="text-sm font-normal text-muted-foreground">
-                            Permanently removes {enrollment.student.fullName} from {enrollment.class.name} and recalculates connected unpaid bills. Use End for a real enrollment that has finished.
-                          </p>
-                        </div>
-                      }
-                    >
-                      {({ close }) => (
-                        <div className="space-y-3">
-                          {Boolean(removeError) && <p className="text-sm text-destructive">{removeError instanceof Error ? removeError.message : "Could not remove enrollment."}</p>}
-                          <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={close}>Cancel</Button>
-                            <Button variant="destructive" disabled={isRemoving} onClick={async () => {
-                              try { await removeEnrollment(enrollment.id); close(); } catch { /* Error shown above. */ }
-                            }}>
-                              {isRemoving ? "Removing..." : "Remove Permanently"}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </Modal>
-                    {enrollment.status === "ACTIVE" && (
-                      <Modal
-                        trigger={
-                          <TooltipWrapper label="End this enrollment">
-                            <Button variant="destructive" size="sm">End</Button>
-                          </TooltipWrapper>
-                        }
-                        className="max-w-sm"
-                        title={
-                          <div>
-                            End Enrollment?
-                            <p className="text-sm font-normal text-muted-foreground">
-                              This will end {enrollment.student.fullName}&apos;s enrollment in {enrollment.class.name}.
-                            </p>
-                          </div>
-                        }
-                      >
-                        {({ close }) => (
-                          <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={close}>Cancel</Button>
-                            <Button
-                              variant="destructive"
-                              onClick={async () => {
-                                await endEnroll(enrollment.id, todayIsoDate());
-                                close();
-                              }}
-                            >
-                              End Enrollment
-                            </Button>
-                          </div>
-                        )}
-                      </Modal>
-                    )}
-                    {enrollment.status !== "ACTIVE" && activeStudentClassPairs.has(`${enrollment.studentId}|${enrollment.classId}`) && (
-                      <TooltipWrapper label={`${enrollment.student.fullName} already has an active enrollment in ${enrollment.class.name}`}>
-                        <Button variant="outline" size="sm" disabled>
-                          Re-enroll
-                        </Button>
-                      </TooltipWrapper>
-                    )}
-                    {enrollment.status !== "ACTIVE" && !activeStudentClassPairs.has(`${enrollment.studentId}|${enrollment.classId}`) && (
-                      <Modal
-                        trigger={
-                          <TooltipWrapper label={`Re-enroll ${enrollment.student.fullName} in ${enrollment.class.name}`}>
-                            <Button variant="outline" size="sm">Re-enroll</Button>
-                          </TooltipWrapper>
-                        }
-                        className="max-w-sm"
-                        title={
-                          <div>
-                            Re-enroll?
-                            <p className="text-sm font-normal text-muted-foreground">
-                              This will reactivate {enrollment.student.fullName}&apos;s enrollment in {enrollment.class.name}, starting today.
-                            </p>
-                          </div>
-                        }
-                      >
-                        {({ close }) => (
-                          <div className="space-y-3">
-                            {Boolean(reactivateError) && (
-                              <p className="text-sm text-destructive">
-                                {reactivateError instanceof Error ? reactivateError.message : "Could not re-enroll. Please try again."}
-                              </p>
-                            )}
-                            <div className="flex justify-end gap-2">
-                              <Button variant="outline" onClick={close}>Cancel</Button>
-                              <Button
-                                onClick={async () => {
-                                  try {
-                                    await reactivateEnroll(enrollment.id, todayIsoDate());
-                                    close();
-                                  } catch {
-                                    // Surfaced via the error message above — nothing further to do here.
-                                  }
-                                }}
-                              >
-                                Re-enroll
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </Modal>
-                    )}
-                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -283,16 +165,161 @@ export default function EnrollmentsPage() {
   );
 }
 
+type EnrollmentAction = "pause" | "edit" | "remove" | "end" | "reenroll" | null;
+
+function EnrollmentActions({
+  id,
+  status,
+  hasActiveDuplicate,
+  studentName,
+  className,
+  startDate,
+  pauses,
+  onChanged,
+}: {
+  id: string;
+  status: string;
+  hasActiveDuplicate: boolean;
+  studentName: string;
+  className: string;
+  startDate: Date;
+  pauses: Array<{ id: string; startMonth: Date; endMonth: Date; reason: string | null }>;
+  onChanged: () => void;
+}) {
+  const [action, setAction] = useState<EnrollmentAction>(null);
+  const isActive = status === "ACTIVE";
+  const { mutate: endEnroll, isLoading: isEnding } = useMutate("endEnrollment", {
+    invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
+    onSuccess: onChanged,
+  });
+  const { mutate: reactivateEnroll, isLoading: isReactivating, error: reactivateError } = useMutate("reactivateEnrollment", {
+    invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
+    onSuccess: onChanged,
+  });
+  const { mutate: removeEnrollment, isLoading: isRemoving, error: removeError } = useMutate("deleteEnrollment", {
+    invalidateKeys: ["getEnrollments", "getStudents", "getClasses", "getMonthlyBillings"],
+    onSuccess: onChanged,
+  });
+  const closeAction = () => setAction(null);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm">
+            Actions
+            <ChevronDown className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onSelect={() => setAction("pause")}>Billing pauses</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setAction("edit")}>Edit start date</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {isActive && <DropdownMenuItem onSelect={() => setAction("end")}>End enrollment</DropdownMenuItem>}
+          {!isActive && (
+            <DropdownMenuItem disabled={hasActiveDuplicate} onSelect={() => setAction("reenroll")}>
+              Re-enroll
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem variant="destructive" onSelect={() => setAction("remove")}>
+            Remove accidental enrollment
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <EnrollmentBillingPauseModal
+        enrollmentId={id}
+        studentName={studentName}
+        pauses={pauses}
+        open={action === "pause"}
+        onOpenChange={(open) => setAction(open ? "pause" : null)}
+      />
+      <EditEnrollmentStartDate
+        id={id}
+        studentName={studentName}
+        className={className}
+        startDate={startDate}
+        open={action === "edit"}
+        onOpenChange={(open) => setAction(open ? "edit" : null)}
+      />
+      <Modal open={action === "remove"} onOpenChange={(open) => setAction(open ? "remove" : null)} className="max-w-sm" title={
+        <div>
+          Remove Accidental Enrollment?
+          <p className="text-sm font-normal text-muted-foreground">
+            Permanently removes {studentName} from {className} and recalculates connected unpaid bills. Use End for a real enrollment that has finished.
+          </p>
+        </div>
+      }>
+        {() => (
+          <div className="space-y-3">
+            {Boolean(removeError) && <p className="text-sm text-destructive">{removeError instanceof Error ? removeError.message : "Could not remove enrollment."}</p>}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={closeAction}>Cancel</Button>
+              <Button variant="destructive" disabled={isRemoving} onClick={async () => {
+                try { await removeEnrollment(id); closeAction(); } catch { /* Error shown above. */ }
+              }}>
+                {isRemoving ? "Removing..." : "Remove Permanently"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+      <Modal open={action === "end"} onOpenChange={(open) => setAction(open ? "end" : null)} className="max-w-sm" title={
+        <div>
+          End Enrollment?
+          <p className="text-sm font-normal text-muted-foreground">This will end {studentName}&apos;s enrollment in {className}.</p>
+        </div>
+      }>
+        {() => (
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={closeAction}>Cancel</Button>
+            <Button variant="destructive" disabled={isEnding} onClick={async () => {
+              await endEnroll(id, todayIsoDate());
+              closeAction();
+            }}>
+              {isEnding ? "Ending..." : "End Enrollment"}
+            </Button>
+          </div>
+        )}
+      </Modal>
+      <Modal open={action === "reenroll"} onOpenChange={(open) => setAction(open ? "reenroll" : null)} className="max-w-sm" title={
+        <div>
+          Re-enroll?
+          <p className="text-sm font-normal text-muted-foreground">This will reactivate {studentName}&apos;s enrollment in {className}, starting today.</p>
+        </div>
+      }>
+        {() => (
+          <div className="space-y-3">
+            {Boolean(reactivateError) && <p className="text-sm text-destructive">{reactivateError instanceof Error ? reactivateError.message : "Could not re-enroll. Please try again."}</p>}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={closeAction}>Cancel</Button>
+              <Button disabled={isReactivating} onClick={async () => {
+                try { await reactivateEnroll(id, todayIsoDate()); closeAction(); } catch { /* Error shown above. */ }
+              }}>
+                {isReactivating ? "Re-enrolling..." : "Re-enroll"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </>
+  );
+}
+
 function EditEnrollmentStartDate({
   id,
   studentName,
   className,
   startDate,
+  open,
+  onOpenChange,
 }: {
   id: string;
   studentName: string;
   className: string;
   startDate: Date;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const { mutate, isLoading, error } = useMutate("updateEnrollmentStartDate", {
     invalidateKeys: ["getEnrollments", "getStudents", "getStudentById", "getMonthlyBillings"],
@@ -300,14 +327,16 @@ function EditEnrollmentStartDate({
 
   return (
     <Modal
-      trigger={
+      open={open}
+      onOpenChange={onOpenChange}
+      trigger={open === undefined ? (
         <TooltipWrapper label="Correct the enrollment start date">
           <Button variant="outline" size="sm">
             <CalendarClock className="size-4" />
             Edit Start Date
           </Button>
         </TooltipWrapper>
-      }
+      ) : undefined}
       className="max-w-md"
       title="Edit Enrollment Start Date"
     >

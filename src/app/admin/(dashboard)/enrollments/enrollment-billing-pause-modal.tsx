@@ -26,10 +26,14 @@ export function EnrollmentBillingPauseModal({
   enrollmentId,
   studentName,
   pauses,
+  open,
+  onOpenChange,
 }: {
   enrollmentId: string;
   studentName: string;
   pauses: BillingPause[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const { mutate: createPause, isLoading: isCreating, error } = useMutate("createEnrollmentBillingPause", {
     invalidateKeys: ["getEnrollments", "getMonthlyBillings", "getStudentById"],
@@ -40,7 +44,9 @@ export function EnrollmentBillingPauseModal({
 
   return (
     <Modal
-      trigger={<Button size="sm" variant="outline">Billing Pauses</Button>}
+      open={open}
+      onOpenChange={onOpenChange}
+      trigger={open === undefined ? <Button size="sm" variant="outline">Billing Pauses</Button> : undefined}
       className="max-w-lg"
       title={
         <div>

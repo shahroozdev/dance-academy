@@ -29,6 +29,12 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Done
 
+- **2026-09-19: Simplified enrollment actions.** Each enrollment row now has one compact Actions
+  menu, with routine, lifecycle, and destructive actions clearly organized.
+
+- **2026-09-19: Prevented modal close-button overlap.** Modal headers now reserve space for the
+  close control, allowing long titles to wrap cleanly on narrow screens.
+
 - **2026-09-19: Completed Varsha-request verification.** Summer-break months can be scheduled before
   billing and resume automatically; class breaks and accidental enrollment removal correctly update
   sibling-discount qualification. All requested break, pause, adjustment, rehearsal, removal, and
