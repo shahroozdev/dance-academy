@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
-import { enrollmentCreateSchema, enrollmentStartDateUpdateSchema } from "@/actions/enrollments.schema";
-import type { EnrollmentCreateInput, EnrollmentStartDateUpdateInput } from "@/actions/enrollments.schema";
+import { enrollmentBillingPauseSchema, enrollmentCreateSchema, enrollmentStartDateUpdateSchema } from "@/actions/enrollments.schema";
+import type { EnrollmentBillingPauseInput, EnrollmentCreateInput, EnrollmentStartDateUpdateInput } from "@/actions/enrollments.schema";
 import { serializableTransaction } from "@/actions/transaction";
 import { idSchema , validateListQuery } from "@/actions/validation.schema";
 import { db } from "@/lib/db";
@@ -33,6 +33,7 @@ export async function getEnrollments(params?: {
       include: {
         student: { select: { id: true, fullName: true } },
         class: { select: { id: true, name: true, dayOfWeek: true, startTime: true } },
+        billingPauses: { orderBy: { startMonth: "desc" } },
       },
       orderBy: { startDate: "desc" },
       skip: (page - 1) * pageSize,
@@ -122,4 +123,27 @@ export async function reactivateEnrollment(id: string, firstBillableDate: string
       data: { status: "ACTIVE", startDate: new Date(`${startDate}T00:00:00.000Z`), endDate: null },
     });
   });
+}
+
+export async function createEnrollmentBillingPause(id: string, input: EnrollmentBillingPauseInput) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  input = enrollmentBillingPauseSchema.parse(input);
+  const startMonth = new Date(`${input.startMonth}-01T00:00:00.000Z`);
+  const endMonth = new Date(`${input.endMonth}-01T00:00:00.000Z`);
+
+  const overlap = await db.enrollmentBillingPause.findFirst({
+    where: { enrollmentId: id, startMonth: { lte: endMonth }, endMonth: { gte: startMonth } },
+  });
+  if (overlap) throw new Error("This enrollment already has a billing pause covering part of that period.");
+
+  return db.enrollmentBillingPause.create({
+    data: { enrollmentId: id, startMonth, endMonth, reason: input.reason || null },
+  });
+}
+
+export async function deleteEnrollmentBillingPause(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  return db.enrollmentBillingPause.delete({ where: { id } });
 }

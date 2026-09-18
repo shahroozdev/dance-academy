@@ -81,11 +81,45 @@ describe("historical enrollment billing", () => {
     expect(await buildLineItemInputs(mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0], "student", month)).toEqual([]);
   });
   it("counts siblings with an enrollment overlapping that month even if now ended", async () => {
-    mocks.tx.student.findMany.mockImplementation(({ include }: { include: { enrollments: unknown } }) => {
-      const enrollments = include.enrollments === true ? [ended] : [];
-      return [{ enrollments }, { enrollments }];
-    });
+    mocks.tx.student.findMany.mockResolvedValue([
+      { enrollments: [{ ...ended, billingPauses: [] }] },
+      { enrollments: [{ ...ended, billingPauses: [] }] },
+    ]);
     expect(await familyQualifyingSiblingCount(mocks.tx as unknown as Parameters<typeof familyQualifyingSiblingCount>[0], "family", month)).toBe(2);
+  });
+
+  it("excludes a temporarily paused enrollment only for the selected billing month", async () => {
+    mocks.tx.enrollment.findMany.mockResolvedValue([{
+      ...ended,
+      status: "ACTIVE",
+      endDate: null,
+      billingPauses: [{ startMonth: new Date("2026-09-01"), endMonth: new Date("2026-09-01") }],
+    }]);
+
+    expect(await buildLineItemInputs(
+      mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0],
+      "student",
+      month,
+    )).toEqual([]);
+    expect(mocks.tx.classMonthlyFee.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("does not count a paused enrollment toward the sibling discount", async () => {
+    mocks.tx.student.findMany.mockResolvedValue([
+      { enrollments: [{ ...ended, billingPauses: [] }] },
+      {
+        enrollments: [{
+          ...ended,
+          billingPauses: [{ startMonth: new Date("2026-09-01"), endMonth: new Date("2026-09-01") }],
+        }],
+      },
+    ]);
+
+    expect(await familyQualifyingSiblingCount(
+      mocks.tx as unknown as Parameters<typeof familyQualifyingSiblingCount>[0],
+      "family",
+      month,
+    )).toBe(1);
   });
 });
 

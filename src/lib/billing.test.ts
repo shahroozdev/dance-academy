@@ -7,6 +7,7 @@ import {
   computeStudentBilling,
   countWeekdayOccurrencesInMonth,
   countWeekdayOccurrencesInRange,
+  enrollmentIsPausedForMonth,
   enrollmentOverlapsMonth,
   isPaymentReminderDue,
   normalizeMonth,
@@ -210,6 +211,20 @@ describe("enrollmentOverlapsMonth", () => {
   });
 });
 
+describe("enrollmentIsPausedForMonth", () => {
+  const pauses = [{ startMonth: new Date("2026-08-01"), endMonth: new Date("2026-09-01") }];
+
+  it("excludes every month in an inclusive pause and resumes afterward", () => {
+    expect(enrollmentIsPausedForMonth(pauses, new Date("2026-08-01"))).toBe(true);
+    expect(enrollmentIsPausedForMonth(pauses, new Date("2026-09-01"))).toBe(true);
+    expect(enrollmentIsPausedForMonth(pauses, new Date("2026-10-01"))).toBe(false);
+  });
+
+  it("treats an enrollment without pauses as billable", () => {
+    expect(enrollmentIsPausedForMonth([], new Date("2026-08-01"))).toBe(false);
+  });
+});
+
 describe("countWeekdayOccurrencesInMonth", () => {
   it("counts every Tuesday in September 2026 (5: the 1st, 8th, 15th, 22nd, 29th)", () => {
     expect(countWeekdayOccurrencesInMonth(normalizeMonth("2026-09-01"), "TUESDAY")).toBe(5);
@@ -247,6 +262,17 @@ describe("countWeekdayOccurrencesInRange", () => {
 
 describe("computeProratedLineItemAmount — mid-month enrollment billing (§4.7)", () => {
   const september = normalizeMonth("2026-09-01");
+
+  it("keeps a class-wide break at zero for a mid-month enrollment", () => {
+    expect(computeProratedLineItemAmount({
+      month: september,
+      dayOfWeek: "THURSDAY",
+      fullMonthAmount: 0,
+      perSessionRate: 20,
+      enrollmentStart: new Date("2026-09-10"),
+      enrollmentEnd: null,
+    })).toBe(0);
+  });
 
   it("charges only for sessions from the enrollment's start date onward when joining mid-month", () => {
     const amount = computeProratedLineItemAmount({

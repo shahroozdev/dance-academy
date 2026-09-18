@@ -6,6 +6,7 @@ import {
   computeProratedLineItemAmount,
   computeStudentBilling,
   countWeekdayOccurrencesInMonth,
+  enrollmentIsPausedForMonth,
   enrollmentOverlapsMonth,
   normalizeMonth,
   round2,
@@ -46,9 +47,13 @@ export async function familyQualifyingSiblingCount(
 ): Promise<number> {
   const students = await tx.student.findMany({
     where: { familyId, isActive: true },
-    include: { enrollments: true },
+    include: { enrollments: { include: { billingPauses: true } } },
   });
-  return students.filter((s) => s.enrollments.some((e) => enrollmentOverlapsMonth(e, month))).length;
+  return students.filter((s) =>
+    s.enrollments.some(
+      (e) => enrollmentOverlapsMonth(e, month) && !enrollmentIsPausedForMonth(e.billingPauses, month),
+    ),
+  ).length;
 }
 
 export async function buildLineItemInputs(
@@ -58,10 +63,12 @@ export async function buildLineItemInputs(
 ): Promise<LineItemInput[]> {
   const enrollments = await tx.enrollment.findMany({
     where: { studentId },
-    include: { class: true },
+    include: { class: true, billingPauses: true },
     orderBy: { startDate: "asc" },
   });
-  const overlapping = enrollments.filter((e) => enrollmentOverlapsMonth(e, month));
+  const overlapping = enrollments.filter(
+    (e) => enrollmentOverlapsMonth(e, month) && !enrollmentIsPausedForMonth(e.billingPauses, month),
+  );
 
   const lineItems: LineItemInput[] = [];
   const billedClasses = new Set<string>();

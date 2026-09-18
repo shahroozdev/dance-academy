@@ -1,5 +1,14 @@
 # Updates Summary
 
+## 2026-09-18
+
+- Staff can mark an individual class as having no classes for a selected month, setting that class-month to zero sessions and $0 without deactivating the ongoing class.
+- An enrollment can now be paused for one or more complete billing months while the student remains enrolled; billing resumes automatically after the selected end month.
+- A paused student is excluded from class tuition and sibling-discount qualification only during the paused months.
+- Class Monthly Fees now explains how to enter extra rehearsals and includes a session-count × rate calculator, while still allowing an exact one-month fee for hourly or differently priced rehearsals.
+- Staff can recalculate every unpaid bill affected by a class-month change in one action, while bills with recorded payments remain protected.
+- The individual bill adjustment form now clearly explains how to apply a one-student, one-month tuition exception without changing their ongoing enrollment.
+
 ## 2026-09-17
 
 - Enrollment start and end boundaries are now stored as calendar dates without a time or timezone, preventing a browser or server location from changing which sessions are billed.

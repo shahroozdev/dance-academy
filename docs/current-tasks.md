@@ -29,11 +29,17 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Done
 
+- **2026-09-18: Added billing exception controls.** Staff can set a no-class month, pause an
+  individual enrollment for complete months with automatic resumption, enter one-student monthly
+  adjustments, override class-month fees for extra rehearsals, and bulk-recalculate affected unpaid
+  bills while preserving bills with payments. All 239 tests, focused lint, TypeScript, and the
+  production build pass. The new billing-pause database update was applied successfully.
+
 - **2026-09-17: Made enrollment billing dates timezone-neutral.** Enrollment start/end boundaries
   are database calendar dates, and staff must choose a guided First Billable Date during registration
   approval or manual enrollment. Sessions before the selected date are excluded and sessions on or
-  after it are included. The legacy-data conversion is prepared but not yet applied to the live
-  database. All 226 tests, focused lint, TypeScript, and the production build pass.
+  after it are included. The live database conversion was applied successfully. All 226 tests,
+  focused lint, TypeScript, and the production build pass.
 
 - **2026-09-17: Audited related enrollment-date billing cases.** Enrollment creation, approval,
   reactivation, ending, monthly boundaries, every weekday, and all admin date displays now use the

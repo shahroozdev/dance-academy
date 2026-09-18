@@ -170,6 +170,7 @@ model Enrollment {
   endDate          DateTime?                @db.Date
   status           EnrollmentStatus         @default(ACTIVE)
   billingLineItems MonthlyBillingLineItem[]
+  billingPauses    EnrollmentBillingPause[]
   createdAt        DateTime                 @default(now())
   updatedAt        DateTime                 @updatedAt
 
@@ -177,6 +178,19 @@ model Enrollment {
   @@index([studentId])
   @@index([classId])
   @@index([status])
+}
+
+model EnrollmentBillingPause {
+  id           String     @id @default(cuid())
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  startMonth   DateTime   @db.Date
+  endMonth     DateTime   @db.Date
+  reason       String?
+  createdAt    DateTime   @default(now())
+
+  @@index([enrollmentId])
+  @@index([startMonth, endMonth])
 }
 
 // ---------- Class Monthly Fees (historical pricing snapshot) ----------

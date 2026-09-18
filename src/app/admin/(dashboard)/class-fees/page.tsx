@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
+import { Modal } from "@/components/common/modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
 import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { PageHeader } from "@/components/shared/page-header";
@@ -39,6 +40,7 @@ export default function ClassFeesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [operationMessage, setOperationMessage] = useState<string | null>(null);
 
   const { data: classesData } = useQuery("getClasses", [{ pageSize: 100, sortBy: "name" }]);
   const { data, isLoading } = useQuery("getClassMonthlyFees", [
@@ -56,6 +58,16 @@ export default function ClassFeesPage() {
   const { mutate: finalizeAll, isLoading: isFinalizingAll } = useMutate("finalizeAllClassMonthlyFeesForMonth", {
     invalidateKeys: ["getClassMonthlyFees"],
   });
+  const { mutate: markNoClasses, isLoading: isMarkingBreak } = useMutate("markClassMonthlyFeeNoClasses", {
+    invalidateKeys: ["getClassMonthlyFees", "getClassMonthlyFeeById"],
+    onSuccess: () => setOperationMessage("The class fee is now $0 for this month. Recalculate its unpaid student bills before finalizing."),
+  });
+  const { mutate: recalculateBills, isLoading: isRecalculating } = useMutate("recalculateClassMonthlyFeeBills", {
+    invalidateKeys: ["getClassMonthlyFees", "getMonthlyBillings", "getMonthlyBillingById"],
+    onSuccess: (result) => setOperationMessage(
+      `Recalculated ${result.recalculated} unpaid bill(s). ${result.skippedWithPayments} bill(s) with payments were left unchanged.`,
+    ),
+  });
 
   const classOptions = useMemo(() => classesData?.data.map((c) => ({ label: c.name, value: c.id })) ?? [], [classesData]);
 
@@ -65,8 +77,11 @@ export default function ClassFeesPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Class Monthly Fees"
-        subtitle="Fees are created automatically when bills are generated. Override a specific month here for cancellations or seasonal pricing."
+        subtitle="Control each class month for breaks, cancellations, extra rehearsals, and seasonal pricing without changing the ongoing class."
       />
+      {operationMessage && (
+        <div className="rounded-md border bg-muted/30 p-3 text-sm">{operationMessage}</div>
+      )}
       <Card
         header={
           <div className="flex items-center gap-2">
@@ -159,6 +174,44 @@ export default function ClassFeesPage() {
                       <TooltipWrapper label="Edit class fee">
                         <Button size="sm" variant="outline" onClick={() => setEditingId(fee.id)}>
                           Edit
+                        </Button>
+                      </TooltipWrapper>
+                      <Modal
+                        trigger={<Button size="sm" variant="outline">No Classes</Button>}
+                        className="max-w-sm"
+                        title={
+                          <div>
+                            Mark No Classes This Month?
+                            <p className="text-sm font-normal text-muted-foreground">
+                              Sets {fee.class.name} to zero sessions and $0 for {month}. The class and future months stay active.
+                            </p>
+                          </div>
+                        }
+                      >
+                        {({ close }) => (
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={close}>Cancel</Button>
+                            <Button
+                              variant="destructive"
+                              disabled={isMarkingBreak}
+                              onClick={async () => {
+                                await markNoClasses(fee.id);
+                                close();
+                              }}
+                            >
+                              Confirm No Classes
+                            </Button>
+                          </div>
+                        )}
+                      </Modal>
+                      <TooltipWrapper label="Apply this class-month fee to every unpaid student bill using it">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isRecalculating}
+                          onClick={() => recalculateBills(fee.id)}
+                        >
+                          Recalculate Bills
                         </Button>
                       </TooltipWrapper>
                       {fee.isFinalized ? (

@@ -43,6 +43,18 @@ export function enrollmentOverlapsMonth(
   return startsByMonthEnd && endsNoEarlierThanMonthStart;
 }
 
+export function enrollmentIsPausedForMonth(
+  pauses: Array<{ startMonth: Date; endMonth: Date }> = [],
+  month: Date,
+): boolean {
+  const normalizedMonth = normalizeMonth(month).getTime();
+  return pauses.some(
+    (pause) =>
+      normalizeMonth(pause.startMonth).getTime() <= normalizedMonth &&
+      normalizeMonth(pause.endMonth).getTime() >= normalizedMonth,
+  );
+}
+
 const DAY_OF_WEEK_INDEX: Record<string, number> = {
   SUNDAY: 0,
   MONDAY: 1,
@@ -106,6 +118,7 @@ export function computeProratedLineItemAmount({
   enrollmentStart,
   enrollmentEnd,
 }: ProratedLineItemInput): number {
+  if (fullMonthAmount === 0) return 0;
   const monthStart = startOfMonthUTC(month);
   const monthEnd = endOfMonthUTC(month);
   enrollmentStart = enrollmentCalendarDate(enrollmentStart);

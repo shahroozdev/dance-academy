@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
+import { recalculateBilling } from "@/actions/billing";
 import { classMonthlyFeeUpdateSchema } from "@/actions/class-fees.schema";
 import type { ClassMonthlyFeeUpdateInput } from "@/actions/class-fees.schema";
 import { idSchema , validateListQuery } from "@/actions/validation.schema";
@@ -79,6 +80,44 @@ export async function updateClassMonthlyFee(id: string, data: ClassMonthlyFeeUpd
       finalizedAt: null,
     },
   });
+}
+
+export async function markClassMonthlyFeeNoClasses(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  return db.classMonthlyFee.update({
+    where: { id },
+    data: {
+      billableSessions: 0,
+      flatFee: 0,
+      monthlyClassFee: 0,
+      notes: "No classes — break/inactive month",
+      isOverridden: true,
+      isFinalized: false,
+      finalizedAt: null,
+    },
+  });
+}
+
+export async function recalculateClassMonthlyFeeBills(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  const lineItems = await db.monthlyBillingLineItem.findMany({
+    where: { classMonthlyFeeId: id },
+    select: { billing: { select: { id: true, payments: { select: { id: true } } } } },
+  });
+  const bills = [...new Map(lineItems.map((line) => [line.billing.id, line.billing])).values()];
+  let recalculated = 0;
+  let skippedWithPayments = 0;
+  for (const bill of bills) {
+    if (bill.payments.length > 0) {
+      skippedWithPayments++;
+      continue;
+    }
+    await recalculateBilling(bill.id);
+    recalculated++;
+  }
+  return { recalculated, skippedWithPayments };
 }
 
 // ---------- Finalization (§4.7) — staff confirmation of a class's billable session count for

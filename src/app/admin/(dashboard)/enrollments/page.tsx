@@ -22,6 +22,8 @@ import { useQuery } from "@/hooks/useQuery";
 import { enrollmentDateInputValue, formatEnrollmentCalendarDate } from "@/lib/enrollment-date";
 import { todayIsoDate } from "@/lib/utils";
 
+import { EnrollmentBillingPauseModal } from "./enrollment-billing-pause-modal";
+
 export default function EnrollmentsPage() {
   const searchParams = useSearchParams();
   const studentId = searchParams.get("studentId") ?? undefined;
@@ -131,6 +133,11 @@ export default function EnrollmentsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-2">
+                    <EnrollmentBillingPauseModal
+                      enrollmentId={enrollment.id}
+                      studentName={enrollment.student.fullName}
+                      pauses={enrollment.billingPauses}
+                    />
                     <EditEnrollmentStartDate
                       id={enrollment.id}
                       studentName={enrollment.student.fullName}

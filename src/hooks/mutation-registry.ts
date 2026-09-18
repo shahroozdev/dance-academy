@@ -2,12 +2,21 @@ import { generateMonthlyBilling, recalculateBilling, setBillingAdjustment } from
 import {
   finalizeAllClassMonthlyFeesForMonth,
   finalizeClassMonthlyFee,
+  markClassMonthlyFeeNoClasses,
+  recalculateClassMonthlyFeeBills,
   unfinalizeClassMonthlyFee,
   updateClassMonthlyFee,
 } from "@/actions/class-fees";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
 import { updateEmailTemplate } from "@/actions/email-templates";
-import { createEnrollment, endEnrollment, reactivateEnrollment, updateEnrollmentStartDate } from "@/actions/enrollments";
+import {
+  createEnrollment,
+  createEnrollmentBillingPause,
+  deleteEnrollmentBillingPause,
+  endEnrollment,
+  reactivateEnrollment,
+  updateEnrollmentStartDate,
+} from "@/actions/enrollments";
 import { createExpense, deleteExpense, updateExpense, uploadExpenseReceipt } from "@/actions/expenses";
 import {
   createFamily,
@@ -52,6 +61,8 @@ export const mutationRegistry = {
   updateTeacher,
   toggleTeacherActive,
   createEnrollment,
+  createEnrollmentBillingPause,
+  deleteEnrollmentBillingPause,
   endEnrollment,
   reactivateEnrollment,
   updateEnrollmentStartDate,
@@ -64,6 +75,8 @@ export const mutationRegistry = {
   recalculateBilling,
   updateClassMonthlyFee,
   finalizeClassMonthlyFee,
+  markClassMonthlyFeeNoClasses,
+  recalculateClassMonthlyFeeBills,
   unfinalizeClassMonthlyFee,
   finalizeAllClassMonthlyFeesForMonth,
   createPayment,

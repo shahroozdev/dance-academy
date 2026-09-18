@@ -28,8 +28,8 @@ export function ClassFeeEditModal({ id, onClose }: { id: string; onClose: () => 
         <div>
           Override Class Fee
           <p className="text-sm font-normal text-muted-foreground">
-            Only affects this class&apos;s fee for this month. Bills already generated need
-            &ldquo;Recalculate&rdquo; on the bill detail page to pick this up.
+            Only affects this class for this month. Enter the total sessions and exact fee after
+            cancellations or extra rehearsals, then use Recalculate Bills on the Class Fees page.
           </p>
         </div>
       }
@@ -52,7 +52,12 @@ export function ClassFeeEditModal({ id, onClose }: { id: string; onClose: () => 
                 await mutate(id, data);
               }}
             >
-              {(form) => (
+              {(form) => {
+                const sessions = Number(form.watch("billableSessions") ?? 0);
+                const rate = Number(form.watch("rate") ?? 0);
+                const calculatedFee = Math.round((sessions * rate + Number.EPSILON) * 100) / 100;
+
+                return (
                 <div className="space-y-4">
                   <p className="text-sm font-medium">{fee.class.name}</p>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -63,18 +68,34 @@ export function ClassFeeEditModal({ id, onClose }: { id: string; onClose: () => 
                     <FormFeilds name="flatFee" label="Flat Fee ($)" type="number" />
                     <FormFeilds name="monthlyClassFee" label="Monthly Class Fee ($)" type="number" />
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    disabled={!Number.isFinite(calculatedFee) || sessions < 0 || rate < 0}
+                    onClick={() => form.setValue("monthlyClassFee", calculatedFee, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })}
+                  >
+                    Use {sessions} sessions × ${rate.toFixed(2)} = ${calculatedFee.toFixed(2)}
+                  </Button>
                   <FormFeilds name="notes" label="Notes" type="textarea" placeholder="e.g. extra session added Sept 20" />
+                  <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
+                    Extra rehearsals: increase Billable Sessions and use the calculation button when every session has the same rate. For hourly or differently priced rehearsals, enter the exact total Monthly Class Fee and describe the calculation in Notes. This changes every enrolled student&apos;s unpaid bill for this class-month only.
+                  </p>
                   {Boolean(error) && <p className="text-sm text-destructive">Could not save. Please try again.</p>}
                   <div className="flex justify-end gap-2 pt-2">
                     <Button type="button" variant="outline" onClick={close}>
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={isSaving || !form.formState.isValid}>
+                    <Button type="submit" disabled={isSaving}>
                       {isSaving ? "Saving..." : "Save Override"}
                     </Button>
                   </div>
                 </div>
-              )}
+                );
+              }}
             </FORM>
           )}
         </div>

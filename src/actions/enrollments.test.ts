@@ -7,13 +7,18 @@ const mocks = vi.hoisted(() => ({
       findUniqueOrThrow: vi.fn(),
       update: vi.fn(),
     },
+    enrollmentBillingPause: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      delete: vi.fn(),
+    },
   },
 }));
 
 vi.mock("@/actions/access", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
-import { updateEnrollmentStartDate } from "@/actions/enrollments";
+import { createEnrollmentBillingPause, updateEnrollmentStartDate } from "@/actions/enrollments";
 
 describe("updateEnrollmentStartDate", () => {
   beforeEach(() => {
@@ -56,5 +61,42 @@ describe("updateEnrollmentStartDate", () => {
       "cannot be in the future",
     );
     expect(mocks.db.enrollment.findUniqueOrThrow).not.toHaveBeenCalled();
+  });
+});
+
+describe("createEnrollmentBillingPause", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ id: "admin" });
+    mocks.db.enrollmentBillingPause.findFirst.mockResolvedValue(null);
+    mocks.db.enrollmentBillingPause.create.mockResolvedValue({ id: "pause" });
+  });
+
+  it("stores an inclusive month range without ending the enrollment", async () => {
+    await createEnrollmentBillingPause("enrollment", {
+      startMonth: "2026-08",
+      endMonth: "2026-09",
+      reason: "Vacation",
+    });
+
+    expect(mocks.db.enrollmentBillingPause.create).toHaveBeenCalledWith({
+      data: {
+        enrollmentId: "enrollment",
+        startMonth: new Date("2026-08-01T00:00:00.000Z"),
+        endMonth: new Date("2026-09-01T00:00:00.000Z"),
+        reason: "Vacation",
+      },
+    });
+  });
+
+  it("rejects overlapping pauses", async () => {
+    mocks.db.enrollmentBillingPause.findFirst.mockResolvedValue({ id: "existing" });
+
+    await expect(createEnrollmentBillingPause("enrollment", {
+      startMonth: "2026-08",
+      endMonth: "2026-08",
+      reason: "Vacation",
+    })).rejects.toThrow("already has a billing pause");
+    expect(mocks.db.enrollmentBillingPause.create).not.toHaveBeenCalled();
   });
 });

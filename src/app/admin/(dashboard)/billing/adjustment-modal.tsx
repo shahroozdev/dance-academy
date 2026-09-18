@@ -29,7 +29,7 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
           Adjustment
           <p className="text-sm font-normal text-muted-foreground">
             A one-month change. It never touches the class rate or other months. Use a
-            negative amount for a discount or refund, a positive amount to add a charge.
+            negative amount to reduce this student&apos;s fee or a positive amount to add a charge.
           </p>
         </div>
       }
@@ -55,6 +55,9 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
                     type="textarea"
                     placeholder="e.g. class cancelled Sept 14, or refund for..."
                   />
+                  <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
+                    To charge only one class this month, subtract the difference between the current total and the intended total. Example: change $80 to $20 with a -$60 adjustment. This affects only this student and month.
+                  </p>
                   {billing.status === "PAID" && (
                     <p className="text-sm text-muted-foreground">
                       A negative adjustment reduces the fee and shows the credit as Overpaid.
