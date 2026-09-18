@@ -2,6 +2,7 @@
 
 ## 2026-09-19
 
+- The compact enrollment Actions menu now includes clear icons for every option, making each action faster to recognize.
 - Enrollment rows now use one compact Actions menu for billing pauses, date correction, ending, re-enrollment, and accidental removal, making the table easier to scan.
 - Modal titles now keep clear space around the close button, so longer headings wrap cleanly instead of appearing underneath the icon.
 - Classes can now have summer-break or inactive month ranges scheduled in advance, so automatic billing excludes those months and resumes afterward without ending the class.

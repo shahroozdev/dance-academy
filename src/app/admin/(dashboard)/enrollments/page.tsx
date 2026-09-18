@@ -1,6 +1,17 @@
 "use client";
 
-import { CalendarClock, ChevronDown, ExternalLink, ListChecks, Plus } from "lucide-react";
+import {
+  CalendarClock,
+  ChevronDown,
+  ExternalLink,
+  ListChecks,
+  LogOut,
+  Pause,
+  Plus,
+  RotateCcw,
+  Settings2,
+  Trash2,
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -207,21 +218,35 @@ function EnrollmentActions({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
+            <Settings2 className="size-4" />
             Actions
             <ChevronDown className="size-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onSelect={() => setAction("pause")}>Billing pauses</DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => setAction("edit")}>Edit start date</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setAction("pause")}>
+            <Pause />
+            Billing pauses
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setAction("edit")}>
+            <CalendarClock />
+            Edit start date
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
-          {isActive && <DropdownMenuItem onSelect={() => setAction("end")}>End enrollment</DropdownMenuItem>}
+          {isActive && (
+            <DropdownMenuItem onSelect={() => setAction("end")}>
+              <LogOut />
+              End enrollment
+            </DropdownMenuItem>
+          )}
           {!isActive && (
             <DropdownMenuItem disabled={hasActiveDuplicate} onSelect={() => setAction("reenroll")}>
+              <RotateCcw />
               Re-enroll
             </DropdownMenuItem>
           )}
           <DropdownMenuItem variant="destructive" onSelect={() => setAction("remove")}>
+            <Trash2 />
             Remove accidental enrollment
           </DropdownMenuItem>
         </DropdownMenuContent>

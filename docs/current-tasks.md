@@ -5,7 +5,8 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
-- Nothing currently in progress.
+- **2026-09-19: Live production verification.** Deploy the finalized enrollment-action icons, then
+  verify the live registration, enrollment exceptions, billing controls, family tools, and related UI.
 
 ## Next / Blocked
 
@@ -28,6 +29,9 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-09-19: Improved enrollment action-menu clarity.** The compact trigger and every menu
+  option now have recognizable icons, with accidental removal remaining visually destructive.
 
 - **2026-09-19: Simplified enrollment actions.** Each enrollment row now has one compact Actions
   menu, with routine, lifecycle, and destructive actions clearly organized.
