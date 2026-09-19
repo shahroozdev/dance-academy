@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
+import { formatEnrollmentCalendarDate } from "@/lib/enrollment-date";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
@@ -81,6 +82,7 @@ export default function ClassesPage() {
                 <TableHead>Program</TableHead>
                 <TableHead>Teacher</TableHead>
                 <TableHead>Day/Time</TableHead>
+                <TableHead>Start Date</TableHead>
                 <TableHead>Rate</TableHead>
                 <TableHead>Enrolled</TableHead>
                 <TableHead>Status</TableHead>
@@ -99,6 +101,9 @@ export default function ClassesPage() {
                   <TableCell>
                     {cls.dayOfWeek?.replace("_", " ")}
                     {cls.startTime && ` ${cls.startTime}`}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {formatEnrollmentCalendarDate(cls.firstClassDate)}
                   </TableCell>
                   <TableCell>
                     {formatCurrency(cls.standardRate)}

@@ -34,6 +34,10 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Done
 
+- **2026-09-19: Added class start dates to the Classes list and corrected the stale Elgin fee.**
+  Staff can see when billing begins from the list, and Bharatanatyam Beginner Elgin's September
+  class fee now correctly shows two sessions and $40; its unpaid student bill was already $40.
+
 - **2026-09-19: Added class start-date billing control.** Staff can set and correct a First Class
   Date; earlier months are excluded, the opening month counts only sessions from that date, and
   unused pre-start fee rows are removed. All 267 tests, lint, TypeScript, and production build pass.
