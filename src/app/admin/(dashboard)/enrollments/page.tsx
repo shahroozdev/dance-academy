@@ -388,7 +388,7 @@ function EditEnrollmentStartDate({
                 Sessions before this date are excluded. A class held on this date or later is included.
               </p>
               <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-                After saving, open the student&apos;s affected monthly bill and select <strong>Recalculate</strong>. Bills that already have payments are protected and must be corrected with an adjustment instead.
+                Affected unpaid family bills are recalculated automatically after saving. Bills that already have payments are protected and must be corrected with an adjustment instead.
               </p>
               {Boolean(error) && <p role="alert" className="text-sm text-destructive">{error instanceof Error ? error.message : "Could not update the enrollment start date."}</p>}
               <div className="flex justify-end gap-2">

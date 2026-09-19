@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   sendEmail: vi.fn(),
+  recalculateAffectedBills: vi.fn(),
   db: {
     registrationRequest: { findUniqueOrThrow: vi.fn(), create: vi.fn(), update: vi.fn() },
     family: { findMany: vi.fn(), count: vi.fn(), findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), create: vi.fn() },
@@ -14,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 vi.mock("@/actions/access", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/actions/billing-impact", () => ({ recalculateAffectedBills: mocks.recalculateAffectedBills }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 vi.mock("@/actions/transaction", () => ({ serializableTransaction: (work: (db: typeof mocks.db) => Promise<unknown>) => work(mocks.db) }));
 vi.mock("@/actions/email", () => ({ sendTemplatedEmail: mocks.sendEmail, sendAdminOperationalAlert: vi.fn() }));
@@ -26,6 +28,7 @@ const request = { id: "request", status: "PENDING", parentGuardianName: "Father 
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.requireAdmin.mockResolvedValue({ id: "admin" });
+  mocks.recalculateAffectedBills.mockResolvedValue({ recalculated: 0, skippedWithPayments: 0 });
   mocks.db.registrationRequest.findUniqueOrThrow.mockResolvedValue(request);
   mocks.db.registrationRequest.update.mockImplementation(async ({ data }) => ({ ...request, ...data }));
   mocks.db.family.findMany.mockResolvedValue([family]);

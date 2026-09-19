@@ -29,7 +29,7 @@ export function ClassFeeEditModal({ id, onClose }: { id: string; onClose: () => 
           Override Class Fee
           <p className="text-sm font-normal text-muted-foreground">
             Only affects this class for this month. Enter the total sessions and exact fee after
-            cancellations or extra rehearsals, then use Recalculate Bills on the Class Fees page.
+            cancellations or extra rehearsals. Affected unpaid bills recalculate automatically; the Recalculate Bills action remains available as a backup.
           </p>
         </div>
       }

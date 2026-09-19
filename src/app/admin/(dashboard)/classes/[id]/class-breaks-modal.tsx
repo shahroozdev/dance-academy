@@ -52,7 +52,7 @@ export function ClassBreaksModal({ classId, className, breaks }: { classId: stri
                 </div>
                 <FormFeilds name="reason" label="Reason" placeholder="e.g. Summer break" />
                 <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-                  Automatic billing excludes this class for every selected month and resumes afterward. If a bill already exists, recalculate its unpaid class bills; paid bills remain protected.
+                  Automatic billing excludes this class for every selected month and resumes afterward. Existing unpaid family bills recalculate automatically; bills with payments remain protected.
                 </p>
                 {Boolean(error) && <p className="text-sm text-destructive">{error instanceof Error ? error.message : "Could not schedule this class break."}</p>}
                 <Button type="submit" className="w-full" disabled={isAdding}>{isAdding ? "Saving..." : "Schedule Class Break"}</Button>

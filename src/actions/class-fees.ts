@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
-import { recalculateBilling } from "@/actions/billing";
+import { recalculateAffectedBills } from "@/actions/billing-impact";
 import { classMonthlyFeeUpdateSchema } from "@/actions/class-fees.schema";
 import type { ClassMonthlyFeeUpdateInput } from "@/actions/class-fees.schema";
 import { idSchema , validateListQuery } from "@/actions/validation.schema";
@@ -85,7 +85,7 @@ export async function updateClassMonthlyFee(id: string, data: ClassMonthlyFeeUpd
 export async function markClassMonthlyFeeNoClasses(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  return db.classMonthlyFee.update({
+  const fee = await db.classMonthlyFee.update({
     where: { id },
     data: {
       billableSessions: 0,
@@ -97,27 +97,14 @@ export async function markClassMonthlyFeeNoClasses(id: string) {
       finalizedAt: null,
     },
   });
+  await recalculateClassMonthlyFeeBills(id);
+  return fee;
 }
 
 export async function recalculateClassMonthlyFeeBills(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  const lineItems = await db.monthlyBillingLineItem.findMany({
-    where: { classMonthlyFeeId: id },
-    select: { billing: { select: { id: true, payments: { select: { id: true } } } } },
-  });
-  const bills = [...new Map(lineItems.map((line) => [line.billing.id, line.billing])).values()];
-  let recalculated = 0;
-  let skippedWithPayments = 0;
-  for (const bill of bills) {
-    if (bill.payments.length > 0) {
-      skippedWithPayments++;
-      continue;
-    }
-    await recalculateBilling(bill.id);
-    recalculated++;
-  }
-  return { recalculated, skippedWithPayments };
+  return recalculateAffectedBills({ lineItems: { some: { classMonthlyFeeId: id } } });
 }
 
 // ---------- Finalization (§4.7) — staff confirmation of a class's billable session count for
@@ -127,10 +114,12 @@ export async function recalculateClassMonthlyFeeBills(id: string) {
 export async function finalizeClassMonthlyFee(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  return db.classMonthlyFee.update({
+  const fee = await db.classMonthlyFee.update({
     where: { id },
     data: { isFinalized: true, finalizedAt: new Date() },
   });
+  await recalculateClassMonthlyFeeBills(id);
+  return fee;
 }
 
 export async function unfinalizeClassMonthlyFee(id: string) {

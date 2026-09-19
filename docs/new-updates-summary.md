@@ -2,6 +2,7 @@
 
 ## 2026-09-19
 
+- Billing-impacting changes now automatically refresh affected unpaid bills after class-fee edits, no-class months, class or student breaks, enrollment date and status changes, extra rehearsals, registration approval, and First Class Date corrections. Bills with payments remain protected, and changed class-fee months require staff finalization again before parent notices.
 - Added each class's First Class Date to the Classes list so staff can verify when billing begins without opening the class; corrected Bharatanatyam Beginner Elgin's saved September class fee to two sessions and $40.
 - Classes now have an editable First Class Date. Billing excludes earlier months, counts only scheduled sessions from that date in the first month, and prevents a student’s first billable date from preceding the class itself.
 - Existing classes inherit their earliest enrollment date as the first class date, while unused fee rows from earlier months are removed so new classes do not show misleading historical fees.

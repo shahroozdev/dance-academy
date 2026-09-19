@@ -77,7 +77,7 @@ export function ExtraSessionsModal({ classId, className, month }: {
                   </div>
                   <FormFeilds name="notes" label="Notes" type="textarea" placeholder="Performance or rehearsal details" />
                   <p className="rounded-md border bg-muted/30 p-3 text-sm">Additional charge per enrolled student: <strong>${amount.toFixed(2)}</strong></p>
-                  <p className="text-xs text-muted-foreground">After saving or removing sessions, use Recalculate Bills and finalize the class fee before notifying parents.</p>
+                  <p className="text-xs text-muted-foreground">Saving or removing sessions automatically recalculates affected unpaid bills. Finalize the class fee before notifying parents; bills with payments remain protected.</p>
                   {Boolean(error) && <p className="text-sm text-destructive">Could not save the extra session.</p>}
                   <Button type="submit" className="w-full" disabled={isCreating}>{isCreating ? "Saving..." : "Add Extra Session"}</Button>
                 </div>

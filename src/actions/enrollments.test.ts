@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  recalculateEnrollmentRangeBills: vi.fn(),
   db: {
     enrollment: {
       findUniqueOrThrow: vi.fn(),
@@ -16,6 +17,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/actions/access", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/actions/billing-impact", () => ({ recalculateEnrollmentRangeBills: mocks.recalculateEnrollmentRangeBills }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import { createEnrollmentBillingPause, updateEnrollmentStartDate } from "@/actions/enrollments";
@@ -29,6 +31,7 @@ describe("updateEnrollmentStartDate", () => {
       class: { firstClassDate: new Date("2026-01-01T00:00:00.000Z") },
     });
     mocks.db.enrollment.update.mockResolvedValue({ id: "enrollment", startDate: new Date("2026-09-10") });
+    mocks.recalculateEnrollmentRangeBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 0 });
   });
 
   it("stores a corrected historical start date", async () => {
@@ -38,6 +41,7 @@ describe("updateEnrollmentStartDate", () => {
       where: { id: "enrollment" },
       data: { startDate: new Date("2026-09-10") },
     });
+    expect(mocks.recalculateEnrollmentRangeBills).toHaveBeenCalledWith("enrollment");
   });
 
   it("rejects a start date after an ended enrollment's end date", async () => {
@@ -89,6 +93,7 @@ describe("createEnrollmentBillingPause", () => {
     mocks.requireAdmin.mockResolvedValue({ id: "admin" });
     mocks.db.enrollmentBillingPause.findFirst.mockResolvedValue(null);
     mocks.db.enrollmentBillingPause.create.mockResolvedValue({ id: "pause" });
+    mocks.recalculateEnrollmentRangeBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 0 });
   });
 
   it("stores an inclusive month range without ending the enrollment", async () => {

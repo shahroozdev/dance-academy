@@ -94,7 +94,7 @@ export function EnrollmentBillingPauseModal({
                 </div>
                 <FormFeilds name="reason" label="Reason / Note" placeholder="e.g. family vacation" />
                 <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-                  The student remains enrolled but receives no class charge for each selected month. Billing resumes automatically in the following month. Recalculate an existing unpaid bill after adding or removing a pause.
+                  The student remains enrolled but receives no class charge for each selected month. Billing resumes automatically afterward, and existing unpaid family bills are recalculated automatically. Bills with payments remain protected.
                 </p>
                 {Boolean(error) && <p className="text-sm text-destructive">{error instanceof Error ? error.message : "Could not save the billing pause."}</p>}
                 <Button type="submit" className="w-full" disabled={isCreating}>

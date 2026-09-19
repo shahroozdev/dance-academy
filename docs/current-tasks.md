@@ -34,6 +34,12 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Done
 
+- **2026-09-19: Centralized automatic billing recalculation.** Class-fee edits, no-class months,
+  class and enrollment pauses, enrollment lifecycle/date changes, extra sessions, registration
+  approval, and class start-date corrections now refresh affected unpaid bills automatically while
+  protecting paid bills and reopening changed class-fee months for review. All 273 tests, focused
+  lint, TypeScript, and the production build pass.
+
 - **2026-09-19: Added class start dates to the Classes list and corrected the stale Elgin fee.**
   Staff can see when billing begins from the list, and Bharatanatyam Beginner Elgin's September
   class fee now correctly shows two sessions and $40; its unpaid student bill was already $40.

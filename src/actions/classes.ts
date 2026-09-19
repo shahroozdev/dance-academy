@@ -1,10 +1,12 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
+import { recalculateAllClassFamilyBills } from "@/actions/billing-impact";
 import { classCreateSchema, classUpdateSchema } from "@/actions/classes.schema";
 import type { ClassCreateInput, ClassUpdateInput } from "@/actions/classes.schema";
 import { idSchema, booleanSchema , validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
+import { countClassSessionsForMonth, normalizeMonth, round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
 
 
@@ -202,6 +204,41 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
     }
     return updated;
   });
+  if (data.firstClassDate !== undefined) {
+    const firstBillingMonth = normalizeMonth(cls.firstClassDate);
+    const existingFee = await db.classMonthlyFee.findUnique({
+      where: { classId_month: { classId: id, month: firstBillingMonth } },
+    });
+    if (existingFee && !existingFee.isOverridden) {
+      const rate = round2(Number(cls.standardRate));
+      const billableSessions = countClassSessionsForMonth(firstBillingMonth, cls.dayOfWeek, cls.firstClassDate);
+      const regularFee = round2(billableSessions * rate);
+      await db.classMonthlyFee.update({
+        where: { id: existingFee.id },
+        data: cls.pricingType === "SEASONAL"
+          ? {
+              billableSessions: null,
+              rate: null,
+              flatFee: rate,
+              monthlyClassFee: rate,
+              isFinalized: false,
+              finalizedAt: null,
+            }
+          : {
+              billableSessions,
+              rate,
+              flatFee: null,
+              monthlyClassFee: regularFee,
+              isFinalized: false,
+              finalizedAt: null,
+            },
+      });
+    }
+    await recalculateAllClassFamilyBills(id);
+    await db.classMonthlyFee.deleteMany({
+      where: { classId: id, month: { lt: firstBillingMonth }, lineItems: { none: {} } },
+    });
+  }
   return { ...cls, standardRate: Number(cls.standardRate) };
 }
 

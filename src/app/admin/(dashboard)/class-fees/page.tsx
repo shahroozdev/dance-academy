@@ -61,7 +61,7 @@ export default function ClassFeesPage() {
   });
   const { mutate: markNoClasses, isLoading: isMarkingBreak } = useMutate("markClassMonthlyFeeNoClasses", {
     invalidateKeys: ["getClassMonthlyFees", "getClassMonthlyFeeById"],
-    onSuccess: () => setOperationMessage("The class fee is now $0 for this month. Recalculate its unpaid student bills before finalizing."),
+    onSuccess: () => setOperationMessage("The class fee is now $0 for this month. Affected unpaid bills were recalculated automatically; bills with payments were protected."),
   });
   const { mutate: recalculateBills, isLoading: isRecalculating } = useMutate("recalculateClassMonthlyFeeBills", {
     invalidateKeys: ["getClassMonthlyFees", "getMonthlyBillings", "getMonthlyBillingById"],

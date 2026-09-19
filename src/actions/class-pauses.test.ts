@@ -2,12 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  recalculateClassRangeBills: vi.fn(),
   db: {
     classBillingPause: { findFirst: vi.fn(), create: vi.fn(), delete: vi.fn() },
+    classMonthlyFee: { updateMany: vi.fn() },
   },
 }));
 
 vi.mock("@/actions/access", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/actions/billing-impact", () => ({ recalculateClassRangeBills: mocks.recalculateClassRangeBills }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import { createClassBillingPause } from "@/actions/class-pauses";
@@ -17,6 +20,8 @@ beforeEach(() => {
   mocks.requireAdmin.mockResolvedValue({ id: "admin" });
   mocks.db.classBillingPause.findFirst.mockResolvedValue(null);
   mocks.db.classBillingPause.create.mockResolvedValue({ id: "break" });
+  mocks.db.classMonthlyFee.updateMany.mockResolvedValue({ count: 1 });
+  mocks.recalculateClassRangeBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 0 });
 });
 
 describe("class billing breaks", () => {
@@ -30,6 +35,11 @@ describe("class billing breaks", () => {
         reason: "Summer break",
       },
     });
+    expect(mocks.recalculateClassRangeBills).toHaveBeenCalledWith(
+      "class",
+      new Date("2026-06-01T00:00:00.000Z"),
+      new Date("2026-08-01T00:00:00.000Z"),
+    );
   });
 
   it("rejects overlapping class-break ranges", async () => {

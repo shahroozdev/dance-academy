@@ -2,15 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
-  recalculateBilling: vi.fn(),
+  recalculateAffectedBills: vi.fn(),
   db: {
     classMonthlyFee: { update: vi.fn() },
-    monthlyBillingLineItem: { findMany: vi.fn() },
   },
 }));
 
 vi.mock("@/actions/access", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/actions/billing", () => ({ recalculateBilling: mocks.recalculateBilling }));
+vi.mock("@/actions/billing-impact", () => ({ recalculateAffectedBills: mocks.recalculateAffectedBills }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import {
@@ -22,6 +21,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.requireAdmin.mockResolvedValue({ id: "admin" });
   mocks.db.classMonthlyFee.update.mockResolvedValue({ id: "fee" });
+  mocks.recalculateAffectedBills.mockResolvedValue({ recalculated: 0, skippedWithPayments: 0 });
 });
 
 describe("markClassMonthlyFeeNoClasses", () => {
@@ -45,18 +45,14 @@ describe("markClassMonthlyFeeNoClasses", () => {
 
 describe("recalculateClassMonthlyFeeBills", () => {
   it("recalculates each unpaid bill once and protects bills that already have payments", async () => {
-    mocks.db.monthlyBillingLineItem.findMany.mockResolvedValue([
-      { billing: { id: "unpaid", payments: [] } },
-      { billing: { id: "unpaid", payments: [] } },
-      { billing: { id: "paid", payments: [{ id: "payment" }] } },
-    ]);
-    mocks.recalculateBilling.mockResolvedValue({ id: "unpaid" });
+    mocks.recalculateAffectedBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 1 });
 
     await expect(recalculateClassMonthlyFeeBills("fee")).resolves.toEqual({
       recalculated: 1,
       skippedWithPayments: 1,
     });
-    expect(mocks.recalculateBilling).toHaveBeenCalledTimes(1);
-    expect(mocks.recalculateBilling).toHaveBeenCalledWith("unpaid");
+    expect(mocks.recalculateAffectedBills).toHaveBeenCalledWith({
+      lineItems: { some: { classMonthlyFeeId: "fee" } },
+    });
   });
 });

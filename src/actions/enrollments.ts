@@ -2,6 +2,7 @@
 
 import { requireAdmin } from "@/actions/access";
 import { recalculateBilling } from "@/actions/billing";
+import { recalculateEnrollmentRangeBills } from "@/actions/billing-impact";
 import { enrollmentBillingPauseSchema, enrollmentCreateSchema, enrollmentStartDateUpdateSchema } from "@/actions/enrollments.schema";
 import type { EnrollmentBillingPauseInput, EnrollmentCreateInput, EnrollmentStartDateUpdateInput } from "@/actions/enrollments.schema";
 import { serializableTransaction } from "@/actions/transaction";
@@ -52,7 +53,7 @@ export async function createEnrollment(data: EnrollmentCreateInput) {
   await requireAdmin();
   data = enrollmentCreateSchema.parse(data);
   const startDate = parseEnrollmentStartDate(data.startDate);
-  return serializableTransaction(async (tx) => {
+  const enrollment = await serializableTransaction(async (tx) => {
     const student = await tx.student.findUniqueOrThrow({ where: { id: data.studentId } });
     const cls = await tx.class.findUniqueOrThrow({ where: { id: data.classId } });
     if (!student.isActive || !cls.isActive) throw new Error("Select an active student and class.");
@@ -65,16 +66,20 @@ export async function createEnrollment(data: EnrollmentCreateInput) {
       data: { studentId: data.studentId, classId: data.classId, startDate },
     });
   });
+  await recalculateEnrollmentRangeBills(enrollment.id);
+  return enrollment;
 }
 
 export async function endEnrollment(id: string, endDateInput: string) {
   await requireAdmin();
   id = idSchema.parse(id);
   const { startDate: endDate } = enrollmentStartDateUpdateSchema.parse({ startDate: endDateInput });
-  return db.enrollment.update({
+  const enrollment = await db.enrollment.update({
     where: { id, status: "ACTIVE" },
     data: { status: "ENDED", endDate: new Date(`${endDate}T00:00:00.000Z`) },
   });
+  await recalculateEnrollmentRangeBills(id);
+  return enrollment;
 }
 
 export async function updateEnrollmentStartDate(id: string, data: EnrollmentStartDateUpdateInput) {
@@ -92,7 +97,9 @@ export async function updateEnrollmentStartDate(id: string, data: EnrollmentStar
     throw new Error("Enrollment start date cannot be after its end date.");
   }
 
-  return db.enrollment.update({ where: { id }, data: { startDate } });
+  const updated = await db.enrollment.update({ where: { id }, data: { startDate } });
+  await recalculateEnrollmentRangeBills(id);
+  return updated;
 }
 
 function parseEnrollmentStartDate(value?: string) {
@@ -115,7 +122,7 @@ export async function reactivateEnrollment(id: string, firstBillableDate: string
   await requireAdmin();
   id = idSchema.parse(id);
   const { startDate } = enrollmentStartDateUpdateSchema.parse({ startDate: firstBillableDate });
-  return serializableTransaction(async (tx) => {
+  const enrollment = await serializableTransaction(async (tx) => {
     const enrollment = await tx.enrollment.findUniqueOrThrow({ where: { id } });
     if (enrollment.status !== "ENDED") throw new Error("Only an ended enrollment can be re-enrolled.");
 
@@ -136,6 +143,8 @@ export async function reactivateEnrollment(id: string, firstBillableDate: string
       data: { status: "ACTIVE", startDate: new Date(`${startDate}T00:00:00.000Z`), endDate: null },
     });
   });
+  await recalculateEnrollmentRangeBills(id);
+  return enrollment;
 }
 
 export async function createEnrollmentBillingPause(id: string, input: EnrollmentBillingPauseInput) {
@@ -150,15 +159,19 @@ export async function createEnrollmentBillingPause(id: string, input: Enrollment
   });
   if (overlap) throw new Error("This enrollment already has a billing pause covering part of that period.");
 
-  return db.enrollmentBillingPause.create({
+  const pause = await db.enrollmentBillingPause.create({
     data: { enrollmentId: id, startMonth, endMonth, reason: input.reason || null },
   });
+  await recalculateEnrollmentRangeBills(id, startMonth, endMonth);
+  return pause;
 }
 
 export async function deleteEnrollmentBillingPause(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  return db.enrollmentBillingPause.delete({ where: { id } });
+  const pause = await db.enrollmentBillingPause.delete({ where: { id } });
+  await recalculateEnrollmentRangeBills(pause.enrollmentId, pause.startMonth, pause.endMonth);
+  return pause;
 }
 
 export async function deleteEnrollment(id: string) {

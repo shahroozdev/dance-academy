@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  recalculateClassMonthBills: vi.fn(),
   db: {
     classExtraSession: { create: vi.fn(), delete: vi.fn() },
     classMonthlyFee: { updateMany: vi.fn() },
@@ -9,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/actions/access", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/actions/billing-impact", () => ({ recalculateClassMonthBills: mocks.recalculateClassMonthBills }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import { createClassExtraSession, deleteClassExtraSession } from "@/actions/extra-sessions";
@@ -17,6 +19,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.requireAdmin.mockResolvedValue({ id: "admin" });
   mocks.db.classMonthlyFee.updateMany.mockResolvedValue({ count: 1 });
+  mocks.recalculateClassMonthBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 0 });
 });
 
 describe("extra rehearsal charges", () => {
@@ -38,6 +41,11 @@ describe("extra rehearsal charges", () => {
       where: { classId: "class", month: new Date("2026-09-01T00:00:00.000Z") },
       data: { isFinalized: false, finalizedAt: null },
     });
+    expect(mocks.recalculateClassMonthBills).toHaveBeenCalledWith(
+      "class",
+      new Date("2026-09-01T00:00:00.000Z"),
+      false,
+    );
   });
 
   it("reopens the affected class month when a rehearsal is removed", async () => {

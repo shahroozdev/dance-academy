@@ -192,7 +192,7 @@ export default function ClassDetailPage() {
         headerClassName="border-b"
       >
         <p className="p-4 text-sm text-muted-foreground">
-          Each extra session is billed only to students enrolled on its date. If bills already exist, recalculate them from Class Monthly Fees before finalizing and notifying parents.
+          Each extra session is billed only to students enrolled on its date. Existing unpaid bills recalculate automatically; finalize the class fee before notifying parents.
         </p>
       </Card>
 

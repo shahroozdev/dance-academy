@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
+import { recalculateClassMonthBills } from "@/actions/billing-impact";
 import { classExtraSessionSchema, type ClassExtraSessionInput } from "@/actions/extra-sessions.schema";
 import { idSchema } from "@/actions/validation.schema";
 import { normalizeMonth, round2 } from "@/lib/billing";
@@ -38,6 +39,7 @@ export async function createClassExtraSession(input: ClassExtraSessionInput) {
     where: { classId: input.classId, month: normalizeMonth(sessionDate) },
     data: { isFinalized: false, finalizedAt: null },
   });
+  await recalculateClassMonthBills(input.classId, normalizeMonth(sessionDate), false);
   return session;
 }
 
@@ -49,5 +51,6 @@ export async function deleteClassExtraSession(id: string) {
     where: { classId: session.classId, month: normalizeMonth(session.sessionDate) },
     data: { isFinalized: false, finalizedAt: null },
   });
+  await recalculateClassMonthBills(session.classId, normalizeMonth(session.sessionDate), false);
   return session;
 }

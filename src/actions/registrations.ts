@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
+import { recalculateAffectedBills } from "@/actions/billing-impact";
 import { sendAdminOperationalAlert, sendTemplatedEmail } from "@/actions/email";
 import { enrollmentStartDateUpdateSchema } from "@/actions/enrollments.schema";
 import { registrationRequestCreateSchema } from "@/actions/registrations.schema";
@@ -303,6 +304,10 @@ export async function approveRegistrationRequest(
 
     return processedRequest;
   });
+
+  if (processedRequest.matchedFamilyId) {
+    await recalculateAffectedBills({ student: { familyId: processedRequest.matchedFamilyId } });
+  }
 
   if (!sendEmailNow) return { ...processedRequest, enrollmentEmail: { requested: false, sent: false, error: null } };
 
