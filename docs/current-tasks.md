@@ -5,10 +5,14 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
-- **2026-09-19: Live production verification.** Deploy the finalized enrollment-action icons, then
-  verify the live registration, enrollment exceptions, billing controls, family tools, and related UI.
+- Nothing currently in progress.
 
 ## Next / Blocked
+
+- **Live production verification was paused for the new-class August-fee question.** The finalized
+  action-menu icons are deployed. Live checks confirmed Jazlyn Arackal has no August student bill;
+  the remaining browser-only workflow checks can resume from enrollment controls onward. Temporary
+  test code was removed and no test records were created.
 
 - **Local dev database is schema-drifted.** The local Postgres instance (`LOCAL_DATABASE_URL`,
   `localhost:5432`) was originally set up via `prisma db push` and is missing the `StudioSettings`,
@@ -29,6 +33,10 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-09-19: Added class start-date billing control.** Staff can set and correct a First Class
+  Date; earlier months are excluded, the opening month counts only sessions from that date, and
+  unused pre-start fee rows are removed. All 267 tests, lint, TypeScript, and production build pass.
 
 - **2026-09-19: Improved enrollment action-menu clarity.** The compact trigger and every menu
   option now have recognizable icons, with accidental removal remaining visually destructive.

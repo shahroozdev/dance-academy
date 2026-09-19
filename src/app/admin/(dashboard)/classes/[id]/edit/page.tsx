@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
+import { enrollmentDateInputValue } from "@/lib/enrollment-date";
 
 const DAY_OPTIONS = [
   { label: "Monday", value: "MONDAY" },
@@ -94,6 +95,7 @@ export default function EditClassPage() {
             level: cls.level ?? "",
             teacherId: cls.teacher?.id ?? "",
             dayOfWeek: cls.dayOfWeek ?? undefined,
+            firstClassDate: enrollmentDateInputValue(cls.firstClassDate),
             startTime: cls.startTime ?? "",
             endTime: cls.endTime ?? "",
             durationMins: cls.durationMins ?? undefined,
@@ -138,6 +140,12 @@ export default function EditClassPage() {
                 <FormFeilds name="dayOfWeek" label="Day" type="select" options={DAY_OPTIONS} placeholder="Select day..." />
                 <FormFeilds name="startTime" label="Start Time" type="text" placeholder="e.g. 16:30" />
                 <FormFeilds name="endTime" label="End Time" type="text" placeholder="e.g. 17:30" />
+              </div>
+              <div className="space-y-1">
+                <FormFeilds name="firstClassDate" label="First Class Date" type="date" required />
+                <p className="text-xs text-muted-foreground">
+                  Months before this date are excluded. In the first month, only scheduled class days on or after this date are billable.
+                </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <FormFeilds name="durationMins" label="Duration (mins)" type="number" />

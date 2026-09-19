@@ -55,6 +55,7 @@ async function main() {
       data: {
         name: "Bharatanatyam Beginner",
         programId: bharatanatyamProgram.id,
+        firstClassDate: new Date("2026-01-01T00:00:00.000Z"),
         level: "Beginner",
         teacherId: meeraIyer.id,
         dayOfWeek: "MONDAY",
@@ -69,6 +70,7 @@ async function main() {
       data: {
         name: "Bharatanatyam Intermediate",
         programId: bharatanatyamProgram.id,
+        firstClassDate: new Date("2026-01-01T00:00:00.000Z"),
         level: "Intermediate",
         teacherId: meeraIyer.id,
         dayOfWeek: "WEDNESDAY",
@@ -83,6 +85,7 @@ async function main() {
       data: {
         name: "Kathak Beginner",
         programId: kathakProgram.id,
+        firstClassDate: new Date("2026-01-01T00:00:00.000Z"),
         level: "Beginner",
         teacherId: rohanVerma.id,
         dayOfWeek: "TUESDAY",
@@ -97,6 +100,7 @@ async function main() {
       data: {
         name: "Kathak Intermediate",
         programId: kathakProgram.id,
+        firstClassDate: new Date("2026-01-01T00:00:00.000Z"),
         level: "Intermediate",
         teacherId: rohanVerma.id,
         dayOfWeek: "THURSDAY",
@@ -111,6 +115,7 @@ async function main() {
       data: {
         name: "Bollywood Fusion",
         programId: bollywoodProgram.id,
+        firstClassDate: new Date("2026-01-01T00:00:00.000Z"),
         level: "All Levels",
         teacherId: simranKaur.id,
         dayOfWeek: "SATURDAY",
@@ -125,6 +130,7 @@ async function main() {
       data: {
         name: "Summer Intensive Workshop",
         programId: mixedProgram.id,
+        firstClassDate: new Date("2026-01-01T00:00:00.000Z"),
         level: "All Levels",
         teacherId: guestChoreographer.id,
         standardRate: 150,

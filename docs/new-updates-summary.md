@@ -2,6 +2,8 @@
 
 ## 2026-09-19
 
+- Classes now have an editable First Class Date. Billing excludes earlier months, counts only scheduled sessions from that date in the first month, and prevents a student’s first billable date from preceding the class itself.
+- Existing classes inherit their earliest enrollment date as the first class date, while unused fee rows from earlier months are removed so new classes do not show misleading historical fees.
 - The compact enrollment Actions menu now includes clear icons for every option, making each action faster to recognize.
 - Enrollment rows now use one compact Actions menu for billing pauses, date correction, ending, re-enrollment, and accidental removal, making the table easier to scan.
 - Modal titles now keep clear space around the close button, so longer headings wrap cleanly instead of appearing underneath the icon.

@@ -5,7 +5,7 @@ import {
   computeBillingStatus,
   computeProratedLineItemAmount,
   computeStudentBilling,
-  countWeekdayOccurrencesInMonth,
+  countClassSessionsForMonth,
   enrollmentIsPausedForMonth,
   enrollmentOverlapsMonth,
   normalizeMonth,
@@ -33,7 +33,7 @@ async function getOrCreateClassMonthlyFee(tx: Prisma.TransactionClient, cls: Cla
     });
   }
 
-  const billableSessions = cls.dayOfWeek ? countWeekdayOccurrencesInMonth(month, cls.dayOfWeek) : 4;
+  const billableSessions = countClassSessionsForMonth(month, cls.dayOfWeek, cls.firstClassDate);
   const rate = round2(Number(cls.standardRate));
   const monthlyClassFee = round2(billableSessions * rate);
   return tx.classMonthlyFee.create({
@@ -58,6 +58,7 @@ export async function familyQualifyingSiblingCount(
     s.enrollments.some(
       (e) =>
         enrollmentOverlapsMonth(e, month) &&
+        enrollmentOverlapsMonth({ startDate: e.class.firstClassDate, endDate: null }, month) &&
         !enrollmentIsPausedForMonth(e.billingPauses, month) &&
         !enrollmentIsPausedForMonth(e.class.billingPauses, month),
     ),
@@ -77,6 +78,7 @@ export async function buildLineItemInputs(
   const overlapping = enrollments.filter(
     (e) =>
       enrollmentOverlapsMonth(e, month) &&
+      enrollmentOverlapsMonth({ startDate: e.class.firstClassDate, endDate: null }, month) &&
       !enrollmentIsPausedForMonth(e.billingPauses, month) &&
       !enrollmentIsPausedForMonth(e.class.billingPauses, month),
   );
@@ -101,6 +103,9 @@ export async function buildLineItemInputs(
       }));
     }
 
+    const classStart = enrollmentCalendarDate(enrollment.class.firstClassDate);
+    const savedEnrollmentStart = enrollmentCalendarDate(enrollment.startDate);
+    const enrollmentStart = savedEnrollmentStart > classStart ? savedEnrollmentStart : classStart;
     const fee = await getOrCreateClassMonthlyFee(tx, enrollment.class, month);
     let baseAmount = 0;
     if (enrollment.class.pricingType === "SEASONAL") {
@@ -111,13 +116,12 @@ export async function buildLineItemInputs(
             dayOfWeek: enrollment.class.dayOfWeek,
             fullMonthAmount: Number(fee.monthlyClassFee),
             perSessionRate: fee.rate === null ? null : Number(fee.rate),
-            enrollmentStart: enrollment.startDate,
+            enrollmentStart,
             enrollmentEnd: enrollment.endDate,
           });
     }
     const monthStart = normalizeMonth(month);
     const monthEnd = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1));
-    const enrollmentStart = enrollmentCalendarDate(enrollment.startDate);
     const enrollmentEnd = enrollment.endDate ? enrollmentCalendarDate(enrollment.endDate) : null;
     const extraSessions = await tx.classExtraSession.findMany({
       where: {
@@ -203,9 +207,13 @@ export async function generateMonthlyBilling(monthInput: string): Promise<Genera
     async (tx) => {
       const candidates = await tx.student.findMany({
         where: { isActive: true, enrollments: { some: {} } },
-        include: { enrollments: true },
+        include: { enrollments: { include: { class: { select: { firstClassDate: true } } } } },
       });
-      const eligibleStudents = candidates.filter((s) => s.enrollments.some((e) => enrollmentOverlapsMonth(e, month)));
+      const eligibleStudents = candidates.filter((s) => s.enrollments.some(
+        (e) =>
+          enrollmentOverlapsMonth(e, month) &&
+          enrollmentOverlapsMonth({ startDate: e.class.firstClassDate, endDate: null }, month),
+      ));
 
       const siblingCountCache = new Map<string, number>();
       const summary: GenerateMonthlyBillingSummary["students"] = [];

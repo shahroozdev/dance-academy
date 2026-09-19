@@ -9,6 +9,7 @@ import { serializableTransaction } from "@/actions/transaction";
 import { booleanSchema, idSchema , validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { enrollmentCalendarDate } from "@/lib/enrollment-date";
 import { matchRegistrationFamily } from "@/lib/family-matching";
 import { firstName } from "@/lib/notifications";
 import {
@@ -104,7 +105,7 @@ export async function getRegistrationAssignmentClasses() {
   await requireAdmin();
   return db.class.findMany({
     where: { isActive: true },
-    select: { id: true, name: true, program: { select: { id: true, name: true } } },
+    select: { id: true, name: true, firstClassDate: true, program: { select: { id: true, name: true } } },
     orderBy: [{ program: { name: "asc" } }, { name: "asc" }],
   });
 }
@@ -219,6 +220,9 @@ export async function approveRegistrationRequest(
     }
     const requestedClass = await tx.class.findUniqueOrThrow({ where: { id: classId } });
     if (!requestedClass.isActive) throw new Error("This class is inactive. Update the registration before approving it.");
+    if (enrollmentStartDate < enrollmentCalendarDate(requestedClass.firstClassDate)) {
+      throw new Error("The first billable date cannot be before the class's first class date.");
+    }
     if (request.requestedProgramId && requestedClass.programId !== request.requestedProgramId) {
       throw new Error("Select a class from the dance program requested by the parent.");
     }

@@ -486,6 +486,7 @@ function EnrollmentsCreateModal({
               id="enrollment-start-date"
               type="date"
               value={startDate}
+              min={selectedClass ? enrollmentDateInputValue(selectedClass.firstClassDate) : undefined}
               max={todayIsoDate()}
               onChange={setStartDate}
             />

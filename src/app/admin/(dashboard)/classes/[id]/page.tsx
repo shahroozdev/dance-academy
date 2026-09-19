@@ -144,6 +144,10 @@ export default function ClassDetailPage() {
             </p>
           </div>
           <div>
+            <p className="text-sm text-muted-foreground">First Class Date</p>
+            <p className="font-medium">{formatEnrollmentCalendarDate(cls.firstClassDate)}</p>
+          </div>
+          <div>
             <p className="text-sm text-muted-foreground">Duration</p>
             <p className="font-medium">{cls.durationMins ? `${cls.durationMins} minutes` : "—"}</p>
           </div>

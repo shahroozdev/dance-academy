@@ -11,6 +11,7 @@ import { Switch } from "@/components/common/switch";
 import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { enrollmentDateInputValue } from "@/lib/enrollment-date";
 import { todayIsoDate } from "@/lib/utils";
 
 const AUTO = "AUTO";
@@ -153,6 +154,7 @@ export function RegistrationApprovalForm({ id, requestedProgramId, onClose }: { 
             name="firstBillableDate"
             label="First Billable Date"
             type="date"
+            min={enrollmentDateInputValue(classes?.find((item) => item.id === form.watch("classId"))?.firstClassDate)}
             max={todayIsoDate()}
             disabled={busy}
             required

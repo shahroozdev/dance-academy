@@ -155,6 +155,7 @@ model Class {
   teacherId            String?
   teacher              Teacher?              @relation(fields: [teacherId], references: [id])
   dayOfWeek            DayOfWeek?
+  firstClassDate       DateTime              @db.Date
   startTime            String?
   endTime              String?
   durationMins         Int?

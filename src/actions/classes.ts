@@ -19,6 +19,7 @@ export type ClassListItem = {
   teacherId: string | null;
   teacherName: string | null;
   dayOfWeek: string | null;
+  firstClassDate: Date;
   startTime: string | null;
   endTime: string | null;
   standardRate: number;
@@ -77,6 +78,7 @@ export async function getClasses(params?: {
       teacherId: c.teacher?.id ?? null,
       teacherName: c.teacher?.name ?? null,
       dayOfWeek: c.dayOfWeek,
+      firstClassDate: c.firstClassDate,
       startTime: c.startTime,
       endTime: c.endTime,
       standardRate: Number(c.standardRate),
@@ -145,6 +147,7 @@ export async function createClass(data: ClassCreateInput) {
       level: data.level || null,
       teacherId: data.teacherId || null,
       dayOfWeek: data.dayOfWeek ?? null,
+      firstClassDate: new Date(`${data.firstClassDate}T00:00:00.000Z`),
       startTime: data.startTime || null,
       endTime: data.endTime || null,
       durationMins: data.durationMins ?? null,
@@ -171,14 +174,16 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
       throw new Error("Select an active dance program.");
     }
   }
-  const cls = await db.class.update({
-    where: { id },
-    data: {
+  const cls = await db.$transaction(async (tx) => {
+    const updated = await tx.class.update({
+      where: { id },
+      data: {
       ...(data.name !== undefined && { name: data.name }),
       ...(data.programId !== undefined && { programId: data.programId }),
       ...(data.level !== undefined && { level: data.level || null }),
       ...(data.teacherId !== undefined && { teacherId: data.teacherId || null }),
       ...(data.dayOfWeek !== undefined && { dayOfWeek: data.dayOfWeek ?? null }),
+      ...(data.firstClassDate !== undefined && { firstClassDate: new Date(`${data.firstClassDate}T00:00:00.000Z`) }),
       ...(data.startTime !== undefined && { startTime: data.startTime || null }),
       ...(data.endTime !== undefined && { endTime: data.endTime || null }),
       ...(data.durationMins !== undefined && { durationMins: data.durationMins ?? null }),
@@ -187,7 +192,15 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
       ...(data.pricingType !== undefined && { pricingType: data.pricingType }),
       ...(data.discountEligible !== undefined && { discountEligible: data.discountEligible }),
       ...(data.isActive !== undefined && { isActive: data.isActive }),
-    },
+      },
+    });
+    if (data.firstClassDate !== undefined) {
+      const firstBillingMonth = new Date(`${data.firstClassDate.slice(0, 7)}-01T00:00:00.000Z`);
+      await tx.classMonthlyFee.deleteMany({
+        where: { classId: id, month: { lt: firstBillingMonth }, lineItems: { none: {} } },
+      });
+    }
+    return updated;
   });
   return { ...cls, standardRate: Number(cls.standardRate) };
 }

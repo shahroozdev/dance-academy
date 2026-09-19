@@ -6,6 +6,7 @@ export const classCreateSchema = z.object({
   level: z.string().or(z.literal("")).optional(),
   teacherId: z.string().or(z.literal("")).optional(),
   dayOfWeek: z.enum(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]).optional(),
+  firstClassDate: z.iso.date("Enter a valid first class date"),
   startTime: z.string().or(z.literal("")).optional(),
   endTime: z.string().or(z.literal("")).optional(),
   durationMins: z.coerce.number().int().positive().optional(),

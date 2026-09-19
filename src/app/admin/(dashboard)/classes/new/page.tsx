@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
+import { todayIsoDate } from "@/lib/utils";
 
 const DAY_OPTIONS = [
   { label: "Monday", value: "MONDAY" },
@@ -62,6 +63,7 @@ export default function NewClassPage() {
             level: "",
             teacherId: "",
             dayOfWeek: undefined,
+            firstClassDate: todayIsoDate(),
             startTime: "",
             endTime: "",
             durationMins: undefined,
@@ -111,6 +113,12 @@ export default function NewClassPage() {
                 <FormFeilds name="dayOfWeek" label="Day" type="select" options={DAY_OPTIONS} placeholder="Select day..." />
                 <FormFeilds name="startTime" label="Start Time" type="text" placeholder="e.g. 16:30" />
                 <FormFeilds name="endTime" label="End Time" type="text" placeholder="e.g. 17:30" />
+              </div>
+              <div className="space-y-1">
+                <FormFeilds name="firstClassDate" label="First Class Date" type="date" required />
+                <p className="text-xs text-muted-foreground">
+                  Billing will not create class fees before this date. The first month includes only scheduled class days on or after it.
+                </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <FormFeilds name="durationMins" label="Duration (mins)" type="number" />

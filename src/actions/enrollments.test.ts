@@ -24,7 +24,10 @@ describe("updateEnrollmentStartDate", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.requireAdmin.mockResolvedValue({ id: "admin" });
-    mocks.db.enrollment.findUniqueOrThrow.mockResolvedValue({ endDate: null });
+    mocks.db.enrollment.findUniqueOrThrow.mockResolvedValue({
+      endDate: null,
+      class: { firstClassDate: new Date("2026-01-01T00:00:00.000Z") },
+    });
     mocks.db.enrollment.update.mockResolvedValue({ id: "enrollment", startDate: new Date("2026-09-10") });
   });
 
@@ -38,7 +41,10 @@ describe("updateEnrollmentStartDate", () => {
   });
 
   it("rejects a start date after an ended enrollment's end date", async () => {
-    mocks.db.enrollment.findUniqueOrThrow.mockResolvedValue({ endDate: new Date("2026-09-09") });
+    mocks.db.enrollment.findUniqueOrThrow.mockResolvedValue({
+      endDate: new Date("2026-09-09"),
+      class: { firstClassDate: new Date("2026-01-01T00:00:00.000Z") },
+    });
 
     await expect(updateEnrollmentStartDate("enrollment", { startDate: "2026-09-10" })).rejects.toThrow(
       "cannot be after its end date",
@@ -49,6 +55,7 @@ describe("updateEnrollmentStartDate", () => {
   it("allows the first billable date to equal the enrollment end date", async () => {
     mocks.db.enrollment.findUniqueOrThrow.mockResolvedValue({
       endDate: new Date("2026-09-10T00:00:00.000Z"),
+      class: { firstClassDate: new Date("2026-01-01T00:00:00.000Z") },
     });
 
     await updateEnrollmentStartDate("enrollment", { startDate: "2026-09-10" });
@@ -61,6 +68,18 @@ describe("updateEnrollmentStartDate", () => {
       "cannot be in the future",
     );
     expect(mocks.db.enrollment.findUniqueOrThrow).not.toHaveBeenCalled();
+  });
+
+  it("rejects a first billable date before the class begins", async () => {
+    mocks.db.enrollment.findUniqueOrThrow.mockResolvedValue({
+      endDate: null,
+      class: { firstClassDate: new Date("2026-09-10T00:00:00.000Z") },
+    });
+
+    await expect(updateEnrollmentStartDate("enrollment", { startDate: "2026-09-09" })).rejects.toThrow(
+      "cannot be before the class's first class date",
+    );
+    expect(mocks.db.enrollment.update).not.toHaveBeenCalled();
   });
 });
 

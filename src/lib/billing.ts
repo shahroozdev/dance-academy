@@ -74,6 +74,16 @@ export function countWeekdayOccurrencesInMonth(month: Date, dayOfWeek: string): 
   return countWeekdayOccurrencesInRange(dayOfWeek, startOfMonthUTC(month), endOfMonthUTC(month));
 }
 
+export function countClassSessionsForMonth(month: Date, dayOfWeek: string | null, firstClassDate: Date): number {
+  if (!dayOfWeek) return 4;
+  const monthStart = startOfMonthUTC(month);
+  const monthEnd = endOfMonthUTC(month);
+  const classStart = enrollmentCalendarDate(firstClassDate);
+  if (isAfter(classStart, monthEnd)) return 0;
+  const effectiveStart = isAfter(classStart, monthStart) ? classStart : monthStart;
+  return countWeekdayOccurrencesInRange(dayOfWeek, effectiveStart, monthEnd);
+}
+
 // Same weekday-count as above, but over an arbitrary date range rather than a whole month —
 // used to prorate a mid-month enrollment's charge (§4.7). No "default to 4" fallback here:
 // that's a whole-month heuristic that isn't meaningful for a partial range.

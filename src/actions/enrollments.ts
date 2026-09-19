@@ -56,6 +56,7 @@ export async function createEnrollment(data: EnrollmentCreateInput) {
     const student = await tx.student.findUniqueOrThrow({ where: { id: data.studentId } });
     const cls = await tx.class.findUniqueOrThrow({ where: { id: data.classId } });
     if (!student.isActive || !cls.isActive) throw new Error("Select an active student and class.");
+    assertNotBeforeClassStart(startDate, cls.firstClassDate);
     const existing = await tx.enrollment.findFirst({
       where: { studentId: data.studentId, classId: data.classId, status: "ACTIVE" },
     });
@@ -82,7 +83,11 @@ export async function updateEnrollmentStartDate(id: string, data: EnrollmentStar
   data = enrollmentStartDateUpdateSchema.parse(data);
   const startDate = parseEnrollmentStartDate(data.startDate);
 
-  const enrollment = await db.enrollment.findUniqueOrThrow({ where: { id }, select: { endDate: true } });
+  const enrollment = await db.enrollment.findUniqueOrThrow({
+    where: { id },
+    select: { endDate: true, class: { select: { firstClassDate: true } } },
+  });
+  assertNotBeforeClassStart(startDate, enrollment.class.firstClassDate);
   if (enrollment.endDate && startDate > enrollmentCalendarDate(enrollment.endDate)) {
     throw new Error("Enrollment start date cannot be after its end date.");
   }
@@ -96,6 +101,12 @@ function parseEnrollmentStartDate(value?: string) {
   today.setUTCHours(23, 59, 59, 999);
   if (startDate > today) throw new Error("Enrollment start date cannot be in the future.");
   return startDate;
+}
+
+function assertNotBeforeClassStart(enrollmentStart: Date, firstClassDate: Date) {
+  if (enrollmentStart < enrollmentCalendarDate(firstClassDate)) {
+    throw new Error("The first billable date cannot be before the class's first class date.");
+  }
 }
 
 // Reactivates the same enrollment record (rather than creating a new one) so a student's
@@ -113,6 +124,7 @@ export async function reactivateEnrollment(id: string, firstBillableDate: string
       tx.class.findUniqueOrThrow({ where: { id: enrollment.classId } }),
     ]);
     if (!student.isActive || !cls.isActive) throw new Error("Both the student and class must be active to re-enroll.");
+    assertNotBeforeClassStart(new Date(`${startDate}T00:00:00.000Z`), cls.firstClassDate);
 
     const existingActive = await tx.enrollment.findFirst({
       where: { studentId: enrollment.studentId, classId: enrollment.classId, status: "ACTIVE" },

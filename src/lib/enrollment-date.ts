@@ -10,7 +10,8 @@ export function formatEnrollmentCalendarDate(value: Date | string): string {
   return date.toLocaleDateString("en-US", { timeZone: "UTC" });
 }
 
-export function enrollmentDateInputValue(value: Date | string): string {
+export function enrollmentDateInputValue(value?: Date | string): string {
+  if (value === undefined) return "";
   const date = enrollmentCalendarDate(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toISOString().slice(0, 10);

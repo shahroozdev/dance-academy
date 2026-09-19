@@ -5,6 +5,7 @@ import {
   computeDueDate,
   computeProratedLineItemAmount,
   computeStudentBilling,
+  countClassSessionsForMonth,
   countWeekdayOccurrencesInMonth,
   countWeekdayOccurrencesInRange,
   enrollmentIsPausedForMonth,
@@ -232,6 +233,24 @@ describe("countWeekdayOccurrencesInMonth", () => {
 
   it("falls back to 4 when the class has no scheduled day", () => {
     expect(countWeekdayOccurrencesInMonth(normalizeMonth("2026-09-01"), "")).toBe(4);
+  });
+});
+
+describe("countClassSessionsForMonth", () => {
+  it("returns no sessions before the class begins", () => {
+    expect(countClassSessionsForMonth(
+      normalizeMonth("2026-08-01"),
+      "WEDNESDAY",
+      new Date("2026-09-16T00:00:00.000Z"),
+    )).toBe(0);
+  });
+
+  it("counts only scheduled days on or after the first class date", () => {
+    expect(countClassSessionsForMonth(
+      normalizeMonth("2026-09-01"),
+      "WEDNESDAY",
+      new Date("2026-09-16T00:00:00.000Z"),
+    )).toBe(3);
   });
 });
 

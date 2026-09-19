@@ -58,6 +58,7 @@ async function setup(payload: SetupPayload) {
       data: {
         name: payload.classAName,
         programId: programA.id,
+        firstClassDate: new Date("2026-01-01T00:00:00.000Z"),
         standardRate: payload.classARate,
         isActive: true,
       },
@@ -66,6 +67,7 @@ async function setup(payload: SetupPayload) {
       data: {
         name: payload.classBName,
         programId: programB.id,
+        firstClassDate: new Date("2026-01-01T00:00:00.000Z"),
         standardRate: payload.classBRate,
         isActive: true,
       },
