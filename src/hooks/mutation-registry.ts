@@ -1,4 +1,4 @@
-import { generateMonthlyBilling, recalculateBilling, setBillingAdjustment } from "@/actions/billing";
+import { generateMonthlyBilling, recalculateBilling, resolveBillingManualReview, setBillingAdjustment } from "@/actions/billing";
 import {
   finalizeAllClassMonthlyFeesForMonth,
   finalizeClassMonthlyFee,
@@ -87,6 +87,7 @@ export const mutationRegistry = {
   generateMonthlyBilling,
   setBillingAdjustment,
   recalculateBilling,
+  resolveBillingManualReview,
   updateClassMonthlyFee,
   finalizeClassMonthlyFee,
   markClassMonthlyFeeNoClasses,

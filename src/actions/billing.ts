@@ -24,20 +24,22 @@ export async function generateMonthlyBilling(monthInput: string) {
 // ---------- Queries ----------
 
 export async function getMonthlyBillings(params: {
-  month: string;
+  month?: string;
   status?: "UNPAID" | "PARTIAL" | "PAID" | "OVERPAID";
   classId?: string;
   familyId?: string;
   search?: string;
   page?: number;
   pageSize?: number;
+  needsManualReview?: boolean;
 }) {
   await requireAdmin();
   validateListQuery(params, []);
-  const { month: monthInput, status, classId, familyId, search, page = 1, pageSize = 200 } = params;
-  const month = normalizeMonth(monthInput);
+  const { month: monthInput, status, classId, familyId, search, page = 1, pageSize = 200, needsManualReview } = params;
 
-  const where: Prisma.MonthlyStudentBillingWhereInput = { month };
+  const where: Prisma.MonthlyStudentBillingWhereInput = {};
+  if (monthInput) where.month = normalizeMonth(monthInput);
+  if (needsManualReview !== undefined) where.needsManualReview = needsManualReview;
   if (status) where.status = status;
   if (familyId) where.student = { familyId };
   if (classId) {
@@ -85,6 +87,9 @@ export async function getMonthlyBillings(params: {
       balance: Number(b.balance),
       status: b.status,
       notificationStatus: b.notificationStatus,
+      needsManualReview: b.needsManualReview,
+      manualReviewReason: b.manualReviewReason,
+      manualReviewAt: b.manualReviewAt,
     })),
     total,
     pages: Math.ceil(total / pageSize),
@@ -162,6 +167,9 @@ export async function setBillingAdjustment(id: string, data: BillingAdjustmentIn
         finalAmountDue,
         balance: round2(finalAmountDue - amountPaid),
         status,
+        needsManualReview: false,
+        manualReviewReason: null,
+        manualReviewAt: null,
       },
     });
   });
@@ -176,6 +184,15 @@ export async function setBillingAdjustment(id: string, data: BillingAdjustmentIn
     });
   }
   return updated;
+}
+
+export async function resolveBillingManualReview(id: string) {
+  await requireAdmin();
+  id = idSchema.parse(id);
+  return db.monthlyStudentBilling.update({
+    where: { id },
+    data: { needsManualReview: false, manualReviewReason: null, manualReviewAt: null },
+  });
 }
 
 // Only safe before any payment exists — pulls in the latest ClassMonthlyFee amounts and
@@ -215,6 +232,9 @@ export async function recalculateBilling(id: string) {
         finalAmountDue: computed.finalAmountDue,
         balance: computed.finalAmountDue,
         status,
+        needsManualReview: false,
+        manualReviewReason: null,
+        manualReviewAt: null,
       },
     });
 

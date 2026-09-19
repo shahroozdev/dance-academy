@@ -86,7 +86,7 @@ export function RegistrationApprovalForm({ id, requestedProgramId, onClose }: { 
     label: `${item.program.name} — ${item.name}`,
   })), [classes, requestedProgramId]);
   const { mutate: approve, isLoading: isApproving, error: approveError } = useMutate("approveRegistrationRequest", {
-    invalidateKeys: ["getRegistrationRequests", "getRegistrationFamilyOptions", "getFamilies", "getStudents", "getEnrollments"],
+    invalidateKeys: ["getRegistrationRequests", "getRegistrationFamilyOptions", "getFamilies", "getStudents", "getEnrollments", "getMonthlyBillings", "getAdminNotificationSummary"],
     onSuccess: (result) => {
       if (result.enrollmentEmail.requested && !result.enrollmentEmail.sent) {
         setEmailWarning(result.enrollmentEmail.error ?? "The enrollment email was not sent.");

@@ -51,20 +51,20 @@ export default function ClassFeesPage() {
   // the paginated `data` above only reflects the current page/class filter.
   const { data: monthFeesForFinalizeCheck } = useQuery("getClassMonthlyFees", [{ month, pageSize: 10000 }]);
   const { mutate: finalizeFee, isLoading: isFinalizingOne } = useMutate("finalizeClassMonthlyFee", {
-    invalidateKeys: ["getClassMonthlyFees"],
+    invalidateKeys: ["getClassMonthlyFees", "getAdminNotificationSummary"],
   });
   const { mutate: unfinalizeFee, isLoading: isUnfinalizingOne } = useMutate("unfinalizeClassMonthlyFee", {
-    invalidateKeys: ["getClassMonthlyFees"],
+    invalidateKeys: ["getClassMonthlyFees", "getAdminNotificationSummary"],
   });
   const { mutate: finalizeAll, isLoading: isFinalizingAll } = useMutate("finalizeAllClassMonthlyFeesForMonth", {
-    invalidateKeys: ["getClassMonthlyFees"],
+    invalidateKeys: ["getClassMonthlyFees", "getAdminNotificationSummary"],
   });
   const { mutate: markNoClasses, isLoading: isMarkingBreak } = useMutate("markClassMonthlyFeeNoClasses", {
-    invalidateKeys: ["getClassMonthlyFees", "getClassMonthlyFeeById"],
+    invalidateKeys: ["getClassMonthlyFees", "getClassMonthlyFeeById", "getMonthlyBillings", "getAdminNotificationSummary"],
     onSuccess: () => setOperationMessage("The class fee is now $0 for this month. Affected unpaid bills were recalculated automatically; bills with payments were protected."),
   });
   const { mutate: recalculateBills, isLoading: isRecalculating } = useMutate("recalculateClassMonthlyFeeBills", {
-    invalidateKeys: ["getClassMonthlyFees", "getMonthlyBillings", "getMonthlyBillingById"],
+    invalidateKeys: ["getClassMonthlyFees", "getMonthlyBillings", "getMonthlyBillingById", "getAdminNotificationSummary"],
     onSuccess: (result) => setOperationMessage(
       `Recalculated ${result.recalculated} unpaid bill(s). ${result.skippedWithPayments} bill(s) with payments were left unchanged.`,
     ),

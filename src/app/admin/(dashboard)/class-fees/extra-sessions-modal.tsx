@@ -20,10 +20,10 @@ export function ExtraSessionsModal({ classId, className, month }: {
 }) {
   const { data: sessions, isLoading } = useQuery("getClassExtraSessions", [classId, month]);
   const { mutate: createSession, isLoading: isCreating, error } = useMutate("createClassExtraSession", {
-    invalidateKeys: ["getClassExtraSessions", "getClassMonthlyFees", "getMonthlyBillings"],
+    invalidateKeys: ["getClassExtraSessions", "getClassMonthlyFees", "getMonthlyBillings", "getAdminNotificationSummary"],
   });
   const { mutate: deleteSession, isLoading: isDeleting } = useMutate("deleteClassExtraSession", {
-    invalidateKeys: ["getClassExtraSessions", "getClassMonthlyFees", "getMonthlyBillings"],
+    invalidateKeys: ["getClassExtraSessions", "getClassMonthlyFees", "getMonthlyBillings", "getAdminNotificationSummary"],
   });
 
   return (

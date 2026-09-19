@@ -66,7 +66,12 @@ export async function createEnrollment(data: EnrollmentCreateInput) {
       data: { studentId: data.studentId, classId: data.classId, startDate },
     });
   });
-  await recalculateEnrollmentRangeBills(enrollment.id);
+  await recalculateEnrollmentRangeBills(
+    enrollment.id,
+    undefined,
+    undefined,
+    "A new enrollment affects this family bill after payment was recorded. Review the bill and add an adjustment if needed.",
+  );
   return enrollment;
 }
 
@@ -78,7 +83,12 @@ export async function endEnrollment(id: string, endDateInput: string) {
     where: { id, status: "ACTIVE" },
     data: { status: "ENDED", endDate: new Date(`${endDate}T00:00:00.000Z`) },
   });
-  await recalculateEnrollmentRangeBills(id);
+  await recalculateEnrollmentRangeBills(
+    id,
+    undefined,
+    undefined,
+    "An enrollment was ended after payment was recorded. Review the bill and add an adjustment if needed.",
+  );
   return enrollment;
 }
 
@@ -98,7 +108,12 @@ export async function updateEnrollmentStartDate(id: string, data: EnrollmentStar
   }
 
   const updated = await db.enrollment.update({ where: { id }, data: { startDate } });
-  await recalculateEnrollmentRangeBills(id);
+  await recalculateEnrollmentRangeBills(
+    id,
+    undefined,
+    undefined,
+    "The enrollment start date changed after payment was recorded. Review the bill and add an adjustment if needed.",
+  );
   return updated;
 }
 
@@ -143,7 +158,12 @@ export async function reactivateEnrollment(id: string, firstBillableDate: string
       data: { status: "ACTIVE", startDate: new Date(`${startDate}T00:00:00.000Z`), endDate: null },
     });
   });
-  await recalculateEnrollmentRangeBills(id);
+  await recalculateEnrollmentRangeBills(
+    id,
+    undefined,
+    undefined,
+    "A reactivated enrollment affects this family bill after payment was recorded. Review the bill and add an adjustment if needed.",
+  );
   return enrollment;
 }
 
@@ -162,7 +182,12 @@ export async function createEnrollmentBillingPause(id: string, input: Enrollment
   const pause = await db.enrollmentBillingPause.create({
     data: { enrollmentId: id, startMonth, endMonth, reason: input.reason || null },
   });
-  await recalculateEnrollmentRangeBills(id, startMonth, endMonth);
+  await recalculateEnrollmentRangeBills(
+    id,
+    startMonth,
+    endMonth,
+    "A student billing pause was added after payment was recorded. Review the bill and add an adjustment if needed.",
+  );
   return pause;
 }
 
@@ -170,7 +195,12 @@ export async function deleteEnrollmentBillingPause(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
   const pause = await db.enrollmentBillingPause.delete({ where: { id } });
-  await recalculateEnrollmentRangeBills(pause.enrollmentId, pause.startMonth, pause.endMonth);
+  await recalculateEnrollmentRangeBills(
+    pause.enrollmentId,
+    pause.startMonth,
+    pause.endMonth,
+    "A student billing pause was removed after payment was recorded. Review the bill and add an adjustment if needed.",
+  );
   return pause;
 }
 

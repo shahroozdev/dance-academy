@@ -104,7 +104,10 @@ export async function markClassMonthlyFeeNoClasses(id: string) {
 export async function recalculateClassMonthlyFeeBills(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  return recalculateAffectedBills({ lineItems: { some: { classMonthlyFeeId: id } } });
+  return recalculateAffectedBills(
+    { lineItems: { some: { classMonthlyFeeId: id } } },
+    "The class fee changed after a payment was recorded. Review this bill and add an adjustment if its balance should change.",
+  );
 }
 
 // ---------- Finalization (§4.7) — staff confirmation of a class's billable session count for

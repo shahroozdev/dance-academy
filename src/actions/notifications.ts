@@ -130,6 +130,8 @@ export type AdminNotificationSummary = {
   pendingRegistrations: number;
   pendingFamilyNotifications: number;
   failedNotifications: number;
+  billingReviews: number;
+  unfinalizedClassFees: number;
   total: number;
 };
 
@@ -144,11 +146,16 @@ export async function getAdminNotificationSummary(): Promise<AdminNotificationSu
   await requireAdmin();
   const failedSince = new Date();
   failedSince.setDate(failedSince.getDate() - FAILED_NOTIFICATION_WINDOW_DAYS);
+  const currentMonth = normalizeMonth(new Date());
 
-  const [pendingRegistrations, pendingFamilies, failedNotifications] = await Promise.all([
+  const [pendingRegistrations, pendingFamilies, failedNotifications, billingReviews, unfinalizedClassFees] = await Promise.all([
     db.registrationRequest.count({ where: { status: "PENDING" } }),
     getPendingNotifications(new Date().toISOString()),
     db.notificationLog.count({ where: { status: "FAILED", createdAt: { gte: failedSince } } }),
+    db.monthlyStudentBilling.count({ where: { needsManualReview: true } }),
+    db.classMonthlyFee.count({
+      where: { month: currentMonth, isFinalized: false, lineItems: { some: {} } },
+    }),
   ]);
 
   const pendingFamilyNotifications = pendingFamilies.length;
@@ -157,7 +164,9 @@ export async function getAdminNotificationSummary(): Promise<AdminNotificationSu
     pendingRegistrations,
     pendingFamilyNotifications,
     failedNotifications,
-    total: pendingRegistrations + pendingFamilyNotifications + failedNotifications,
+    billingReviews,
+    unfinalizedClassFees,
+    total: pendingRegistrations + pendingFamilyNotifications + failedNotifications + billingReviews + unfinalizedClassFees,
   };
 }
 

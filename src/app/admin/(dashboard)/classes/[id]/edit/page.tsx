@@ -36,7 +36,7 @@ export default function EditClassPage() {
 
   const { data: cls, isLoading } = useQuery("getClassById", [id]);
   const { mutate, isLoading: isSaving } = useMutate("updateClass", {
-    invalidateKeys: ["getClasses", "getClassById"],
+    invalidateKeys: ["getClasses", "getClassById", "getMonthlyBillings", "getAdminNotificationSummary"],
     onSuccess: () => router.push(`/admin/classes/${id}`),
   });
   const { data: teachers } = useQuery("getTeachers", [{ isActive: true, pageSize: 100, sortBy: "name" }]);

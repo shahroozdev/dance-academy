@@ -36,10 +36,10 @@ export function EnrollmentBillingPauseModal({
   onOpenChange?: (open: boolean) => void;
 }) {
   const { mutate: createPause, isLoading: isCreating, error } = useMutate("createEnrollmentBillingPause", {
-    invalidateKeys: ["getEnrollments", "getMonthlyBillings", "getStudentById"],
+    invalidateKeys: ["getEnrollments", "getMonthlyBillings", "getStudentById", "getAdminNotificationSummary"],
   });
   const { mutate: removePause, isLoading: isDeleting } = useMutate("deleteEnrollmentBillingPause", {
-    invalidateKeys: ["getEnrollments", "getMonthlyBillings", "getStudentById"],
+    invalidateKeys: ["getEnrollments", "getMonthlyBillings", "getStudentById", "getAdminNotificationSummary"],
   });
 
   return (

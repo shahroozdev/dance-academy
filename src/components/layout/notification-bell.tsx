@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, UserPlus, Send, MailWarning } from "lucide-react";
+import { Bell, CircleAlert, ClipboardCheck, UserPlus, Send, MailWarning } from "lucide-react";
 import { useEffect } from "react";
 
 import { Link } from "@/components/Link";
@@ -81,6 +81,24 @@ export function NotificationBell() {
                         <MailWarning className="size-4" />
                         <span className="flex-1">Failed sends (last 30 days)</span>
                         <Badge variant="destructive">{data.failedNotifications}</Badge>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {data.billingReviews > 0 && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/billing?review=1" className="flex items-center gap-2">
+                        <CircleAlert className="size-4" />
+                        <span className="flex-1">Paid bills needing review</span>
+                        <Badge variant="destructive">{data.billingReviews}</Badge>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {data.unfinalizedClassFees > 0 && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/class-fees" className="flex items-center gap-2">
+                        <ClipboardCheck className="size-4" />
+                        <span className="flex-1">Class fees awaiting finalization</span>
+                        <Badge variant="secondary">{data.unfinalizedClassFees}</Badge>
                       </Link>
                     </DropdownMenuItem>
                   )}

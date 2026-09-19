@@ -41,7 +41,12 @@ describe("updateEnrollmentStartDate", () => {
       where: { id: "enrollment" },
       data: { startDate: new Date("2026-09-10") },
     });
-    expect(mocks.recalculateEnrollmentRangeBills).toHaveBeenCalledWith("enrollment");
+    expect(mocks.recalculateEnrollmentRangeBills).toHaveBeenCalledWith(
+      "enrollment",
+      undefined,
+      undefined,
+      expect.any(String),
+    );
   });
 
   it("rejects a start date after an ended enrollment's end date", async () => {

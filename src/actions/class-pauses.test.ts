@@ -39,6 +39,7 @@ describe("class billing breaks", () => {
       "class",
       new Date("2026-06-01T00:00:00.000Z"),
       new Date("2026-08-01T00:00:00.000Z"),
+      expect.any(String),
     );
   });
 

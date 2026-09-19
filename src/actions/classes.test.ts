@@ -51,7 +51,7 @@ describe("updateClass billing impact", () => {
         finalizedAt: null,
       },
     });
-    expect(mocks.recalculateAllClassFamilyBills).toHaveBeenCalledWith("class");
+    expect(mocks.recalculateAllClassFamilyBills).toHaveBeenCalledWith("class", expect.any(String));
     expect(mocks.db.classMonthlyFee.deleteMany).toHaveBeenCalledWith({
       where: {
         classId: "class",
@@ -67,6 +67,6 @@ describe("updateClass billing impact", () => {
     await updateClass("class", { firstClassDate: "2026-09-18" });
 
     expect(mocks.db.classMonthlyFee.update).not.toHaveBeenCalled();
-    expect(mocks.recalculateAllClassFamilyBills).toHaveBeenCalledWith("class");
+    expect(mocks.recalculateAllClassFamilyBills).toHaveBeenCalledWith("class", expect.any(String));
   });
 });

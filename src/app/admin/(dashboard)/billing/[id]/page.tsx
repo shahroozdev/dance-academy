@@ -1,10 +1,12 @@
 "use client";
 
+import { Check, LoaderCircle } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
 import { AdjustmentModal } from "@/app/admin/(dashboard)/billing/adjustment-modal";
 import { PaymentModal } from "@/app/admin/(dashboard)/billing/payment-modal";
+import { Alert, AlertDescription, AlertTitle } from "@/components/common/alert";
 import { Badge } from "@/components/common/badge";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
@@ -44,6 +46,9 @@ export default function BillingDetailPage() {
     error: recalculateError,
   } = useMutate("recalculateBilling", {
     invalidateKeys: ["getMonthlyBillings", "getMonthlyBillingById"],
+  });
+  const { mutate: markReviewed, isLoading: isMarkingReviewed } = useMutate("resolveBillingManualReview", {
+    invalidateKeys: ["getMonthlyBillings", "getMonthlyBillingById", "getAdminNotificationSummary"],
   });
 
   if (isLoading || !billing) {
@@ -108,6 +113,25 @@ export default function BillingDetailPage() {
 
       {Boolean(recalculateError) && (
         <p className="text-sm text-destructive">Could not recalculate this bill. Please try again.</p>
+      )}
+
+      {billing.needsManualReview && (
+        <Alert variant="destructive">
+          <AlertTitle>Manual billing review required</AlertTitle>
+          <AlertDescription>
+            <p>{billing.manualReviewReason} Review the class fees and payment history, then use <strong>Adjust</strong> if the balance must change.</p>
+            <Button
+              className="mt-3"
+              size="sm"
+              variant="outline"
+              disabled={isMarkingReviewed}
+              onClick={() => markReviewed(id)}
+            >
+              {isMarkingReviewed ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}
+              {isMarkingReviewed ? "Saving..." : "Mark as Reviewed — No Adjustment Needed"}
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">

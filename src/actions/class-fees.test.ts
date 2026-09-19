@@ -53,6 +53,6 @@ describe("recalculateClassMonthlyFeeBills", () => {
     });
     expect(mocks.recalculateAffectedBills).toHaveBeenCalledWith({
       lineItems: { some: { classMonthlyFeeId: "fee" } },
-    });
+    }, expect.any(String));
   });
 });

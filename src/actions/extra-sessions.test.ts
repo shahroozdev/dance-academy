@@ -45,6 +45,7 @@ describe("extra rehearsal charges", () => {
       "class",
       new Date("2026-09-01T00:00:00.000Z"),
       false,
+      expect.any(String),
     );
   });
 

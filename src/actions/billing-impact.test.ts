@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   recalculateBilling: vi.fn(),
   db: {
-    monthlyStudentBilling: { findMany: vi.fn() },
+    monthlyStudentBilling: { findMany: vi.fn(), update: vi.fn() },
     enrollment: { findMany: vi.fn(), findUniqueOrThrow: vi.fn() },
   },
 }));
@@ -36,6 +36,14 @@ describe("central billing-impact recalculation", () => {
     });
     expect(mocks.recalculateBilling).toHaveBeenCalledTimes(1);
     expect(mocks.recalculateBilling).toHaveBeenCalledWith("unpaid");
+    expect(mocks.db.monthlyStudentBilling.update).toHaveBeenCalledWith({
+      where: { id: "paid" },
+      data: {
+        needsManualReview: true,
+        manualReviewReason: expect.any(String),
+        manualReviewAt: expect.any(Date),
+      },
+    });
   });
 
   it("treats a payment recorded during recalculation as protected", async () => {

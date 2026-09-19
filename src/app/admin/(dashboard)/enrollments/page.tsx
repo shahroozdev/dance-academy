@@ -200,15 +200,15 @@ function EnrollmentActions({
   const [action, setAction] = useState<EnrollmentAction>(null);
   const isActive = status === "ACTIVE";
   const { mutate: endEnroll, isLoading: isEnding } = useMutate("endEnrollment", {
-    invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
+    invalidateKeys: ["getEnrollments", "getStudents", "getClasses", "getMonthlyBillings", "getAdminNotificationSummary"],
     onSuccess: onChanged,
   });
   const { mutate: reactivateEnroll, isLoading: isReactivating, error: reactivateError } = useMutate("reactivateEnrollment", {
-    invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
+    invalidateKeys: ["getEnrollments", "getStudents", "getClasses", "getMonthlyBillings", "getAdminNotificationSummary"],
     onSuccess: onChanged,
   });
   const { mutate: removeEnrollment, isLoading: isRemoving, error: removeError } = useMutate("deleteEnrollment", {
-    invalidateKeys: ["getEnrollments", "getStudents", "getClasses", "getMonthlyBillings"],
+    invalidateKeys: ["getEnrollments", "getStudents", "getClasses", "getMonthlyBillings", "getAdminNotificationSummary"],
     onSuccess: onChanged,
   });
   const closeAction = () => setAction(null);
@@ -347,7 +347,7 @@ function EditEnrollmentStartDate({
   onOpenChange?: (open: boolean) => void;
 }) {
   const { mutate, isLoading, error } = useMutate("updateEnrollmentStartDate", {
-    invalidateKeys: ["getEnrollments", "getStudents", "getStudentById", "getMonthlyBillings"],
+    invalidateKeys: ["getEnrollments", "getStudents", "getStudentById", "getMonthlyBillings", "getAdminNotificationSummary"],
   });
 
   return (
@@ -422,7 +422,7 @@ function EnrollmentsCreateModal({
   const { data: classesData } = useQuery("getClasses", [{ pageSize: 100 }]);
 
   const { mutate: createEnroll, isLoading, error } = useMutate("createEnrollment", {
-    invalidateKeys: ["getEnrollments", "getStudents", "getClasses"],
+    invalidateKeys: ["getEnrollments", "getStudents", "getClasses", "getMonthlyBillings", "getAdminNotificationSummary"],
     onSuccess: () => {
       onCreated();
       onOpenChange(false);

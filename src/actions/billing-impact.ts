@@ -11,6 +11,7 @@ export type BillingImpactSummary = {
 
 export async function recalculateAffectedBills(
   where: Prisma.MonthlyStudentBillingWhereInput,
+  reviewReason = "A billing-related change could not be applied automatically because this bill has payments.",
 ): Promise<BillingImpactSummary> {
   const bills = await db.monthlyStudentBilling.findMany({
     where,
@@ -22,6 +23,10 @@ export async function recalculateAffectedBills(
 
   for (const bill of uniqueBills) {
     if (bill.payments.length > 0) {
+      await db.monthlyStudentBilling.update({
+        where: { id: bill.id },
+        data: { needsManualReview: true, manualReviewReason: reviewReason, manualReviewAt: new Date() },
+      });
       skippedWithPayments++;
       continue;
     }
@@ -30,6 +35,10 @@ export async function recalculateAffectedBills(
       recalculated++;
     } catch (error) {
       if (error instanceof Error && error.message.includes("has payments recorded")) {
+        await db.monthlyStudentBilling.update({
+          where: { id: bill.id },
+          data: { needsManualReview: true, manualReviewReason: reviewReason, manualReviewAt: new Date() },
+        });
         skippedWithPayments++;
         continue;
       }
@@ -44,6 +53,7 @@ export async function recalculateClassMonthBills(
   classId: string,
   month: Date,
   includeFamilyBills: boolean,
+  reviewReason?: string,
 ): Promise<BillingImpactSummary> {
   const enrollments = await db.enrollment.findMany({
     where: { classId },
@@ -56,13 +66,14 @@ export async function recalculateClassMonthBills(
     : { id: { in: studentIds } };
 
   if (studentIds.length === 0) return { recalculated: 0, skippedWithPayments: 0 };
-  return recalculateAffectedBills({ month, student: studentWhere });
+  return recalculateAffectedBills({ month, student: studentWhere }, reviewReason);
 }
 
 export async function recalculateClassRangeBills(
   classId: string,
   startMonth: Date,
   endMonth: Date,
+  reviewReason?: string,
 ): Promise<BillingImpactSummary> {
   const monthAfterEnd = new Date(Date.UTC(endMonth.getUTCFullYear(), endMonth.getUTCMonth() + 1, 1));
   const enrollments = await db.enrollment.findMany({
@@ -74,23 +85,27 @@ export async function recalculateClassRangeBills(
   return recalculateAffectedBills({
     month: { gte: startMonth, lt: monthAfterEnd },
     student: { familyId: { in: familyIds } },
-  });
+  }, reviewReason);
 }
 
-export async function recalculateAllClassFamilyBills(classId: string): Promise<BillingImpactSummary> {
+export async function recalculateAllClassFamilyBills(
+  classId: string,
+  reviewReason?: string,
+): Promise<BillingImpactSummary> {
   const enrollments = await db.enrollment.findMany({
     where: { classId },
     select: { student: { select: { familyId: true } } },
   });
   const familyIds = [...new Set(enrollments.map((enrollment) => enrollment.student.familyId))];
   if (familyIds.length === 0) return { recalculated: 0, skippedWithPayments: 0 };
-  return recalculateAffectedBills({ student: { familyId: { in: familyIds } } });
+  return recalculateAffectedBills({ student: { familyId: { in: familyIds } } }, reviewReason);
 }
 
 export async function recalculateEnrollmentRangeBills(
   enrollmentId: string,
   startMonth?: Date,
   endMonth?: Date,
+  reviewReason?: string,
 ): Promise<BillingImpactSummary> {
   const enrollment = await db.enrollment.findUniqueOrThrow({
     where: { id: enrollmentId },
@@ -105,5 +120,5 @@ export async function recalculateEnrollmentRangeBills(
   return recalculateAffectedBills({
     ...(month && { month }),
     student: { familyId: enrollment.student.familyId },
-  });
+  }, reviewReason);
 }

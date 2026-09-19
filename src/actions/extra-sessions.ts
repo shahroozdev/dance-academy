@@ -39,7 +39,12 @@ export async function createClassExtraSession(input: ClassExtraSessionInput) {
     where: { classId: input.classId, month: normalizeMonth(sessionDate) },
     data: { isFinalized: false, finalizedAt: null },
   });
-  await recalculateClassMonthBills(input.classId, normalizeMonth(sessionDate), false);
+  await recalculateClassMonthBills(
+    input.classId,
+    normalizeMonth(sessionDate),
+    false,
+    "An extra session was added after payment was recorded. Review the bill and add an adjustment for the additional charge if needed.",
+  );
   return session;
 }
 
@@ -51,6 +56,11 @@ export async function deleteClassExtraSession(id: string) {
     where: { classId: session.classId, month: normalizeMonth(session.sessionDate) },
     data: { isFinalized: false, finalizedAt: null },
   });
-  await recalculateClassMonthBills(session.classId, normalizeMonth(session.sessionDate), false);
+  await recalculateClassMonthBills(
+    session.classId,
+    normalizeMonth(session.sessionDate),
+    false,
+    "An extra session was removed after payment was recorded. Review the bill and add an adjustment if needed.",
+  );
   return session;
 }

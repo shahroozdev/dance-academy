@@ -34,6 +34,13 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Done
 
+- **2026-09-20: Made billing review needs persistent and visible.** Paid bills protected during an
+  automatic recalculation now retain the exact review reason, appear in an all-month Billing review
+  view and the notification bell, and can be cleared by an adjustment or an explicit reviewed
+  action. Current-month class fees awaiting finalization also appear in the bell. The additive
+  database update was applied successfully; all 274 tests, lint, TypeScript, and the production
+  build pass.
+
 - **2026-09-19: Centralized automatic billing recalculation.** Class-fee edits, no-class months,
   class and enrollment pauses, enrollment lifecycle/date changes, extra sessions, registration
   approval, and class start-date corrections now refresh affected unpaid bills automatically while

@@ -234,7 +234,10 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
             },
       });
     }
-    await recalculateAllClassFamilyBills(id);
+    await recalculateAllClassFamilyBills(
+      id,
+      "The class First Class Date changed after payment was recorded. Review the bill and add an adjustment if needed.",
+    );
     await db.classMonthlyFee.deleteMany({
       where: { classId: id, month: { lt: firstBillingMonth }, lineItems: { none: {} } },
     });

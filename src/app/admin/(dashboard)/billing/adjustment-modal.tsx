@@ -15,7 +15,7 @@ export function AdjustmentModal({ billingId, onClose }: { billingId: string; onC
     isLoading: isSaving,
     error,
   } = useMutate("setBillingAdjustment", {
-    invalidateKeys: ["getMonthlyBillings", "getMonthlyBillingById"],
+    invalidateKeys: ["getMonthlyBillings", "getMonthlyBillingById", "getAdminNotificationSummary"],
     onSuccess: onClose,
   });
 

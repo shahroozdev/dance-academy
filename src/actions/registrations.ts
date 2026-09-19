@@ -306,7 +306,10 @@ export async function approveRegistrationRequest(
   });
 
   if (processedRequest.matchedFamilyId) {
-    await recalculateAffectedBills({ student: { familyId: processedRequest.matchedFamilyId } });
+    await recalculateAffectedBills(
+      { student: { familyId: processedRequest.matchedFamilyId } },
+      "An approved registration changed this family's enrollment after payment was recorded. Review the bill and add an adjustment if needed.",
+    );
   }
 
   if (!sendEmailNow) return { ...processedRequest, enrollmentEmail: { requested: false, sent: false, error: null } };

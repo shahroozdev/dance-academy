@@ -1,5 +1,11 @@
 # Updates Summary
 
+## 2026-09-20
+
+- The notification bell now shows paid bills requiring manual review and current-month class fees awaiting finalization, so billing exceptions cannot remain hidden.
+- When a paid bill is protected from automatic recalculation, Billing shows the exact reason and guides staff to adjust it or mark it reviewed when no adjustment is needed.
+- Billing has a dedicated manual-review view across all months, and saving an adjustment automatically clears the related review alert.
+
 ## 2026-09-19
 
 - Billing-impacting changes now automatically refresh affected unpaid bills after class-fee edits, no-class months, class or student breaks, enrollment date and status changes, extra rehearsals, registration approval, and First Class Date corrections. Bills with payments remain protected, and changed class-fee months require staff finalization again before parent notices.

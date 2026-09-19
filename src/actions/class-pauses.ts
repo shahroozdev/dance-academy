@@ -23,7 +23,12 @@ export async function createClassBillingPause(classId: string, input: ClassBilli
     where: { classId, month: { gte: startMonth, lte: endMonth } },
     data: { isFinalized: false, finalizedAt: null },
   });
-  await recalculateClassRangeBills(classId, startMonth, endMonth);
+  await recalculateClassRangeBills(
+    classId,
+    startMonth,
+    endMonth,
+    "A class break changed this billing period after payment was recorded. Review the bill and add an adjustment if needed.",
+  );
   return pause;
 }
 
@@ -35,6 +40,11 @@ export async function deleteClassBillingPause(id: string) {
     where: { classId: pause.classId, month: { gte: pause.startMonth, lte: pause.endMonth } },
     data: { isFinalized: false, finalizedAt: null },
   });
-  await recalculateClassRangeBills(pause.classId, pause.startMonth, pause.endMonth);
+  await recalculateClassRangeBills(
+    pause.classId,
+    pause.startMonth,
+    pause.endMonth,
+    "A class break was removed after payment was recorded. Review the bill and add an adjustment if needed.",
+  );
   return pause;
 }

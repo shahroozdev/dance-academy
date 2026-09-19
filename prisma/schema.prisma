@@ -309,6 +309,9 @@ model MonthlyStudentBilling {
   // Set once a payment-reminder cron run (§5.4) has sent a reminder for this bill — a bill only
   // ever gets one automated reminder, not a fresh one every day it stays overdue.
   reminderSentAt     DateTime?
+  needsManualReview  Boolean                  @default(false)
+  manualReviewReason String?
+  manualReviewAt     DateTime?
   lineItems          MonthlyBillingLineItem[]
   payments           Payment[]
   createdAt          DateTime                 @default(now())
@@ -317,6 +320,7 @@ model MonthlyStudentBilling {
   @@unique([studentId, month])
   @@index([month])
   @@index([status])
+  @@index([needsManualReview])
 }
 
 model MonthlyBillingLineItem {

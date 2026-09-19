@@ -3,11 +3,13 @@
 import {
   ChevronDown,
   ChevronRight,
+  CircleAlert,
   Download,
   MessageCircle,
   Receipt,
   RefreshCw,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { AdjustmentModal } from "@/app/admin/(dashboard)/billing/adjustment-modal";
@@ -67,7 +69,13 @@ function formatMonthLabel(value: string): string {
   });
 }
 
+function formatBillMonth(value: Date | string): string {
+  return new Date(value).toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+}
+
 export default function BillingPage() {
+  const searchParams = useSearchParams();
+  const reviewOnly = searchParams.get("review") === "1";
   const [month, setMonth] = useState(currentMonthValue());
   const [search, setSearch] = useState("");
   const [visibleStatuses, setVisibleStatuses] = useState<Set<StatusValue>>(
@@ -87,7 +95,11 @@ export default function BillingPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
-  const { data, isLoading } = useQuery("getMonthlyBillings", [{ month, pageSize: 5000 }]);
+  const { data, isLoading } = useQuery("getMonthlyBillings", [{
+    month: reviewOnly ? undefined : month,
+    needsManualReview: reviewOnly ? true : undefined,
+    pageSize: 5000,
+  }]);
   const { mutate: generate, isLoading: isGenerating } = useMutate(
     "generateMonthlyBilling",
     {
@@ -99,7 +111,7 @@ export default function BillingPage() {
     if (!data) return [];
     const term = search.trim().toLowerCase();
     return data.data.filter((b) => {
-      if (!visibleStatuses.has(b.status as StatusValue)) return false;
+      if (!reviewOnly && !visibleStatuses.has(b.status as StatusValue)) return false;
       if (
         term &&
         !b.studentName.toLowerCase().includes(term) &&
@@ -109,7 +121,7 @@ export default function BillingPage() {
       }
       return true;
     });
-  }, [data, visibleStatuses, search]);
+  }, [data, visibleStatuses, search, reviewOnly]);
 
   const families = useMemo(() => {
     const map = new Map<
@@ -173,7 +185,7 @@ export default function BillingPage() {
     const csv = toCsv(filtered, [
       { label: "Student", value: (b) => b.studentName },
       { label: "Family", value: (b) => b.familyName },
-      { label: "Month", value: () => formatMonthLabel(month) },
+      { label: "Month", value: (b) => formatBillMonth(b.month) },
       { label: "Classes", value: (b) => b.classNames.join("; ") },
       { label: "Base Tuition", value: (b) => b.baseTuition },
       { label: "Multi-Class Discount", value: (b) => b.multiClassDiscount },
@@ -184,23 +196,27 @@ export default function BillingPage() {
       { label: "Balance", value: (b) => b.balance },
       { label: "Status", value: (b) => b.status },
     ]);
-    downloadCsv(`billing-${month}.csv`, csv);
+    downloadCsv(reviewOnly ? "billing-manual-review.csv" : `billing-${month}.csv`, csv);
   };
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Billing"
-        subtitle="Generate and review monthly student billing."
+        subtitle={reviewOnly ? "Review paid bills that could not be changed automatically." : "Generate and review monthly student billing."}
         actions={
           <div className="flex w-full flex-wrap items-center gap-2">
-            <input
-              type="month"
-              value={month}
-              onChange={(e) => { setMonth(e.target.value); setPage(1); }}
-              className="flex h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            />
-            <TooltipWrapper
+            {reviewOnly ? (
+              <Button variant="outline" asChild><Link href="/admin/billing">Back to Monthly Billing</Link></Button>
+            ) : (
+              <input
+                type="month"
+                value={month}
+                onChange={(e) => { setMonth(e.target.value); setPage(1); }}
+                className="flex h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            )}
+            {!reviewOnly && <TooltipWrapper
               label={
                 isGenerating
                   ? "Generating..."
@@ -225,7 +241,7 @@ export default function BillingPage() {
                     : `Generate Bills for ${formatMonthLabel(month)}`}
                 </span>
               </Button>
-            </TooltipWrapper>
+            </TooltipWrapper>}
             <TooltipWrapper label="Export CSV">
               <Button
                 variant="outline"
@@ -243,6 +259,16 @@ export default function BillingPage() {
       {generateSummary && (
         <div className="rounded-md border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
           {generateSummary}
+        </div>
+      )}
+
+      {reviewOnly && (
+        <div className="flex items-start gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          <CircleAlert className="mt-0.5 size-5 shrink-0 text-destructive" />
+          <div>
+            <p className="font-medium">Manual billing review</p>
+            <p className="text-muted-foreground">These bills had payments when a billing-related change occurred, so their saved amounts were protected. Open each bill, review the reason, and use Adjust to apply the required correction. Saving an adjustment clears the alert.</p>
+          </div>
         </div>
       )}
 
@@ -276,7 +302,7 @@ export default function BillingPage() {
         contentClassName="flex min-h-0 flex-1 flex-col p-2"
       >
         <div className="flex flex-wrap items-center gap-2 p-2">
-          {STATUS_OPTIONS.map((status) => (
+          {!reviewOnly && STATUS_OPTIONS.map((status) => (
             <Button
               key={status}
               size="sm"
@@ -337,16 +363,18 @@ export default function BillingPage() {
                         {family.bills.length > 1 ? "s" : ""})
                       </span>
                     </button>
-                    <TooltipWrapper label="Send notification">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setNotifyingFamilyId(family.familyId)}
-                      >
-                        <MessageCircle className="size-4" />
-                        Notify
-                      </Button>
-                    </TooltipWrapper>
+                    {!reviewOnly && (
+                      <TooltipWrapper label="Send notification">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setNotifyingFamilyId(family.familyId)}
+                        >
+                          <MessageCircle className="size-4" />
+                          Notify
+                        </Button>
+                      </TooltipWrapper>
+                    )}
                     <span className="font-medium">
                       {formatCurrency(familyTotal)}
                     </span>
@@ -364,6 +392,7 @@ export default function BillingPage() {
                           <TableHead>Paid</TableHead>
                           <TableHead>Balance</TableHead>
                           <TableHead>Status</TableHead>
+                          {reviewOnly && <TableHead>Review Reason</TableHead>}
                           <TableHead />
                         </TableRow>
                       </TableHeader>
@@ -406,16 +435,17 @@ export default function BillingPage() {
                               {formatCurrency(bill.balance)}
                             </TableCell>
                             <TableCell>
-                              <Badge
-                                variant={
-                                  STATUS_BADGE_VARIANT[
-                                    bill.status as StatusValue
-                                  ]
-                                }
-                              >
-                                {bill.status}
-                              </Badge>
+                              <div className="flex flex-col items-start gap-1">
+                                <Badge variant={STATUS_BADGE_VARIANT[bill.status as StatusValue]}>{bill.status}</Badge>
+                                {bill.needsManualReview && <Badge variant="destructive">Review needed</Badge>}
+                              </div>
                             </TableCell>
+                            {reviewOnly && (
+                              <TableCell className="min-w-64 text-sm text-muted-foreground">
+                                <span className="font-medium text-foreground">{formatBillMonth(bill.month)}</span>
+                                <span className="block">{bill.manualReviewReason}</span>
+                              </TableCell>
+                            )}
                             <TableCell>
                               <div className="flex gap-2">
                                 <TooltipWrapper label="Adjust billing">

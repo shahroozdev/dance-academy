@@ -19,10 +19,10 @@ function monthLabel(date: Date) {
 
 export function ClassBreaksModal({ classId, className, breaks }: { classId: string; className: string; breaks: ClassBreak[] }) {
   const { mutate: addBreak, isLoading: isAdding, error } = useMutate("createClassBillingPause", {
-    invalidateKeys: ["getClassById", "getClasses", "getMonthlyBillings"],
+    invalidateKeys: ["getClassById", "getClasses", "getMonthlyBillings", "getAdminNotificationSummary"],
   });
   const { mutate: removeBreak, isLoading: isRemoving } = useMutate("deleteClassBillingPause", {
-    invalidateKeys: ["getClassById", "getClasses", "getMonthlyBillings"],
+    invalidateKeys: ["getClassById", "getClasses", "getMonthlyBillings", "getAdminNotificationSummary"],
   });
 
   return (

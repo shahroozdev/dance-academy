@@ -15,7 +15,7 @@ export function ClassFeeEditModal({ id, onClose }: { id: string; onClose: () => 
     isLoading: isSaving,
     error,
   } = useMutate("updateClassMonthlyFee", {
-    invalidateKeys: ["getClassMonthlyFees"],
+    invalidateKeys: ["getClassMonthlyFees", "getMonthlyBillings", "getAdminNotificationSummary"],
     onSuccess: onClose,
   });
 
