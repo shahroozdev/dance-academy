@@ -5,7 +5,12 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
-- Nothing currently in progress.
+- **2026-09-20: Live verification found and fixed a class-fee override gap.** The production run
+  proved that an ordinary saved class-fee override did not start automatic bill recalculation. The
+  missing call is now connected locally with regression coverage; all 275 tests, lint, TypeScript,
+  and the production build pass. Both test runs removed every temporary family, student, class,
+  bill, and payment. Next: commit/push the fix, wait for deployment, and rerun the isolated live
+  scenario to verify unpaid recalculation plus paid-bill review visibility on production.
 
 ## Next / Blocked
 

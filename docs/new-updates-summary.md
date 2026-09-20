@@ -2,6 +2,8 @@
 
 ## 2026-09-20
 
+- Class-fee overrides now immediately update every affected unpaid bill, while paid bills remain protected and appear in the billing review queue.
+
 - The notification bell now shows paid bills requiring manual review and current-month class fees awaiting finalization, so billing exceptions cannot remain hidden.
 - When a paid bill is protected from automatic recalculation, Billing shows the exact reason and guides staff to adjust it or mark it reviewed when no adjustment is needed.
 - Billing has a dedicated manual-review view across all months, and saving an adjustment automatically clears the related review alert.

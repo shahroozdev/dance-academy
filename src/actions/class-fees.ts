@@ -65,7 +65,7 @@ export async function updateClassMonthlyFee(id: string, data: ClassMonthlyFeeUpd
   await requireAdmin();
   id = idSchema.parse(id);
   data = classMonthlyFeeUpdateSchema.parse(data);
-  return db.classMonthlyFee.update({
+  const fee = await db.classMonthlyFee.update({
     where: { id },
     data: {
       billableSessions: data.billableSessions ?? null,
@@ -80,6 +80,8 @@ export async function updateClassMonthlyFee(id: string, data: ClassMonthlyFeeUpd
       finalizedAt: null,
     },
   });
+  await recalculateClassMonthlyFeeBills(id);
+  return fee;
 }
 
 export async function markClassMonthlyFeeNoClasses(id: string) {

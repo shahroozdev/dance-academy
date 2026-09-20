@@ -15,6 +15,7 @@ vi.mock("@/lib/db", () => ({ db: mocks.db }));
 import {
   markClassMonthlyFeeNoClasses,
   recalculateClassMonthlyFeeBills,
+  updateClassMonthlyFee,
 } from "@/actions/class-fees";
 
 beforeEach(() => {
@@ -40,6 +41,24 @@ describe("markClassMonthlyFeeNoClasses", () => {
         finalizedAt: null,
       },
     });
+  });
+});
+
+describe("updateClassMonthlyFee", () => {
+  it("automatically applies an override to unpaid bills and flags paid bills for review", async () => {
+    mocks.recalculateAffectedBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 1 });
+
+    await updateClassMonthlyFee("fee", {
+      billableSessions: 3,
+      rate: 20,
+      monthlyClassFee: 60,
+      notes: "Extra rehearsal",
+    });
+
+    expect(mocks.recalculateAffectedBills).toHaveBeenCalledWith(
+      { lineItems: { some: { classMonthlyFeeId: "fee" } } },
+      expect.stringContaining("class fee changed"),
+    );
   });
 });
 
