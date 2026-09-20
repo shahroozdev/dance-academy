@@ -18,6 +18,7 @@ const listQuerySchema = z.object({
   pageSize: z.number().int().min(1).max(10000).optional(),
   search: z.string().max(500).optional(),
   isActive: z.boolean().optional(),
+  needsManualReview: z.boolean().optional(),
   sortBy: z.string().max(100).optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
   status: z.enum(["PENDING", "PROCESSED", "REJECTED", "ACTIVE", "ENDED", "UNPAID", "PARTIAL", "PAID", "OVERPAID"]).optional(),

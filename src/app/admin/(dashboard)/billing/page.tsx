@@ -15,6 +15,7 @@ import { useMemo, useState } from "react";
 import { AdjustmentModal } from "@/app/admin/(dashboard)/billing/adjustment-modal";
 import { NotificationModal } from "@/app/admin/(dashboard)/billing/notification-modal";
 import { PaymentModal } from "@/app/admin/(dashboard)/billing/payment-modal";
+import { Alert, AlertDescription, AlertTitle } from "@/components/common/alert";
 import { Badge } from "@/components/common/badge";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
@@ -95,7 +96,7 @@ export default function BillingPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
-  const { data, isLoading } = useQuery("getMonthlyBillings", [{
+  const { data, error, isLoading } = useQuery("getMonthlyBillings", [{
     month: reviewOnly ? undefined : month,
     needsManualReview: reviewOnly ? true : undefined,
     pageSize: 5000,
@@ -328,15 +329,25 @@ export default function BillingPage() {
             ))}
           </div>
         )}
-        {!isLoading && families.length === 0 && (
+        {!isLoading && Boolean(error) && (
+          <Alert variant="destructive" className="m-2">
+            <AlertTitle>Billing records could not be loaded</AlertTitle>
+            <AlertDescription>
+              Refresh the page and try again. If this continues, the billing list needs administrator attention.
+            </AlertDescription>
+          </Alert>
+        )}
+        {!isLoading && !error && families.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
             <Receipt className="size-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
-              No bills match the current filters for {formatMonthLabel(month)}.
+              {reviewOnly
+                ? "No paid bills currently need manual review."
+                : `No bills match the current filters for ${formatMonthLabel(month)}.`}
             </p>
           </div>
         )}
-        {!isLoading && families.length > 0 && (
+        {!isLoading && !error && families.length > 0 && (
           <div className="divide-y">
             {pagedFamilies.map((family) => {
               const isExpanded = expandedFamilies.has(family.familyId);
