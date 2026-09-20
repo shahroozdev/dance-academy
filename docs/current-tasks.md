@@ -5,12 +5,7 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
-- **2026-09-20: Live verification found and fixed a class-fee override gap.** The production run
-  proved that an ordinary saved class-fee override did not start automatic bill recalculation. The
-  missing call is now connected locally with regression coverage; all 275 tests, lint, TypeScript,
-  and the production build pass. Both test runs removed every temporary family, student, class,
-  bill, and payment. Next: commit/push the fix, wait for deployment, and rerun the isolated live
-  scenario to verify unpaid recalculation plus paid-bill review visibility on production.
+- Nothing currently in progress.
 
 ## Next / Blocked
 
@@ -38,6 +33,13 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-09-20: Live-verified automatic recalculation and paid-bill review.** A saved class-fee
+  override now recalculates unpaid bills immediately, preserves paid bills for review, lists them in
+  the all-month review queue, and surfaces them in the notification bell. The isolated production
+  browser test passed, including the 5% sibling discount, exact review reason, and verified removal
+  of every temporary family, student, class, bill, and payment. All 277 tests, lint, TypeScript, and
+  the production build pass.
 
 - **2026-09-20: Made billing review needs persistent and visible.** Paid bills protected during an
   automatic recalculation now retain the exact review reason, appear in an all-month Billing review
