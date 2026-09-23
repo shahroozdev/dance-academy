@@ -250,7 +250,7 @@ export default function ClassDetailPage() {
               <div key={fee.id} className="flex items-center justify-between p-4">
                 <div>
                   <p className="font-medium">
-                    {new Date(fee.month).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                    {new Date(fee.month).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {fee.billableSessions

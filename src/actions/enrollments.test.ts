@@ -72,11 +72,15 @@ describe("updateEnrollmentStartDate", () => {
     expect(mocks.db.enrollment.update).toHaveBeenCalled();
   });
 
-  it("rejects future start dates", async () => {
-    await expect(updateEnrollmentStartDate("enrollment", { startDate: "2099-01-01" })).rejects.toThrow(
-      "cannot be in the future",
-    );
-    expect(mocks.db.enrollment.findUniqueOrThrow).not.toHaveBeenCalled();
+  it("allows a future start date for a class that hasn't begun yet", async () => {
+    mocks.db.enrollment.update.mockResolvedValue({ id: "enrollment", startDate: new Date("2099-01-01") });
+
+    await updateEnrollmentStartDate("enrollment", { startDate: "2099-01-01" });
+
+    expect(mocks.db.enrollment.update).toHaveBeenCalledWith({
+      where: { id: "enrollment" },
+      data: { startDate: new Date("2099-01-01") },
+    });
   });
 
   it("rejects a first billable date before the class begins", async () => {

@@ -245,7 +245,7 @@ export default function StudentDetailPage() {
               >
                 <div>
                   <p className="font-medium">
-                    {new Date(billing.month).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                    {new Date(billing.month).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">

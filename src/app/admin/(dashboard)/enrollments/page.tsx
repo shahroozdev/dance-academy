@@ -383,7 +383,7 @@ function EditEnrollmentStartDate({
               <p className="text-sm text-muted-foreground">
                 Correct when {studentName} actually started {className}. This date determines which class sessions are included in mid-month billing.
               </p>
-              <FormFeilds name="startDate" label="First Billable Date" type="date" max={todayIsoDate()} required />
+              <FormFeilds name="startDate" label="First Billable Date" type="date" required />
               <p className="text-sm text-muted-foreground">
                 Sessions before this date are excluded. A class held on this date or later is included.
               </p>
@@ -487,7 +487,6 @@ function EnrollmentsCreateModal({
               type="date"
               value={startDate}
               min={selectedClass ? enrollmentDateInputValue(selectedClass.firstClassDate) : undefined}
-              max={todayIsoDate()}
               onChange={setStartDate}
             />
             <p className="mt-1 text-xs text-muted-foreground">Sessions before this date are excluded. A class held on this date or later is included.</p>

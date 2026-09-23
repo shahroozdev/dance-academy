@@ -118,11 +118,7 @@ export async function updateEnrollmentStartDate(id: string, data: EnrollmentStar
 }
 
 function parseEnrollmentStartDate(value?: string) {
-  const startDate = value ? new Date(value) : new Date();
-  const today = new Date();
-  today.setUTCHours(23, 59, 59, 999);
-  if (startDate > today) throw new Error("Enrollment start date cannot be in the future.");
-  return startDate;
+  return value ? new Date(value) : new Date();
 }
 
 function assertNotBeforeClassStart(enrollmentStart: Date, firstClassDate: Date) {

@@ -155,7 +155,6 @@ export function RegistrationApprovalForm({ id, requestedProgramId, onClose }: { 
             label="First Billable Date"
             type="date"
             min={enrollmentDateInputValue(classes?.find((item) => item.id === form.watch("classId"))?.firstClassDate)}
-            max={todayIsoDate()}
             disabled={busy}
             required
           />
