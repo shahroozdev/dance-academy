@@ -302,6 +302,8 @@ test("full acceptance flow (docs/08 §8.2)", async ({ page }) => {
     // the submit click must be scoped to the dialog to avoid matching the trigger behind it.
     await page.getByRole("button", { name: "Record Payment" }).click();
     const paymentDialog = page.getByRole("dialog");
+    await paymentDialog.getByLabel("Payment Amount Type").click();
+    await page.getByRole("option", { name: "Partial payment", exact: true }).click();
     await paymentDialog.getByLabel("Amount ($)", { exact: true }).fill("300");
     await paymentDialog.getByRole("button", { name: "Record Payment" }).click();
 
