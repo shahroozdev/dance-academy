@@ -6,6 +6,7 @@ import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Modal } from "@/components/common/modal";
 import { PermanentDeleteModal } from "@/components/common/permanent-delete-modal";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -233,28 +234,43 @@ export default function StudentDetailPage() {
 
       {student.monthlyBillings.length > 0 && (
         <Card
-          header={<span className="text-sm font-medium">Recent Billing History</span>}
+          header={
+            <div>
+              <span className="text-sm font-medium">Monthly Billing Ledger</span>
+              <p className="text-sm font-normal text-muted-foreground">Each row is a separate month. Open a row to review its classes and payments.</p>
+            </div>
+          }
           headerClassName="border-b"
+          contentClassName="p-0"
         >
-          <div className="divide-y">
-            {student.monthlyBillings.map((billing) => (
-              <div
-                key={billing.id}
-                className="flex items-center justify-between p-4 hover:bg-muted/50 cursor-pointer"
-                onClick={() => router.push(`/admin/billing/${billing.id}`)}
-              >
-                <div>
-                  <p className="font-medium">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Month</TableHead>
+                <TableHead>Amount Due</TableHead>
+                <TableHead>Paid</TableHead>
+                <TableHead>Balance</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {student.monthlyBillings.map((billing) => (
+                <TableRow
+                  key={billing.id}
+                  className="cursor-pointer"
+                  onClick={() => router.push(`/admin/billing/${billing.id}`)}
+                >
+                  <TableCell className="font-medium">
                     {new Date(billing.month).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <p className="font-medium">${Number(billing.finalAmountDue).toFixed(2)}</p>
-                  <Badge variant={BILLING_STATUS_VARIANT[billing.status] ?? "destructive"}>{billing.status}</Badge>
-                </div>
-              </div>
-            ))}
-          </div>
+                  </TableCell>
+                  <TableCell>${billing.finalAmountDue.toFixed(2)}</TableCell>
+                  <TableCell>${billing.amountPaid.toFixed(2)}</TableCell>
+                  <TableCell className="font-medium">${billing.balance.toFixed(2)}</TableCell>
+                  <TableCell><Badge variant={BILLING_STATUS_VARIANT[billing.status] ?? "destructive"}>{billing.status}</Badge></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </Card>
       )}
     </div>

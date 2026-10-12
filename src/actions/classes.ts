@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
-import { recalculateAllClassFamilyBills } from "@/actions/billing-impact";
+import { recalculateAllClassFamilyBills, recalculateClassFamilyBillsFromMonth } from "@/actions/billing-impact";
 import { classCreateSchema, classUpdateSchema } from "@/actions/classes.schema";
 import type { ClassCreateInput, ClassUpdateInput } from "@/actions/classes.schema";
 import { idSchema, booleanSchema , validateListQuery } from "@/actions/validation.schema";
@@ -158,6 +158,7 @@ export async function createClass(data: ClassCreateInput) {
       pricingType: data.pricingType,
       discountEligible: data.discountEligible,
       isActive: data.isActive,
+      inactiveFromMonth: data.isActive ? null : normalizeMonth(new Date()),
     },
   });
   return { ...cls, standardRate: Number(cls.standardRate) };
@@ -193,7 +194,10 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
       ...(data.capacity !== undefined && { capacity: data.capacity ?? null }),
       ...(data.pricingType !== undefined && { pricingType: data.pricingType }),
       ...(data.discountEligible !== undefined && { discountEligible: data.discountEligible }),
-      ...(data.isActive !== undefined && { isActive: data.isActive }),
+      ...(data.isActive !== undefined && {
+        isActive: data.isActive,
+        inactiveFromMonth: data.isActive ? null : normalizeMonth(new Date()),
+      }),
       },
     });
     if (data.firstClassDate !== undefined) {
@@ -242,6 +246,13 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
       where: { classId: id, month: { lt: firstBillingMonth }, lineItems: { none: {} } },
     });
   }
+  if (data.isActive !== undefined) {
+    await recalculateClassFamilyBillsFromMonth(
+      id,
+      normalizeMonth(new Date()),
+      "The class active status changed after a payment was recorded. Review this month and move or adjust the payment if needed.",
+    );
+  }
   return { ...cls, standardRate: Number(cls.standardRate) };
 }
 
@@ -249,7 +260,13 @@ export async function toggleClassActive(id: string, isActive: boolean) {
   await requireAdmin();
   id = idSchema.parse(id);
   isActive = booleanSchema.parse(isActive);
-  const cls = await db.class.update({ where: { id }, data: { isActive } });
+  const inactiveFromMonth = isActive ? null : normalizeMonth(new Date());
+  const cls = await db.class.update({ where: { id }, data: { isActive, inactiveFromMonth } });
+  await recalculateClassFamilyBillsFromMonth(
+    id,
+    normalizeMonth(new Date()),
+    "The class active status changed after a payment was recorded. Review this month and move or adjust the payment if needed.",
+  );
   return { ...cls, standardRate: Number(cls.standardRate) };
 }
 

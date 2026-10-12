@@ -101,6 +101,23 @@ export async function recalculateAllClassFamilyBills(
   return recalculateAffectedBills({ student: { familyId: { in: familyIds } } }, reviewReason);
 }
 
+export async function recalculateClassFamilyBillsFromMonth(
+  classId: string,
+  startMonth: Date,
+  reviewReason?: string,
+): Promise<BillingImpactSummary> {
+  const enrollments = await db.enrollment.findMany({
+    where: { classId },
+    select: { student: { select: { familyId: true } } },
+  });
+  const familyIds = [...new Set(enrollments.map((enrollment) => enrollment.student.familyId))];
+  if (familyIds.length === 0) return { recalculated: 0, skippedWithPayments: 0 };
+  return recalculateAffectedBills({
+    month: { gte: startMonth },
+    student: { familyId: { in: familyIds } },
+  }, reviewReason);
+}
+
 export async function recalculateEnrollmentRangeBills(
   enrollmentId: string,
   startMonth?: Date,

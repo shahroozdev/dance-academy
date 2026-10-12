@@ -111,7 +111,6 @@ export async function getStudentById(id: string) {
       },
       monthlyBillings: {
         orderBy: { month: "desc" },
-        take: 12,
       },
     },
   });

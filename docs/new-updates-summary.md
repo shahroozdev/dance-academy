@@ -1,5 +1,29 @@
 # Updates Summary
 
+## 2026-10-12
+
+- Registration now completes safely when the email service is slow or unavailable instead of remaining stuck on “Submitting.”
+- Final regression checks strengthened automatic cleanup so temporary acceptance-test records can be removed reliably after an interrupted run.
+
+## 2026-10-11
+
+- Student profiles and payment month choices now include the complete monthly history instead of stopping after a fixed number of months.
+- Changing a class-month from no fee to a positive fee now also updates affected family bills that did not previously contain a line for that class.
+- Monthly Class Counts now shows separately recorded extra rehearsals apart from regular classes and displays their combined total, preventing the same rehearsal from being counted twice.
+- Monthly bill generation now skips unchanged existing bills, repairs inactive-class charges when needed, and safely creates only missing bills while retrying temporary database conflicts.
+
+## 2026-10-09
+
+- Student profiles now show a month-by-month billing ledger with the amount due, amount paid, remaining balance, and status for each month.
+- Recording a payment now clearly identifies its billing month and lets staff choose a full remaining payment or a partial payment.
+- Class Monthly Fees shows active classes by default, with an option to review all historical classes when needed.
+- Deactivating a class now stops billing from the current month while preserving its earlier billing history.
+- Existing unpaid bills are automatically corrected when an inactive class should no longer be charged, including bills whose previous total was zero.
+- Seasonal fees can be repaired into their correct earlier month without a mistaken later charge blocking the correction.
+- Added Monthly Class Counts, where teachers can record the number of classes actually held and add notes without directly changing parent bills.
+- Teacher-reported counts remain pending until staff explicitly applies them from Class Monthly Fees; affected unpaid bills then recalculate automatically, while paid bills remain protected for review.
+- Payment notes are now visible on the bill detail page to make month-specific payment history easier to understand.
+
 ## 2026-09-20
 
 - Class-fee overrides now immediately update every affected unpaid bill, while paid bills remain protected and appear in the billing review queue.

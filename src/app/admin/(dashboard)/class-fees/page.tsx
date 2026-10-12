@@ -3,22 +3,16 @@
 import { DollarSign } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { Badge } from "@/components/common/badge";
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
+import { Input } from "@/components/common/input";
 import { Modal } from "@/components/common/modal";
+import { Skeleton } from "@/components/common/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
 import TooltipWrapper from "@/components/common/TooltipWrapper";
 import { PageHeader } from "@/components/shared/page-header";
 import { TablePagination } from "@/components/shared/table-pagination";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 
@@ -38,18 +32,19 @@ function currentMonthValue(): string {
 export default function ClassFeesPage() {
   const [month, setMonth] = useState(currentMonthValue());
   const [classId, setClassId] = useState<string>("ALL");
+  const [classVisibility, setClassVisibility] = useState<"ACTIVE" | "ALL">("ACTIVE");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [operationMessage, setOperationMessage] = useState<string | null>(null);
 
-  const { data: classesData } = useQuery("getClasses", [{ pageSize: 100, sortBy: "name" }]);
+  const { data: classesData } = useQuery("getClasses", [{ pageSize: 100, sortBy: "name", isActive: classVisibility === "ACTIVE" ? true : undefined }]);
   const { data, isLoading } = useQuery("getClassMonthlyFees", [
-    { month, classId: classId === "ALL" ? undefined : classId, page, pageSize },
+    { month, classId: classId === "ALL" ? undefined : classId, isActive: classVisibility === "ACTIVE" ? true : undefined, page, pageSize },
   ]);
   // Unpaginated, whole-month fetch used only to decide whether "Finalize All" is still needed —
   // the paginated `data` above only reflects the current page/class filter.
-  const { data: monthFeesForFinalizeCheck } = useQuery("getClassMonthlyFees", [{ month, pageSize: 10000 }]);
+  const { data: monthFeesForFinalizeCheck } = useQuery("getClassMonthlyFees", [{ month, isActive: classVisibility === "ACTIVE" ? true : undefined, pageSize: 10000 }]);
   const { mutate: finalizeFee, isLoading: isFinalizingOne } = useMutate("finalizeClassMonthlyFee", {
     invalidateKeys: ["getClassMonthlyFees", "getAdminNotificationSummary"],
   });
@@ -67,6 +62,14 @@ export default function ClassFeesPage() {
     invalidateKeys: ["getClassMonthlyFees", "getMonthlyBillings", "getMonthlyBillingById", "getAdminNotificationSummary"],
     onSuccess: (result) => setOperationMessage(
       `Recalculated ${result.recalculated} unpaid bill(s). ${result.skippedWithPayments} bill(s) with payments were left unchanged.`,
+    ),
+  });
+  const { mutate: applyReported, isLoading: isApplyingReported } = useMutate("applyReportedClassSessions", {
+    invalidateKeys: ["getClassMonthlyFees", "getMonthlyClassSessionTracking", "getMonthlyBillings", "getAdminNotificationSummary"],
+    onSuccess: (result) => setOperationMessage(
+      result.applied
+        ? `Teacher count applied. Recalculated ${result.recalculated} unpaid bill(s); ${result.skippedWithPayments} paid bill(s) need review.`
+        : "The reported count was saved for this flat-fee class; its flat fee was not changed.",
     ),
   });
 
@@ -100,26 +103,30 @@ export default function ClassFeesPage() {
             onChange={(e) => { setMonth(e.target.value); setPage(1); }}
             className="flex h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
-          <Select value={classId} onValueChange={(value) => { setClassId(value); setPage(1); }}>
-            <SelectTrigger className="w-56">
-              <SelectValue placeholder="All classes" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All classes</SelectItem>
-              {classOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            type="select"
+            value={classId}
+            onChange={(value) => { setClassId(value); setPage(1); }}
+            className="w-56"
+            options={[{ label: "All classes", value: "ALL" }, ...classOptions]}
+          />
+          <Input
+            type="select"
+            value={classVisibility}
+            onChange={(value) => { setClassVisibility(value as "ACTIVE" | "ALL"); setClassId("ALL"); setPage(1); }}
+            className="w-48"
+            options={[
+              { label: "Active classes only", value: "ACTIVE" },
+              { label: "All historical classes", value: "ALL" },
+            ]}
+          />
           <TooltipWrapper label="Finalize all class fees for this month">
             <Button
               size="sm"
               variant="outline"
               className="ml-auto"
               disabled={isFinalizingAll || !monthFeesForFinalizeCheck || monthFeesForFinalizeCheck.data.every((f) => f.isFinalized)}
-              onClick={() => finalizeAll(month)}
+              onClick={() => finalizeAll(month, classVisibility === "ACTIVE" ? true : undefined)}
             >
               {isFinalizingAll ? "Finalizing..." : `Finalize All for ${month}`}
             </Button>
@@ -148,6 +155,7 @@ export default function ClassFeesPage() {
               <TableRow>
                 <TableHead>Class</TableHead>
                 <TableHead>Billable Sessions</TableHead>
+                <TableHead>Teacher Reported</TableHead>
                 <TableHead>Rate</TableHead>
                 <TableHead>Flat Fee</TableHead>
                 <TableHead>Monthly Class Fee</TableHead>
@@ -161,6 +169,12 @@ export default function ClassFeesPage() {
                 <TableRow key={fee.id}>
                   <TableCell className="font-medium">{fee.class.name}</TableCell>
                   <TableCell>{fee.billableSessions ?? "—"}</TableCell>
+                  <TableCell>
+                    {fee.reportedSessions ?? "—"}
+                    {fee.reportedSessions !== null && fee.reportedSessions !== fee.billableSessions && (
+                      <Badge variant="outline" className="ml-2">Pending</Badge>
+                    )}
+                  </TableCell>
                   <TableCell>{formatCurrency(fee.rate)}</TableCell>
                   <TableCell>{formatCurrency(fee.flatFee)}</TableCell>
                   <TableCell className="font-medium">{formatCurrency(fee.monthlyClassFee)}</TableCell>
@@ -178,6 +192,13 @@ export default function ClassFeesPage() {
                         </Button>
                       </TooltipWrapper>
                       <ExtraSessionsModal classId={fee.class.id} className={fee.class.name} month={month} />
+                      {fee.reportedSessions !== null && fee.reportedSessions !== fee.billableSessions && (
+                        <TooltipWrapper label="Apply the teacher-reported count to billing and recalculate unpaid bills">
+                          <Button size="sm" variant="outline" disabled={isApplyingReported} onClick={() => applyReported(fee.id)}>
+                            Apply Reported
+                          </Button>
+                        </TooltipWrapper>
+                      )}
                       <Modal
                         trigger={<Button size="sm" variant="outline">No Classes</Button>}
                         className="max-w-sm"
