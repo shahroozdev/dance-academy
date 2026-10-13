@@ -185,6 +185,9 @@ model Class {
   // makes an actual queue unlikely to be needed.
   capacity             Int?
   isActive             Boolean               @default(true)
+  // First calendar month that must not be billed after the class is deactivated. Historical
+  // months before this boundary remain available for corrections and reporting.
+  inactiveFromMonth    DateTime?              @db.Date
   enrollments          Enrollment[]
   monthlyFees          ClassMonthlyFee[]
   extraSessions        ClassExtraSession[]
@@ -277,6 +280,10 @@ model ClassMonthlyFee {
   rate             Decimal?                 @db.Decimal(10, 2)
   flatFee          Decimal?                 @db.Decimal(10, 2)
   monthlyClassFee  Decimal                  @db.Decimal(10, 2)
+  // Teacher-entered count is a draft. It does not change bills until staff explicitly applies it.
+  reportedSessions Int?
+  reportNotes      String?
+  reportedAt       DateTime?
   isOverridden     Boolean                  @default(false)
   // Staff confirmation that this class's billable session count for the month is correct.
   // Fee notifications for any bill referencing this row are blocked until it's finalized —

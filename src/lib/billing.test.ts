@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   computeBillingStatus,
+  classIsBillableForMonth,
   computeDueDate,
   computeProratedLineItemAmount,
   computeStudentBilling,
@@ -13,6 +14,21 @@ import {
   isPaymentReminderDue,
   normalizeMonth,
 } from "@/lib/billing";
+
+describe("classIsBillableForMonth", () => {
+  const firstClassDate = new Date("2026-09-10T00:00:00.000Z");
+
+  it("keeps historical months but excludes the deactivation month and later", () => {
+    const cls = { firstClassDate, inactiveFromMonth: new Date("2026-10-01T00:00:00.000Z") };
+    expect(classIsBillableForMonth(cls, new Date("2026-09-01T00:00:00.000Z"))).toBe(true);
+    expect(classIsBillableForMonth(cls, new Date("2026-10-01T00:00:00.000Z"))).toBe(false);
+    expect(classIsBillableForMonth(cls, new Date("2026-11-01T00:00:00.000Z"))).toBe(false);
+  });
+
+  it("does not bill before the first class month", () => {
+    expect(classIsBillableForMonth({ firstClassDate, inactiveFromMonth: null }, new Date("2026-08-01T00:00:00.000Z"))).toBe(false);
+  });
+});
 
 // Worked cases mirror docs/04-business-logic-billing-discounts.md §4.6, which mirrors the
 // requirements doc's own §7 examples (Nia/Leia) and §16's required test matrix.

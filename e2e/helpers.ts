@@ -22,7 +22,7 @@ export function rowValue(page: Page, label: string): Locator {
 // everywhere it's used (register form, expense modal, etc.) — distinct from the enrollments
 // page's plain native <select>, which needs `selectNativeByLabel` below instead.
 export async function selectRadixOption(page: Page, labelText: string, optionText: string): Promise<void> {
-  await page.getByLabel(labelText, { exact: true }).click();
+  await page.getByLabel(labelText).click();
   await page.getByRole("option", { name: optionText, exact: true }).click();
 }
 
@@ -30,7 +30,11 @@ export async function selectRadixOption(page: Page, labelText: string, optionTex
 // getByLabel() can't find them by accessible name — locate by DOM adjacency instead.
 export async function selectNativeByLabel(page: Page, labelText: string, optionLabel: string): Promise<void> {
   const select = page.getByText(labelText, { exact: true }).locator("xpath=following-sibling::select[1]");
-  await select.selectOption({ label: optionLabel });
+  const option = select.locator("option").filter({ hasText: optionLabel }).first();
+  await option.waitFor({ state: "attached", timeout: 60_000 });
+  const value = await option.getAttribute("value");
+  if (!value) throw new Error(`Could not find ${labelText} option containing "${optionLabel}".`);
+  await select.selectOption(value);
 }
 
 export function billingRow(page: Page, studentName: string): Locator {
@@ -52,13 +56,13 @@ export function billingCell(row: Locator, column: number): Locator {
 
 // Runs e2e/fixtures/db-cli.ts as a subprocess (see that file for why) and returns its parsed
 // JSON result. Synchronous — only used for one-time setup and final teardown, not per-step, so
-// the subprocess-spawn cost doesn't add up. The payload crosses as base64 (not a raw JSON string)
-// so `shell: true` — needed to resolve `npx` on Windows — can't mangle its quotes/spaces.
+// the subprocess-spawn cost doesn't add up. The payload crosses as base64 (not a raw JSON string),
+// and Node invokes tsx directly so no shell can alter it.
 export function runDbCli<T>(command: "setup" | "cleanup", payload: unknown): T {
   const payloadB64 = Buffer.from(JSON.stringify(payload)).toString("base64");
-  const output = execFileSync("npx", ["tsx", "e2e/fixtures/db-cli.ts", command, payloadB64], {
+  const output = execFileSync(process.execPath, ["node_modules/tsx/dist/cli.mjs", "e2e/fixtures/db-cli.ts", command, payloadB64], {
     encoding: "utf8",
-    shell: true,
+    timeout: 180_000,
   });
   const lastLine = output.trim().split("\n").pop() ?? "{}";
   return JSON.parse(lastLine) as T;

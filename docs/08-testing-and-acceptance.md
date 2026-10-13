@@ -69,7 +69,28 @@ Mirrors the doc's §15 "Definition of Done" checklist as one continuous scripted
 Passing this script end-to-end **is** the MVP acceptance test defined by the requirements
 document — not merely "the tables exist," matching the doc's own framing in §15.
 
-## 8.3 Manual QA checklist (pre-launch, once per release)
+## 8.3 Live test safety and cleanup
+
+When the acceptance flow is intentionally run against the live deployment's test database:
+
+- Give every temporary class, family, student, expense, and email a unique `E2E` run identifier.
+- Keep **Send enrollment confirmation email now** off and assert that it is off before approval.
+  Do not send email or WhatsApp messages to real parents during testing.
+- Create only isolated test classes and students. Never attach a test enrollment to an existing
+  student, family, or class.
+- Finalize only the temporary classes created by that run; do not modify real class-fee rows.
+- Always retain the `afterAll` fixture cleanup in the Playwright test so records are removed after
+  both successful and failed runs.
+- After the run, verify that no records with that run identifier remain in the database.
+- Temporary one-off cleanup scripts, screenshots, traces, videos, and generated reports are test
+  artifacts. Remove them after verification; do not commit them. Keep the reusable Playwright spec,
+  shared helpers, fixture CLI, and test assertions because they are the permanent regression suite.
+
+The production regression run completed on 20 September 2026 with enrollment email disabled. The
+full browser flow passed, all 277 automated tests passed, and the cleanup verification reported zero
+remaining records from the run.
+
+## 8.4 Manual QA checklist (pre-launch, once per release)
 
 - Mobile responsiveness of `/register` (parents will overwhelmingly fill this out on a phone).
 - Admin table usability at ~50 students of seed data — confirm the grouped/filtered billing

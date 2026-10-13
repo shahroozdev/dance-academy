@@ -204,6 +204,7 @@ export default function BillingDetailPage() {
                 <TableHead>Amount</TableHead>
                 <TableHead>Method</TableHead>
                 <TableHead>Reference</TableHead>
+                <TableHead>Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -213,6 +214,7 @@ export default function BillingDetailPage() {
                   <TableCell>{formatCurrency(p.amount)}</TableCell>
                   <TableCell>{p.method}</TableCell>
                   <TableCell>{p.reference ?? "—"}</TableCell>
+                  <TableCell className="max-w-md whitespace-normal">{p.notes ?? "—"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -357,6 +357,47 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Done
 
+- **2026-10-12: Final Varsha-request and regression verification.** Rechecked the complete monthly
+  billing scope, passed all 293 automated tests, TypeScript, schema validation, lint, and the
+  production build. The isolated browser journey passed registration, enrollment, repeated bill
+  generation, discounts, adjustment, and notification preview before a slow Class Fees render
+  exceeded the browser test wait. That run exposed and fixed an unrelated email-service hang;
+  every uniquely prefixed temporary record from the interrupted runs was removed.
+
+- **2026-10-11: Deep-audited Varsha's monthly billing requests and edge cases.** Fixed complete
+  monthly history, zero-to-positive class-fee recalculation, rehearsal double-count guidance, and
+  studio-wide generation transaction scaling/retries. All 292 automated tests plus new focused
+  coverage, TypeScript, schema validation, lint, and the production build pass. The browser flow
+  confirmed login, registration, approval, and enrollment; its whole-roster generation stress run
+  exposed the scaling issue now repaired, and all uniquely prefixed test records were removed.
+
+- **2026-10-09: Implemented Varsha's monthly billing and class-tracking improvements.** Student
+  profiles now show due, paid, balance, and status by month; payment entry exposes its bill month
+  and full/partial choice; inactive classes stop billing from their deactivation month; Class Fees
+  defaults to active classes; zero-dollar and inactive-only bills can repair correctly; and Monthly
+  Class Counts stores teacher reports as drafts until staff applies them to billing. The additive
+  database migration was applied. All 288 tests, lint, TypeScript, schema validation, production
+  build, and a read-only browser pass against configured data succeeded. Avisha's live financial
+  records were inspected but not changed because her $200 payment spans multiple months and its
+  exact allocation requires confirmation.
+
+
+- **2026-10-09: Investigated Varsha's month-by-month billing concerns.** Confirmed that monthly
+  bills exist separately but the student history does not clearly show due, paid, and balance by
+  month; payment month is implicit in the selected bill; Class Monthly Fees lists historical and
+  inactive classes; and class deactivation does not close active enrollments. Avisha Talele's live
+  records show a stale $0 September bill, while her September Onam payment and the one-time Onam
+  charge were both attached to October, producing an October credit. No live records were changed.
+
+
+- **2026-09-20: Broader live regression of the last two days of changes.** The production A-to-Z
+  registration, enrollment, billing, discount, adjustment, fee-finalization, notification-preview,
+  payment, balance, and reporting journey passed. All 277 automated tests covering class breaks,
+  student billing pauses, extra sessions, enrollment removal, family combination, class start dates,
+  and automatic recalculation also passed, along with lint, TypeScript, and the production build.
+  Enrollment email was disabled during the live run, and cleanup verification found no remaining
+  temporary records.
+
 - **2026-09-20: Live-verified automatic recalculation and paid-bill review.** A saved class-fee
   override now recalculates unpaid bills immediately, preserves paid bills for review, lists them in
   the all-month review queue, and surfaces them in the notification bell. The isolated production

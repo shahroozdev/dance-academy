@@ -3,6 +3,7 @@ import { serializableTransaction } from "@/actions/transaction";
 import type { Class, Prisma } from "@/generated/prisma/client";
 import {
   computeBillingStatus,
+  classIsBillableForMonth,
   computeProratedLineItemAmount,
   computeStudentBilling,
   countClassSessionsForMonth,
@@ -58,7 +59,7 @@ export async function familyQualifyingSiblingCount(
     s.enrollments.some(
       (e) =>
         enrollmentOverlapsMonth(e, month) &&
-        enrollmentOverlapsMonth({ startDate: e.class.firstClassDate, endDate: null }, month) &&
+        classIsBillableForMonth(e.class, month) &&
         !enrollmentIsPausedForMonth(e.billingPauses, month) &&
         !enrollmentIsPausedForMonth(e.class.billingPauses, month),
     ),
@@ -78,7 +79,7 @@ export async function buildLineItemInputs(
   const overlapping = enrollments.filter(
     (e) =>
       enrollmentOverlapsMonth(e, month) &&
-      enrollmentOverlapsMonth({ startDate: e.class.firstClassDate, endDate: null }, month) &&
+      classIsBillableForMonth(e.class, month) &&
       !enrollmentIsPausedForMonth(e.billingPauses, month) &&
       !enrollmentIsPausedForMonth(e.class.billingPauses, month),
   );
@@ -98,7 +99,9 @@ export async function buildLineItemInputs(
         where: {
           enrollmentId: enrollment.id,
           classMonthlyFee: { classId: enrollment.classId },
-          billing: { month: { not: month } },
+          // Only an earlier charge suppresses this month. A mistakenly generated future charge
+          // must not prevent repairing the correct first month.
+          billing: { month: { lt: month } },
         },
       }));
     }
@@ -202,98 +205,124 @@ export async function generateMonthlyBilling(monthInput: string): Promise<Genera
   const month = normalizeMonth(monthInput);
   const multiClassDiscountPct = await getMultiClassDiscountPct();
   const siblingDiscountPct = await getSiblingDiscountPct();
-
-  return serializableTransaction(
-    async (tx) => {
-      const candidates = await tx.student.findMany({
-        where: { isActive: true, enrollments: { some: {} } },
-        include: { enrollments: { include: { class: { select: { firstClassDate: true } } } } },
-      });
-      const eligibleStudents = candidates.filter((s) => s.enrollments.some(
-        (e) =>
-          enrollmentOverlapsMonth(e, month) &&
-          enrollmentOverlapsMonth({ startDate: e.class.firstClassDate, endDate: null }, month),
-      ));
-
-      const siblingCountCache = new Map<string, number>();
-      const summary: GenerateMonthlyBillingSummary["students"] = [];
-      let created = 0;
-      let updated = 0;
-      let skipped = 0;
-
-      for (const student of eligibleStudents) {
-        if (!siblingCountCache.has(student.familyId)) {
-          siblingCountCache.set(student.familyId, await familyQualifyingSiblingCount(tx, student.familyId, month));
-        }
-        const hasSiblingDiscount = (siblingCountCache.get(student.familyId) ?? 0) >= 2;
-
-        const existing = await tx.monthlyStudentBilling.findUnique({
-          where: { studentId_month: { studentId: student.id, month } },
-          include: { payments: true },
-        });
-
-        if (existing && (existing.status !== "UNPAID" || existing.payments.length > 0)) {
-          skipped++;
-          summary.push({ studentId: student.id, studentName: student.fullName, result: "skipped" });
-          continue;
-        }
-
-        const lineItemInputs = await buildLineItemInputs(tx, student.id, month);
-        const computed = computeStudentBilling({
-          lineItems: lineItemInputs,
-          hasSiblingDiscount,
-          adjustment: existing ? Number(existing.adjustment) : 0,
-          multiClassDiscountPct,
-          siblingDiscountPct,
-        });
-        const status = computeBillingStatus(computed.finalAmountDue, 0);
-
-        const billing = await tx.monthlyStudentBilling.upsert({
-          where: { studentId_month: { studentId: student.id, month } },
-          create: {
-            studentId: student.id,
-            month,
-            baseTuition: computed.baseTuition,
-            multiClassDiscount: computed.multiClassDiscount,
-            siblingDiscount: computed.siblingDiscount,
-            adjustment: computed.adjustment,
-            finalAmountDue: computed.finalAmountDue,
-            amountPaid: 0,
-            balance: computed.finalAmountDue,
-            status,
-          },
-          update: {
-            baseTuition: computed.baseTuition,
-            multiClassDiscount: computed.multiClassDiscount,
-            siblingDiscount: computed.siblingDiscount,
-            finalAmountDue: computed.finalAmountDue,
-            balance: computed.finalAmountDue,
-            status,
-          },
-        });
-
-        await tx.monthlyBillingLineItem.deleteMany({ where: { billingId: billing.id } });
-        if (lineItemInputs.length > 0) {
-          await tx.monthlyBillingLineItem.createMany({
-            data: lineItemInputs.map((li) => ({
-              billingId: billing.id,
-              enrollmentId: li.enrollmentId,
-              classMonthlyFeeId: li.classMonthlyFeeId,
-              amount: li.amount,
-            })),
-          });
-        }
-
-        if (existing) {
-          updated++;
-          summary.push({ studentId: student.id, studentName: student.fullName, result: "updated" });
-        } else {
-          created++;
-          summary.push({ studentId: student.id, studentName: student.fullName, result: "created" });
-        }
-      }
-
-      return { month: month.toISOString(), created, updated, skipped, students: summary };
+  const candidates = await db.student.findMany({
+    where: {
+      isActive: true,
+      OR: [
+        { enrollments: { some: {} } },
+        { monthlyBillings: { some: { month } } },
+      ],
     },
-  );
+    include: {
+      enrollments: { include: { class: { select: { firstClassDate: true, inactiveFromMonth: true } } } },
+      monthlyBillings: {
+        where: { month },
+        select: {
+          id: true,
+          finalAmountDue: true,
+          amountPaid: true,
+          lineItems: {
+            select: {
+              classMonthlyFee: {
+                select: { class: { select: { firstClassDate: true, inactiveFromMonth: true } } },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  const eligibleStudents = candidates.filter((student) => student.enrollments.some(
+    (enrollment) =>
+      enrollmentOverlapsMonth(enrollment, month) &&
+      classIsBillableForMonth(enrollment.class, month),
+  ) || student.monthlyBillings.length > 0);
+
+  const students: GenerateMonthlyBillingSummary["students"] = eligibleStudents
+    .filter((student) => {
+      const existing = student.monthlyBillings[0];
+      const hasInactiveLine = existing?.lineItems.some(
+        (lineItem) => !classIsBillableForMonth(lineItem.classMonthlyFee.class, month),
+      ) ?? false;
+      return existing && !hasInactiveLine;
+    })
+    .map((student) => ({ studentId: student.id, studentName: student.fullName, result: "skipped" }));
+  const studentsToProcess = eligibleStudents.filter((student) => {
+    const existing = student.monthlyBillings[0];
+    const hasInactiveLine = existing?.lineItems.some(
+      (lineItem) => !classIsBillableForMonth(lineItem.classMonthlyFee.class, month),
+    ) ?? false;
+    return !existing || hasInactiveLine;
+  });
+
+  const processStudent = async (student: (typeof eligibleStudents)[number]) => serializableTransaction(async (tx) => {
+    const siblingCount = await familyQualifyingSiblingCount(tx, student.familyId, month);
+    const existing = await tx.monthlyStudentBilling.findUnique({
+      where: { studentId_month: { studentId: student.id, month } },
+      include: { payments: true },
+    });
+    if (existing && existing.payments.length > 0) {
+      return { studentId: student.id, studentName: student.fullName, result: "skipped" as const };
+    }
+
+    const lineItemInputs = await buildLineItemInputs(tx, student.id, month);
+    const computed = computeStudentBilling({
+      lineItems: lineItemInputs,
+      hasSiblingDiscount: siblingCount >= 2,
+      adjustment: existing ? Number(existing.adjustment) : 0,
+      multiClassDiscountPct,
+      siblingDiscountPct,
+    });
+    const status = computeBillingStatus(computed.finalAmountDue, 0);
+    const billing = await tx.monthlyStudentBilling.upsert({
+      where: { studentId_month: { studentId: student.id, month } },
+      create: {
+        studentId: student.id,
+        month,
+        baseTuition: computed.baseTuition,
+        multiClassDiscount: computed.multiClassDiscount,
+        siblingDiscount: computed.siblingDiscount,
+        adjustment: computed.adjustment,
+        finalAmountDue: computed.finalAmountDue,
+        amountPaid: 0,
+        balance: computed.finalAmountDue,
+        status,
+      },
+      update: {
+        baseTuition: computed.baseTuition,
+        multiClassDiscount: computed.multiClassDiscount,
+        siblingDiscount: computed.siblingDiscount,
+        finalAmountDue: computed.finalAmountDue,
+        balance: computed.finalAmountDue,
+        status,
+      },
+    });
+    await tx.monthlyBillingLineItem.deleteMany({ where: { billingId: billing.id } });
+    if (lineItemInputs.length > 0) {
+      await tx.monthlyBillingLineItem.createMany({
+        data: lineItemInputs.map((lineItem) => ({
+          billingId: billing.id,
+          enrollmentId: lineItem.enrollmentId,
+          classMonthlyFeeId: lineItem.classMonthlyFeeId,
+          amount: lineItem.amount,
+        })),
+      });
+    }
+    return {
+      studentId: student.id,
+      studentName: student.fullName,
+      result: existing ? "updated" as const : "created" as const,
+    };
+  });
+
+  for (const student of studentsToProcess) {
+    students.push(await processStudent(student));
+  }
+  return {
+    month: month.toISOString(),
+    created: students.filter((student) => student.result === "created").length,
+    updated: students.filter((student) => student.result === "updated").length,
+    skipped: students.filter((student) => student.result === "skipped").length,
+    students,
+  };
 }

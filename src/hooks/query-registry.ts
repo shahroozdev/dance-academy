@@ -1,5 +1,6 @@
-import { getMonthlyBillingById, getMonthlyBillings } from "@/actions/billing";
+import { getMonthlyBillingById, getMonthlyBillings, getStudentBillingPaymentOptions } from "@/actions/billing";
 import { getClassMonthlyFeeById, getClassMonthlyFees } from "@/actions/class-fees";
+import { getMonthlyClassSessionTracking } from "@/actions/class-sessions";
 import { getClasses, getClassById, getClassRoster } from "@/actions/classes";
 import { getContentFestivalById, getContentFestivals } from "@/actions/content-festivals";
 import { getContentInquiries, getContentInquirySummary } from "@/actions/content-inquiries";
@@ -57,6 +58,8 @@ export const queryRegistry = {
   getRegistrationAssignmentClasses,
   getMonthlyBillings,
   getMonthlyBillingById,
+  getStudentBillingPaymentOptions,
+  getMonthlyClassSessionTracking,
   getClassMonthlyFees,
   getClassMonthlyFeeById,
   getPayments,

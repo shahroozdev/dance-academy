@@ -55,6 +55,16 @@ export function enrollmentIsPausedForMonth(
   );
 }
 
+export function classIsBillableForMonth(
+  cls: { firstClassDate: Date; inactiveFromMonth?: Date | null },
+  month: Date,
+): boolean {
+  const billingMonth = normalizeMonth(month).getTime();
+  const firstMonth = normalizeMonth(cls.firstClassDate).getTime();
+  const inactiveFrom = cls.inactiveFromMonth ? normalizeMonth(cls.inactiveFromMonth).getTime() : null;
+  return billingMonth >= firstMonth && (inactiveFrom === null || billingMonth < inactiveFrom);
+}
+
 const DAY_OF_WEEK_INDEX: Record<string, number> = {
   SUNDAY: 0,
   MONDAY: 1,

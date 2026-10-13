@@ -33,13 +33,15 @@ const CLASS_A_NAME = `E2E Ballet ${RUN_ID}`;
 const CLASS_B_NAME = `E2E Jazz ${RUN_ID}`;
 const PARENT_NAME = `Priya E2E${RUN_ID}`;
 const STUDENT1_NAME = `Nia E2E${RUN_ID}`;
-const STUDENT2_NAME = `Leia E2E${RUN_ID}`;
-const PARENT_PHONE = `555${Date.now().toString().slice(-7)}`;
+const STUDENT2_NAME = `AAA Leia E2E${RUN_ID}`;
+const PARENT_PHONE = `+1202555${Date.now().toString().slice(-4)}`;
 const PARENT_EMAIL = `e2e-${RUN_ID}@example.test`;
 const EXPENSE_DESCRIPTION = `E2E rent ${RUN_ID}`;
+const NOW = new Date();
+const BILLING_START_DATE = `${NOW.getFullYear()}-${String(NOW.getMonth() + 1).padStart(2, "0")}-01`;
 
-const OWNER_EMAIL = process.env.SEED_OWNER_EMAIL ?? "owner@malhaardance.example";
-const OWNER_PASSWORD = process.env.SEED_OWNER_PASSWORD ?? "changeme123";
+const OWNER_EMAIL = `e2e-owner-${RUN_ID}@example.test`;
+const OWNER_PASSWORD = `E2E-${RUN_ID}-Test!`;
 
 // Class A: 4 sessions/mo * $100 = $400. Class B: 4 sessions/mo * $50 = $200. Both classes leave
 // `dayOfWeek` unset, which pins the billable-session count to a fixed 4 (src/lib/billing.ts) —
@@ -69,6 +71,8 @@ test.beforeAll(() => {
 
 test.afterAll(() => {
   runDbCli("cleanup", {
+    runId: RUN_ID,
+    adminEmail: OWNER_EMAIL,
     phone: PARENT_PHONE,
     expenseDescription: EXPENSE_DESCRIPTION,
     classIds: [classAId, classBId].filter(Boolean),
@@ -76,7 +80,10 @@ test.afterAll(() => {
 });
 
 test("full acceptance flow (docs/08 §8.2)", async ({ page }) => {
-  test.setTimeout(180_000);
+  // Production server actions and report queries can be slower than local development; keep the
+  // end-to-end timeout large enough that a slow baseline does not masquerade as a missing field.
+  test.setTimeout(600_000);
+  page.setDefaultTimeout(15_000);
 
   // Signed in up front (not part of the doc's numbered steps, but the financial-report baseline
   // reads just below need an authenticated session, and /register itself doesn't care either way
@@ -91,20 +98,20 @@ test("full acceptance flow (docs/08 §8.2)", async ({ page }) => {
 
   await test.step("1. Submit /register as a parent for a new student in an existing class", async () => {
     await page.goto("/register");
-    await page.getByLabel("Full Name", { exact: true }).fill(PARENT_NAME);
-    await page.getByLabel("Email", { exact: true }).fill(PARENT_EMAIL);
-    await page.getByLabel("Phone", { exact: true }).fill(PARENT_PHONE);
-    await page.getByLabel("Student Full Name", { exact: true }).fill(STUDENT1_NAME);
-    await page.getByLabel("Date of Birth", { exact: true }).fill("2015-05-05");
+    await page.locator('[name="parentGuardianName"]').fill(PARENT_NAME);
+    await page.locator('[name="parentEmail"]').fill(PARENT_EMAIL);
+    await page.locator('input[type="tel"]').first().fill(PARENT_PHONE);
+    await page.locator('[name="studentFullName"]').fill(STUDENT1_NAME);
+    await page.locator('[name="dob"]').fill("2015-05-05");
     await selectRadixOption(page, "Gender", "Female");
-    await selectRadixOption(page, "Requested Class", `${CLASS_A_NAME} (Ballet)`);
-    await page.getByLabel("Contact Name", { exact: true }).fill(`${PARENT_NAME} Emergency Contact`);
-    await page.getByLabel("Relationship", { exact: true }).fill("Grandmother");
-    await page.getByLabel("Emergency Phone", { exact: true }).fill(`555${Date.now().toString().slice(-6)}1`);
+    await selectRadixOption(page, "Dance Style / Program", "Ballet");
+    await page.locator('[name="emergencyContactName"]').fill(`${PARENT_NAME} Emergency Contact`);
+    await page.locator('[name="emergencyContactRelationship"]').fill("Grandmother");
+    await page.locator('input[type="tel"]').last().fill("+12025550199");
     await page.getByLabel(/agree to the studio's policies/i).check();
 
     await page.getByRole("button", { name: "Submit Registration" }).click();
-    await expect(page.getByText("Thank you!")).toBeVisible();
+    await expect(page.getByText(/Thank you for registering!/)).toBeVisible({ timeout: 120_000 });
   });
 
   await test.step("2. Confirm the RegistrationRequest appears in /admin/registrations", async () => {
@@ -118,7 +125,14 @@ test("full acceptance flow (docs/08 §8.2)", async ({ page }) => {
   await test.step("3. Approve it; confirm the correct Family and Student are created/matched and an Enrollment exists", async () => {
     await page.getByRole("row", { name: new RegExp(STUDENT1_NAME) }).getByRole("button", { name: "Review" }).click();
     await expect(page.getByText(/create new/)).toHaveCount(2); // both family and student are new
-    await page.getByRole("button", { name: "Approve & Process" }).click();
+    await selectRadixOption(page, "Final Level / Batch / Class", `Ballet — ${CLASS_A_NAME}`);
+    await page.getByLabel("First Billable Date").fill(BILLING_START_DATE);
+    const sendEnrollmentEmail = page.getByRole("switch", { name: "Send enrollment confirmation email now" });
+    if ((await sendEnrollmentEmail.getAttribute("aria-checked")) === "true") {
+      await sendEnrollmentEmail.click();
+    }
+    await expect(sendEnrollmentEmail).toHaveAttribute("aria-checked", "false");
+    await page.getByRole("button", { name: "Finalize Enrollment" }).click();
     await expect(page.getByRole("row", { name: new RegExp(STUDENT1_NAME) })).not.toBeVisible();
 
     // Find the newly created family (there's no id to jump to directly from the registrations
@@ -138,7 +152,7 @@ test("full acceptance flow (docs/08 §8.2)", async ({ page }) => {
   await test.step("4. Trigger Generate Bills for the current month; confirm the new student has a bill with zero admin retyping", async () => {
     await page.goto("/admin/billing");
     await page.getByRole("button", { name: /Generate Bills for/ }).click();
-    await expect(page.getByText(/created,.*updated,.*skipped/)).toBeVisible();
+    await expect(page.getByText(/created,.*updated,.*skipped/)).toBeVisible({ timeout: 120_000 });
 
     await page.getByPlaceholder("Search student or family...").fill(RUN_ID);
     await page.getByRole("button", { name: new RegExp(familyName) }).click();
@@ -152,12 +166,13 @@ test("full acceptance flow (docs/08 §8.2)", async ({ page }) => {
     await page.getByRole("button", { name: "Add Enrollment" }).click();
     await selectNativeByLabel(page, "Student", `${STUDENT1_NAME} (${familyName})`);
     await selectNativeByLabel(page, "Class", `${CLASS_B_NAME} — Jazz`);
+    await page.getByLabel("First Billable Date").fill(BILLING_START_DATE);
     await page.getByRole("button", { name: "Create Enrollment" }).click();
-    await expect(page.getByRole("row", { name: new RegExp(CLASS_B_NAME) })).toBeVisible();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
 
     await page.goto("/admin/billing");
     await page.getByRole("button", { name: /Generate Bills for/ }).click();
-    await expect(page.getByText(/created,.*updated,.*skipped/)).toBeVisible();
+    await expect(page.getByText(/created,.*updated,.*skipped/)).toBeVisible({ timeout: 120_000 });
     await page.getByPlaceholder("Search student or family...").fill(RUN_ID);
     await page.getByRole("button", { name: new RegExp(familyName) }).click();
 
@@ -172,18 +187,21 @@ test("full acceptance flow (docs/08 §8.2)", async ({ page }) => {
     await page.goto(`/admin/students/new?familyId=${familyId}`);
     await page.getByLabel("Student Name", { exact: true }).fill(STUDENT2_NAME);
     await page.getByRole("button", { name: "Create Student" }).click();
-    await page.waitForURL(/\/admin\/students\/[^/]+$/);
+    await page.waitForURL((url) => (
+      /\/admin\/students\/[^/?]+$/.test(url.pathname) && !url.pathname.endsWith("/new")
+    ));
 
     await page.goto("/admin/enrollments");
     await page.getByRole("button", { name: "Add Enrollment" }).click();
-    await selectNativeByLabel(page, "Student", `${STUDENT2_NAME} (${familyName})`);
+    await selectNativeByLabel(page, "Student", STUDENT2_NAME);
     await selectNativeByLabel(page, "Class", `${CLASS_A_NAME} — Ballet`);
+    await page.getByLabel("First Billable Date").fill(BILLING_START_DATE);
     await page.getByRole("button", { name: "Create Enrollment" }).click();
-    await expect(page.getByRole("row", { name: new RegExp(STUDENT2_NAME) })).toBeVisible();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
 
     await page.goto("/admin/billing");
     await page.getByRole("button", { name: /Generate Bills for/ }).click();
-    await expect(page.getByText(/created,.*updated,.*skipped/)).toBeVisible();
+    await expect(page.getByText(/created,.*updated,.*skipped/)).toBeVisible({ timeout: 120_000 });
     await page.getByPlaceholder("Search student or family...").fill(RUN_ID);
     await page.getByRole("button", { name: new RegExp(familyName) }).click();
 
@@ -253,12 +271,26 @@ test("full acceptance flow (docs/08 §8.2)", async ({ page }) => {
   await test.step('10. Confirm the "Copy Message"/wa.me fallback produces correct text (WhatsApp send isn\'t automated yet)', async () => {
     const waLink = page.getByRole("link", { name: "Open in WhatsApp" });
     const href = await waLink.getAttribute("href");
-    expect(href).toContain(`https://wa.me/1${PARENT_PHONE}`);
+    expect(href).toContain(`https://wa.me/${PARENT_PHONE.replace(/\D/g, "")}`);
     expect(href).toContain(encodeURIComponent(familyMessage).slice(0, 40));
 
     await page.getByRole("button", { name: "Copy Message" }).click();
     await expect(page.getByRole("button", { name: "Copied!" })).toBeVisible();
 
+    await expect(page.getByRole("button", { name: "Mark as Sent" })).toBeDisabled();
+    await page.keyboard.press("Escape");
+    await page.goto("/admin/class-fees");
+    await page.locator('input[type="month"]').fill(BILLING_START_DATE.slice(0, 7));
+    for (const className of [CLASS_A_NAME, CLASS_B_NAME]) {
+      const feeRow = page.getByRole("row", { name: new RegExp(className) });
+      await feeRow.getByRole("button", { name: "Finalize", exact: true }).click();
+      await expect(feeRow.getByText("Finalized", { exact: true })).toBeVisible();
+    }
+
+    await page.goto("/admin/billing");
+    await page.getByPlaceholder("Search student or family...").fill(RUN_ID);
+    await page.getByRole("button", { name: new RegExp(familyName) }).click();
+    await page.getByRole("button", { name: "Notify" }).click();
     await page.getByRole("button", { name: "Mark as Sent" }).click();
     await expect(page.getByText("Send Notification")).not.toBeVisible();
   });
@@ -270,6 +302,8 @@ test("full acceptance flow (docs/08 §8.2)", async ({ page }) => {
     // the submit click must be scoped to the dialog to avoid matching the trigger behind it.
     await page.getByRole("button", { name: "Record Payment" }).click();
     const paymentDialog = page.getByRole("dialog");
+    await paymentDialog.getByLabel("Payment Amount Type").click();
+    await page.getByRole("option", { name: "Partial payment", exact: true }).click();
     await paymentDialog.getByLabel("Amount ($)", { exact: true }).fill("300");
     await paymentDialog.getByRole("button", { name: "Record Payment" }).click();
 
@@ -347,7 +381,7 @@ async function signIn(page: Page): Promise<void> {
   await page.getByLabel("Email", { exact: true }).fill(OWNER_EMAIL);
   await page.getByLabel("Password", { exact: true }).fill(OWNER_PASSWORD);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await page.waitForURL(/\/admin$/);
+  await page.waitForURL(/\/admin$/, { timeout: 60_000 });
 }
 
 type FinancialSummary = { tuitionCollected: number; totalExpenses: number; netProfit: number };

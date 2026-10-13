@@ -1,14 +1,17 @@
 "use client";
 
+import { useState } from "react";
+import { z } from "zod";
+
 import { paymentCreateSchema, refundCreateSchema } from "@/actions/payments.schema";
 import { Button } from "@/components/common/button";
 import { FORM, FormFeilds } from "@/components/common/form";
+import { Input } from "@/components/common/input";
+import { Label } from "@/components/common/label";
 import { Modal } from "@/components/common/modal";
 import { Skeleton } from "@/components/common/skeleton";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
-
-import type { z } from "zod";
 
 const METHOD_OPTIONS = [
   { label: "Zelle", value: "ZELLE" },
@@ -29,10 +32,22 @@ function formatCurrency(amount: number) {
 // form schema entirely rather than trusted to survive as an unregistered form field.
 const paymentFormSchema = paymentCreateSchema.omit({ billingId: true });
 const refundFormSchema = refundCreateSchema.omit({ billingId: true });
-type PaymentFormInput = z.infer<typeof paymentFormSchema>;
+const paymentEntryFormSchema = paymentFormSchema.extend({ paymentKind: z.enum(["FULL", "PARTIAL"]) });
+const refundEntryFormSchema = refundFormSchema.extend({ paymentKind: z.enum(["FULL", "PARTIAL"]) });
+type PaymentFormInput = z.infer<typeof paymentEntryFormSchema>;
+
+function formatMonth(value: Date | string): string {
+  return new Date(value).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+}
 
 export function PaymentModal({ billingId, onClose }: { billingId: string; onClose: () => void }) {
-  const { data: billing, isLoading } = useQuery("getMonthlyBillingById", [billingId]);
+  const [selectedBillingId, setSelectedBillingId] = useState(billingId);
+  const { data: billing, isLoading } = useQuery("getMonthlyBillingById", [selectedBillingId]);
+  const { data: billOptions } = useQuery(
+    "getStudentBillingPaymentOptions",
+    [billing?.studentId ?? ""],
+    { enabled: Boolean(billing?.studentId) },
+  );
   const isRefund = (billing?.balance ?? 0) < 0;
   const title = isRefund ? "Record Refund" : "Record Payment";
   const {
@@ -54,7 +69,7 @@ export function PaymentModal({ billingId, onClose }: { billingId: string; onClos
           {title}
           {billing && (
             <p className="text-sm font-normal text-muted-foreground">
-              {billing.student.fullName} — {isRefund ? "credit available" : "balance due"} {formatCurrency(Math.abs(billing.balance))}
+              {billing.student.fullName} — {formatMonth(billing.month)} — {isRefund ? "credit available" : "balance due"} {formatCurrency(Math.abs(billing.balance))}
             </p>
           )}
         </div>
@@ -66,24 +81,60 @@ export function PaymentModal({ billingId, onClose }: { billingId: string; onClos
             <Skeleton className="h-48 w-full" />
           ) : (
             <FORM
-              schema={isRefund ? refundFormSchema : paymentFormSchema}
+              schema={isRefund ? refundEntryFormSchema : paymentEntryFormSchema}
               defaultValues={{
                 paymentDate: todayValue(),
                 amount: isRefund ? Math.min(-billing.balance, billing.amountPaid) : Math.max(0, billing.balance),
                 method: "ZELLE",
                 reference: "",
                 notes: "",
+                paymentKind: "FULL",
               }}
               onSubmit={async (data: PaymentFormInput) => {
-                await mutate({ billingId, ...data, notes: data.notes ?? "" });
+                const { paymentKind, ...payment } = data;
+                const amount = isRefund || paymentKind === "PARTIAL" ? payment.amount : Math.max(0, billing.balance);
+                await mutate({
+                  billingId: selectedBillingId,
+                  ...payment,
+                  amount,
+                  notes: payment.notes ?? "",
+                });
               }}
             >
               {(form) => (
                 <div className="space-y-4">
                   {isRefund && <p className="text-sm text-muted-foreground">Record this only after returning the money. It reduces collected income on the refund date.</p>}
+                  {!isRefund && (
+                    <div className="space-y-2">
+                      <Label htmlFor="payment-billing-month">Payment For Month</Label>
+                      <Input
+                      id="payment-billing-month"
+                      type="select"
+                      value={selectedBillingId}
+                      onChange={setSelectedBillingId}
+                      options={(billOptions ?? [])
+                        .filter((option) => option.balance > 0 || option.id === selectedBillingId)
+                        .map((option) => ({
+                          value: option.id,
+                          label: `${formatMonth(option.month)} — ${formatCurrency(option.balance)} due`,
+                        }))}
+                      />
+                    </div>
+                  )}
+                  {!isRefund && (
+                    <FormFeilds
+                      name="paymentKind"
+                      label="Payment Amount Type"
+                      type="select"
+                      options={[
+                        { value: "FULL", label: `Full remaining balance (${formatCurrency(billing.balance)})` },
+                        { value: "PARTIAL", label: "Partial payment" },
+                      ]}
+                    />
+                  )}
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormFeilds name="paymentDate" label={isRefund ? "Refund Date" : "Payment Date"} type="date" />
-                    <FormFeilds name="amount" label="Amount ($)" type="number" />
+                    <FormFeilds name="amount" label="Amount ($)" type="number" disabled={!isRefund && form.watch("paymentKind") === "FULL"} />
                   </div>
                   <FormFeilds name="method" label="Method" type="select" options={METHOD_OPTIONS} />
                   <FormFeilds name="reference" label="Reference" placeholder="e.g. Zelle confirmation #" />

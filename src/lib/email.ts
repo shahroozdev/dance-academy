@@ -27,6 +27,9 @@ export async function sendEmail({ to, subject, text, html, smtp }: SendEmailInpu
     port: smtp.port,
     secure: smtp.secure,
     auth: { user: smtp.user, pass: smtp.password },
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 15_000,
   });
 
   try {
@@ -35,5 +38,7 @@ export async function sendEmail({ to, subject, text, html, smtp }: SendEmailInpu
   } catch (error) {
     console.error(`[email] Failed to send "${subject}" to ${to}:`, error);
     return { sent: false, error: error instanceof Error ? error.message : "Unknown error" };
+  } finally {
+    transporter.close();
   }
 }

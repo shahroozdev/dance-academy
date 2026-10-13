@@ -77,13 +77,26 @@ async function setup(payload: SetupPayload) {
   return { classAId: classA.id, classBId: classB.id };
 }
 
-type CleanupPayload = { phone: string; expenseDescription: string; classIds: string[] };
+type CleanupPayload = {
+  runId?: string;
+  adminEmail?: string;
+  phone: string;
+  expenseDescription: string;
+  classIds: string[];
+};
 
 async function cleanup(payload: CleanupPayload) {
   // Looked up fresh by the unique phone/description this run used, rather than requiring every
   // id created along the way — self-heals even if an earlier step failed partway through, and
   // keeps this shared dev database clean since the app itself has no delete UI for most of these.
-  const family = await db.family.findFirst({ where: { phone: payload.phone } });
+  const family = await db.family.findFirst({
+    where: {
+      OR: [
+        { phone: payload.phone },
+        ...(payload.runId ? [{ email: `e2e-${payload.runId}@example.test` }] : []),
+      ],
+    },
+  });
   if (family) {
     const students = await db.student.findMany({ where: { familyId: family.id } });
     const studentIds = students.map((s) => s.id);
@@ -100,13 +113,30 @@ async function cleanup(payload: CleanupPayload) {
     await db.student.deleteMany({ where: { id: { in: studentIds } } });
     await db.family.delete({ where: { id: family.id } });
   }
-  await db.registrationRequest.deleteMany({ where: { parentPhone: payload.phone } });
+  await db.registrationRequest.deleteMany({
+    where: {
+      OR: [
+        { parentPhone: payload.phone },
+        ...(payload.runId ? [{ parentEmail: `e2e-${payload.runId}@example.test` }] : []),
+      ],
+    },
+  });
 
   await db.expense.deleteMany({ where: { description: payload.expenseDescription } });
 
-  if (payload.classIds.length > 0) {
-    await db.classMonthlyFee.deleteMany({ where: { classId: { in: payload.classIds } } });
-    await db.class.deleteMany({ where: { id: { in: payload.classIds } } });
+  const runClasses = payload.runId
+    ? await db.class.findMany({
+        where: { name: { in: [`E2E Ballet ${payload.runId}`, `E2E Jazz ${payload.runId}`] } },
+        select: { id: true },
+      })
+    : [];
+  const classIds = [...new Set([...payload.classIds, ...runClasses.map(({ id }) => id)])];
+  if (classIds.length > 0) {
+    await db.classMonthlyFee.deleteMany({ where: { classId: { in: classIds } } });
+    await db.class.deleteMany({ where: { id: { in: classIds } } });
+  }
+  if (payload.adminEmail) {
+    await db.adminUser.deleteMany({ where: { email: payload.adminEmail } });
   }
 
   return { ok: true };

@@ -8,6 +8,7 @@ import {
   updateClassMonthlyFee,
 } from "@/actions/class-fees";
 import { createClassBillingPause, deleteClassBillingPause } from "@/actions/class-pauses";
+import { applyReportedClassSessions, reportMonthlyClassSessions } from "@/actions/class-sessions";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
 import { createFestival, updateFestival } from "@/actions/content-festivals";
 import { setInquiryStatus } from "@/actions/content-inquiries";
@@ -112,6 +113,8 @@ export const mutationRegistry = {
   recalculateClassMonthlyFeeBills,
   unfinalizeClassMonthlyFee,
   finalizeAllClassMonthlyFeesForMonth,
+  reportMonthlyClassSessions,
+  applyReportedClassSessions,
   createPayment,
   createRefund,
   createProgram,

@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/access";
-import { recalculateAffectedBills } from "@/actions/billing-impact";
+import { recalculateClassMonthBills } from "@/actions/billing-impact";
 import { classMonthlyFeeUpdateSchema } from "@/actions/class-fees.schema";
 import type { ClassMonthlyFeeUpdateInput } from "@/actions/class-fees.schema";
 import { idSchema , validateListQuery } from "@/actions/validation.schema";
@@ -12,21 +12,23 @@ import { db } from "@/lib/db";
 export async function getClassMonthlyFees(params?: {
   month?: string;
   classId?: string;
+  isActive?: boolean;
   page?: number;
   pageSize?: number;
 }) {
   await requireAdmin();
   validateListQuery(params, []);
-  const { month, classId, page = 1, pageSize = 50 } = params ?? {};
+  const { month, classId, isActive, page = 1, pageSize = 50 } = params ?? {};
 
   const where: Prisma.ClassMonthlyFeeWhereInput = {};
   if (month) where.month = normalizeMonth(month);
   if (classId) where.classId = classId;
+  if (isActive !== undefined) where.class = { isActive };
 
   const [data, total] = await Promise.all([
     db.classMonthlyFee.findMany({
       where,
-      include: { class: { select: { id: true, name: true, pricingType: true, program: { select: { name: true } } } } },
+      include: { class: { select: { id: true, name: true, pricingType: true, isActive: true, program: { select: { name: true } } } } },
       orderBy: [{ month: "desc" }, { class: { name: "asc" } }],
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -106,8 +108,14 @@ export async function markClassMonthlyFeeNoClasses(id: string) {
 export async function recalculateClassMonthlyFeeBills(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  return recalculateAffectedBills(
-    { lineItems: { some: { classMonthlyFeeId: id } } },
+  const fee = await db.classMonthlyFee.findUniqueOrThrow({
+    where: { id },
+    select: { classId: true, month: true },
+  });
+  return recalculateClassMonthBills(
+    fee.classId,
+    fee.month,
+    true,
     "The class fee changed after a payment was recorded. Review this bill and add an adjustment if its balance should change.",
   );
 }
@@ -136,11 +144,11 @@ export async function unfinalizeClassMonthlyFee(id: string) {
   });
 }
 
-export async function finalizeAllClassMonthlyFeesForMonth(monthInput: string) {
+export async function finalizeAllClassMonthlyFeesForMonth(monthInput: string, isActive?: boolean) {
   await requireAdmin();
   const month = normalizeMonth(monthInput);
   const { count } = await db.classMonthlyFee.updateMany({
-    where: { month, isFinalized: false },
+    where: { month, isFinalized: false, ...(isActive !== undefined && { class: { isActive } }) },
     data: { isFinalized: true, finalizedAt: new Date() },
   });
   return { finalized: count };

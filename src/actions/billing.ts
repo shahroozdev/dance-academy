@@ -137,6 +137,22 @@ export async function getMonthlyBillingById(id: string) {
   };
 }
 
+export async function getStudentBillingPaymentOptions(studentId: string) {
+  await requireAdmin();
+  studentId = idSchema.parse(studentId);
+  const bills = await db.monthlyStudentBilling.findMany({
+    where: { studentId },
+    select: { id: true, month: true, finalAmountDue: true, amountPaid: true, balance: true, status: true },
+    orderBy: { month: "desc" },
+  });
+  return bills.map((bill) => ({
+    ...bill,
+    finalAmountDue: Number(bill.finalAmountDue),
+    amountPaid: Number(bill.amountPaid),
+    balance: Number(bill.balance),
+  }));
+}
+
 // ---------- Mutations ----------
 
 // Allowed on a PAID bill on purpose — a negative adjustment with a note is the studio's chosen
