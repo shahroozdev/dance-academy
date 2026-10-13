@@ -9,6 +9,23 @@ import {
 } from "@/actions/class-fees";
 import { createClassBillingPause, deleteClassBillingPause } from "@/actions/class-pauses";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
+import { createFestival, updateFestival } from "@/actions/content-festivals";
+import { setInquiryStatus } from "@/actions/content-inquiries";
+import {
+  addContentMediaLink,
+  createContentUploadTicket,
+  deleteContentMedia,
+  registerContentUpload,
+  updateContentMedia,
+  uploadContentDocument,
+} from "@/actions/content-media";
+import { createPerformance, updatePerformance } from "@/actions/content-performances";
+import { createPressItem, updatePressItem } from "@/actions/content-press";
+import { createProfile, moveProfile, updateProfile } from "@/actions/content-profiles";
+import { updateWebsiteSettings } from "@/actions/content-settings";
+import { setSiteMediaSlot } from "@/actions/content-site-media";
+import { setContentStatus } from "@/actions/content-status";
+import { createContentUser, setContentUserPassword, updateContentUser } from "@/actions/content-users";
 import { updateEmailTemplate } from "@/actions/email-templates";
 import {
   createEnrollment,
@@ -28,6 +45,7 @@ import {
   toggleFamilyActive,
 } from "@/actions/families";
 import { combineFamilies, createFamilyGuardian, deleteFamilyGuardian, setPrimaryFamilyGuardian, updateFamilyGuardian } from "@/actions/family-guardians";
+import { submitWebsiteInquiry } from "@/actions/inquiries";
 import { markFamilyNotificationSent, sendFamilyNotificationEmail, sendFamilyPaymentReminder } from "@/actions/notifications";
 import { createOtherIncome, deleteOtherIncome, updateOtherIncome } from "@/actions/other-income";
 import { createPayment, createRefund } from "@/actions/payments";
@@ -113,6 +131,29 @@ export const mutationRegistry = {
   markFamilyNotificationSent,
   sendFamilyNotificationEmail,
   sendFamilyPaymentReminder,
+  submitWebsiteInquiry,
+  createFestival,
+  updateFestival,
+  createPerformance,
+  updatePerformance,
+  createPressItem,
+  updatePressItem,
+  setContentStatus,
+  createContentUploadTicket,
+  registerContentUpload,
+  uploadContentDocument,
+  setSiteMediaSlot,
+  setInquiryStatus,
+  addContentMediaLink,
+  updateContentMedia,
+  deleteContentMedia,
+  createProfile,
+  updateProfile,
+  moveProfile,
+  updateWebsiteSettings,
+  createContentUser,
+  updateContentUser,
+  setContentUserPassword,
 } as const;
 
 export type MutationRegistry = typeof mutationRegistry;

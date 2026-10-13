@@ -10,7 +10,14 @@
     "lint:fix": "eslint --fix",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:site": "playwright test e2e/public-site.spec.ts e2e/content-portal.spec.ts",
     "db:seed-mock": "tsx prisma/seed-mock-data.ts",
+    "content:create-owner": "tsx scripts/create-content-owner.ts",
+    "content:seed": "tsx scripts/seed-website-content.ts",
+    "content:move-media": "tsx scripts/move-media-to-cloudinary.ts",
+    "content:add-gallery-photos": "tsx scripts/add-gallery-photos.ts",
+    "content:archive-photos": "tsx scripts/archive-photos-to-cloudinary.ts",
+    "admin:set-logo": "tsx scripts/set-site-logo.ts",
     "prepare": "husky"
   },
   "dependencies": {

@@ -10,6 +10,10 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-sans);
+  /* Public website fonts — the variables are set on the (public) layout wrapper only. */
+  --font-display: var(--font-playfair);
+  --font-public: var(--font-work-sans);
+  --font-condensed: var(--font-oswald);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -132,5 +136,74 @@
   html {
     @apply font-sans;
     font-size: var(--font-size-base, 16px);
+  }
+}
+
+/* Public website: full-screen stacked sections. On screens where every section fits, the
+   section pager (src/components/public/section-pager.tsx) takes over scrolling: it marks the
+   container `data-paged`, and while moving between sections sets `data-moving`, which shrinks
+   every section so the page shows as a frame around it; the section grows back on arrival.
+   Phones and short windows keep ordinary scrolling so taller sections stay fully reachable. */
+.public-scroll {
+  scroll-behavior: smooth;
+}
+
+.public-scroll[data-paged] {
+  overflow-y: hidden;
+  /* The pager animates scrollTop itself; native smoothing would fight it frame by frame. */
+  scroll-behavior: auto;
+}
+
+.public-scroll[data-paged] .public-panel {
+  transition: transform 0.5s ease-in-out;
+}
+
+.public-scroll[data-moving] .public-panel {
+  transform: scale(0.92);
+}
+
+/* The opening video remains readable through layered brand colour. */
+.hero-color-glow {
+  background:
+    radial-gradient(circle at 82% 14%, var(--primary) 0, transparent 26%),
+    radial-gradient(circle at 30% 100%, var(--chart-4) 0, transparent 32%);
+  mix-blend-mode: screen;
+  opacity: 0.28;
+}
+
+.hero-copy > * {
+  animation: hero-copy-enter 0.8s both cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-copy > :nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.hero-copy > :nth-child(3) {
+  animation-delay: 220ms;
+}
+
+.hero-copy > :nth-child(4) {
+  animation-delay: 320ms;
+}
+
+@keyframes hero-copy-enter {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-scroll {
+    scroll-behavior: auto;
+  }
+
+  .hero-copy > * {
+    animation: none;
   }
 }

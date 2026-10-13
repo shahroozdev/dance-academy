@@ -1,1 +1,1 @@
-export { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+export { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";

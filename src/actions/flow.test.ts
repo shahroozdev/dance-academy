@@ -14,9 +14,11 @@ const mocks = vi.hoisted(() => {
     studioSettings: { findUnique: vi.fn() },
     notificationLog: { create: vi.fn() },
   };
-  return { tx, auth: vi.fn(), sendEmail: vi.fn(), transaction: vi.fn() };
+  return { tx, auth: vi.fn(), contentAuth: vi.fn(), sendEmail: vi.fn(), transaction: vi.fn() };
 });
 vi.mock("@/auth", () => ({ auth: mocks.auth }));
+// The Content Portal's actions sit in the same registries and check their own, separate session.
+vi.mock("@/content-auth", () => ({ contentAuth: mocks.contentAuth }));
 vi.mock("@/lib/db", () => ({ db: { ...mocks.tx, $transaction: mocks.transaction } }));
 vi.mock("@/actions/email", () => ({
   sendTemplatedEmail: mocks.sendEmail,
@@ -47,12 +49,17 @@ beforeEach(() => {
   mocks.tx.classExtraSession.findMany.mockResolvedValue([]);
 });
 
+// The only actions a visitor without a session may call: the public registration form and the
+// website contact form. Everything else must reject before reading its arguments.
+const PUBLIC_ACTIONS = new Set(["createRegistrationRequest", "submitWebsiteInquiry"]);
+
 describe("action access", () => {
   const adminActions = Object.entries({ ...queryRegistry, ...mutationRegistry })
-    .filter(([name]) => name !== "createRegistrationRequest");
+    .filter(([name]) => !PUBLIC_ACTIONS.has(name));
   for (const [name, action] of adminActions) {
     it(`${name} rejects an unauthenticated call before inspecting arguments`, async () => {
       mocks.auth.mockResolvedValue(null);
+      mocks.contentAuth.mockResolvedValue(null);
       await expect((action as () => Promise<unknown>)()).rejects.toThrow("NEXT_REDIRECT");
       expect(mocks.tx.adminUser.findUnique).not.toHaveBeenCalled();
       expect(mocks.transaction).not.toHaveBeenCalled();

@@ -1,5 +1,100 @@
 # Updates Summary
 
+## 2026-10-14
+
+- The Content Portal has a new Inquiries section. Every message sent from the website's contact form is now kept there, newest first, with the visitor's name, topic, message, and the date it arrived.
+- Opening an inquiry shows the full message with the visitor's email, phone, and student details, and marks it as read. From there it can be marked as replied, archived, or put back to new, and a Reply by email button opens a ready-addressed email.
+- The list can be searched by name, email, or message and filtered by topic and by status. Archived inquiries are hidden unless asked for.
+- A bell in the Content Portal's header shows how many inquiries are new and lists the latest few. It refreshes about once a minute.
+- Both Content Owners and Content Editors can read and handle inquiries.
+- A message from the contact form is no longer lost if the email alert cannot be sent: it is saved first, and the visitor is told it was sent. The email alert to staff still goes out exactly as before.
+- To keep junk out of the list, one visitor can send at most five messages an hour.
+- Entering a wrong password on either sign-in page now shows "Invalid email or password." Before, the page showed nothing and simply stayed as it was. If sign-in fails for another reason, the page now says so and asks to try again.
+- The bell in the Content Portal now reads its count correctly to screen readers, and says "1 new inquiry" rather than "1 new inquiries".
+- Nothing in Studio Admin was changed.
+
+## 2026-10-13
+
+- The Content Portal now has a working section for each part of the public website: Festivals, Performances, Press & Media, a Media Library, Public Profiles, and Website Settings. Like the portal's sign-in, these become usable once the approved setup has been applied and the first Content Owner has been created.
+- Festival editions can be added and edited in the portal: year, date, start time, venue, summary, ticket link, artists with optional biographies and photos, posters, gallery photos, videos, and sponsor logos with links.
+- Performances can be added with a date, venue, summary, full description, cover image, video link, and photo gallery. Each published performance gets its own page on the website, and the Performances page lists them as cards. Until the first performance is published, that page keeps its current photo grid.
+- Press items can be added with a headline, publication, type, date, short excerpt, a link, a feature image, and an attached PDF. Published items appear as cards on the Press & Media page.
+- The Media Library holds every image, video link, and document the website can use. Images and PDFs up to 4 MB can be uploaded; longer videos are added as a link, such as YouTube. Each image carries a description for screen readers, an optional photo credit, and a focus point so the subject stays in frame when the picture is cropped. The library shows where each file is in use, and a file in use cannot be deleted.
+- Founder and instructor profiles can be edited in the portal, each with a switch that decides whether it is shown on the website, and they can be put in the order they should appear.
+- Website Settings lets a Content Owner change the contact email, phone number, WhatsApp link, Facebook and Instagram links, the home page's introduction, and the description shown in search results. Changes appear in the menu, the footer, and the Contact and home pages.
+- Everything in the portal starts as a draft. Only a Content Owner can publish it, take it back off the website, archive it, or restore it. Changing something that is already live returns it to draft until it is published again, and the portal says so before saving.
+- Content Editors can write drafts and add files, but cannot publish, change anything that is live, or manage users.
+- A Preview button shows a draft festival or performance exactly as its website page will look, before it is published.
+- A Content Owner can add other content users, change their role, turn off their sign-in, and set a new password for them. The portal always keeps at least one active Content Owner.
+- A History page lists every change made in the portal: who did what, and when.
+- The Content Portal now looks and works like Studio Admin: the same collapsible sidebar on the left, the same top bar with a page trail and an account menu, and the same sign-out button at the bottom of the sidebar. Sections only a Content Owner can use are grouped under "Manage" and are hidden from editors.
+- The festival, the two founder profiles, and the website's contact and social details have been moved into the Content Portal, already published, so they can be edited there. The website now reads them from the portal; visitors see exactly what they saw before.
+- The festival posters, the artist's video message, and the founders' portraits are now kept in the website's file storage and appear in the Media Library, along with the six Performances page photos, ready to be used in new content.
+- In Studio Admin, the Dashboard link in the sidebar is now highlighted only on the Dashboard itself, instead of on every page.
+- The six photos on the Performances page are now managed in the Content Portal, as the gallery of an entry called "Performance Highlights". The page looks the same as before, and photos added to or removed from that gallery change the page. The four performance photos on the home page come from the same place.
+- Photos in any published performance's gallery now appear in the Performances page's photo grid. A performance that also has a cover image is shown as a card linking to its own page.
+- "Performance Highlights" has its own page on the website showing the six photos.
+- The Media Library can now take much larger files: images up to 10 MB and videos up to 100 MB, uploaded directly from the computer. Videos no longer have to be added as a link, although that still works. PDFs stay limited to 4 MB.
+- Videos uploaded to the Media Library are compressed automatically before visitors see them, so they load faster. A newly uploaded video can take a minute or two before it starts playing on the website.
+- Website Settings has a new "Site images and video" section, where a Content Owner chooses the home page's opening video and its still image, the founders' photo used on the home and About pages, and the picture for each training program. A change appears on the website straight away, and removing a choice brings back the original.
+- The website's existing photos and videos have been moved into the new storage. The home page's opening video is now delivered at about a third of its original size, so it starts sooner.
+- The logo uploaded in Studio Admin Settings is now the logo everywhere: the public website header and menu, the registration form, both sign-in pages, and the Content Portal, as well as the admin sidebar and emails as before. The current Malhaar logo has been uploaded there, so nothing looks different today; uploading a new logo in Settings now changes all of those places at once.
+- Another 85 photos from Malhaar's Facebook and Instagram pages are now in the Media Library, ready to be chosen for a page. They are not shown anywhere on the website yet. Each still needs a proper description written before it is used.
+- The Performances page now shows 41 photos instead of 6. Thirty-five on-stage and performance photos from Malhaar's Facebook page were added to the "Performance Highlights" gallery, each with a description for visitors using a screen reader. Posters, selfies, backstage snapshots, and pictures too small to look good were left out.
+- The website's page list for search engines now includes each published festival year and each published performance, and never includes drafts or archived content.
+- Once a festival's street address and ZIP code are entered, they are included in the event details search engines read.
+
+## 2026-10-09
+
+- A separate Content Portal has been prepared for the public website, with its own sign-in, dashboard, and sign-out so content work stays separate from studio operations. Switching portals will explicitly sign the user out of the other portal, so one browser cannot use both at once. Public pages will show the active portal's dashboard and sign-out menu without revealing studio information. It will become available after the approved Content User setup is applied and its first Content Owner is created.
+- Book Tickets buttons on the festival page and homepage now take visitors to the Sycamore Tickets website.
+- The Malhaar name in the top header is now black with a gentle white shadow, keeping it clear over every page background.
+- The Malhaar logo now appears at the top of the slide-out website menu.
+- The website menu now slides in from the right as a compact panel instead of covering the whole screen.
+- The final Contact section on the home page now includes direct Facebook, Instagram, and WhatsApp buttons.
+- The two founders now each have their own portrait on the home and Instructors pages, rather than sharing one combined photograph.
+- Every home-page section after the opening video now uses one of the supplied floral backgrounds, with different flower styles and placements as visitors move through the site.
+- The home page now opens with the introduction video across the full screen. Its message sits over the video with a gentle entrance, a rose-inspired backdrop, and Malhaar's signature colour wash for a more theatrical first impression.
+- The public website now uses the newly supplied Malhaar logo and approved recent dance, student, founder, and festival images instead of the old website photography.
+- The home page now opens with Malhaar's supplied introduction video and has a clear Register for Classes button.
+- Training now includes an adults-only Semi Classical option, alongside the three existing programs, and directs prospective students to registration.
+- The Instructors page now focuses only on the two founders. Visitors can open each founder's full biography from a card instead of scrolling through it on the page.
+- Performances are now shown as a photo gallery that visitors can browse at a glance, replacing the previous one-photo-at-a-time display.
+- The Ananta Festival page now shows the supplied festival posters and artist video message. Ticket information has been removed until it is available.
+- Support now has one clear Contact Malhaar action. The menu, footer, and contact page now include registration, WhatsApp, Facebook, and Instagram links.
+
+## 2026-10-05
+
+- The website's front page is now a public home page for Malhaar Dance Company instead of sending visitors straight to the staff login. Staff still sign in at the same admin address as before.
+- The site now has a separate page for each part of the company: About, Training, Instructors, Performances, Malhaar Ananta Arts Festival, Press & Media, Support, and Contact. A menu button in the top corner opens a full-screen menu listing all of them, and every page ends with the same footer of links and contact details.
+- The logo and menu button look the same on every page: they sit directly over the top of the page with no bar behind them, as on the home page. On phones, a soft backdrop appears behind them once a visitor scrolls down, so they stay easy to read.
+- The home page is a set of short full-screen sections, one for each of those pages, each with a button leading to the full page. Dots on the right edge show which section is on screen and jump to any other.
+- Moving between home page sections on a computer is animated: the current section shrinks slightly so the page shows as a frame around it, the next section slides in at that smaller size, and then it grows to fill the screen. On phones the page scrolls normally.
+- The opening section shows a dancer with the photo's background removed, standing directly on the page's soft colour wash instead of inside a framed picture.
+- The About page tells the founders' story and the company's vision.
+- The Training page presents Bharatanatyam, Mohiniyattam, and Bollywood/Cinematic, each with a photo, its full description, and an inquiry button. It mentions the Wood Dale and Elgin locations and shows no fixed schedules.
+- The Instructors page now also lists the rest of the teaching team below the two founders. The list comes straight from the Teachers section of the admin: every teacher marked active appears with their name and the dance programs they currently teach, and a teacher added or deactivated in admin shows up or disappears on the website straight away. Email addresses, phone numbers, and notes kept in admin are never shown.
+- The Instructors page gives each founder's portrait, title, specializations, and full biography. Both portraits come from the old website, and the home page shows them side by side.
+- The Performances page has the introduction, the kinds of performances Malhaar presents, a slideshow of twelve photos from the old website, and buttons to book a performance or propose a collaboration. The slideshow shows one photo at a time and moves on by itself every few seconds; visitors can use the arrows, the dots, or a swipe on a phone, and it pauses while they hover over it.
+- Every photo from the old website now appears on the new one, apart from the old logo. Each dance form on the Training page uses the photo the old website showed beside that class.
+- Everything written on the old website has been saved for reference, so nothing is lost when that site is taken down.
+- The Malhaar Ananta Arts Festival has its own page for the 2026 edition with the date, time, venue, featured artists, and buttons for ticket inquiries, meeting the artists, and sponsorship. Each future year will get its own page while earlier years stay available.
+- The Press & Media page introduces the section and gives the address for media inquiries; coverage will be added as it is supplied.
+- The Support page explains how to get involved, with a button for each way of supporting Malhaar.
+- The Contact page shows the two locations, the email address, and the inquiry form. Buttons elsewhere on the site, such as "Become a Sponsor" or "Inquire About Mohiniyattam", open the form with the matching subject already chosen.
+- Each inquiry is emailed to the studio; if it cannot be delivered, the visitor is told and shown the studio email address instead.
+- Every page has its own title and description for search engines, and the staff area is kept out of search results.
+
+### Search engine improvements (2026-10-06)
+
+- Page titles now say what each page offers and where, for example "Bharatanatyam, Mohiniyattam & Bollywood Dance Training" instead of "Training", and each page's main heading names its topic.
+- Every page tells search engines its one official address, so the same page is never counted twice.
+- Links to the site shared on WhatsApp, Facebook, X, or by text message now show a branded picture with the company name, a short summary, and the page title.
+- Search engines are given clear facts about the company in a form they can read directly: its name, the two locations, the founders, the three training programs, and the Malhaar Ananta Arts Festival with its date, venue, and artists.
+- The staff area and the registration form are marked so they never appear in search results.
+- The "page not found" screen now offers visitors a way back to the home page and the contact page.
+- The site uses the new Malhaar Dance Company logo and name throughout, shows locations as Wood Dale and Elgin, Illinois with no street address, and uses photos carried over from the old website for now.
+
 ## 2026-09-20
 
 - Class-fee overrides now immediately update every affected unpaid bill, while paid bills remain protected and appear in the billing review queue.

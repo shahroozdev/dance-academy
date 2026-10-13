@@ -55,3 +55,6 @@ next-env.d.ts
 # AI tool configs (local-only, not needed for deploy)
 /.claude
 /.opencode
+
+# Source videos supplied by the client are kept locally while they are prepared for web delivery.
+/public/media/*.mp4

@@ -5,7 +5,313 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
-- Nothing currently in progress.
+- **2026-10-14: Browser tests for the public site and the Content Portal.** Run both with
+  `npm run test:e2e:site` (plain `npm run test:e2e` also runs the older admin acceptance flow, which writes
+  billing data — do not run that against the live database).
+  - `e2e/public-site.spec.ts` — 44 tests, read-only: every page (title, one h1, no failed image/video
+    requests, no sideways scroll at 390px), menu and footer, festival redirect and 404s, gallery, biography
+    window, contact-form validation, sitemap/robots/canonical/structured data, noindex on sign-in pages, and
+    that signed-out visitors are kept out. The form's success screen is reached through the hidden anti-spam
+    field, which saves nothing and sends no email.
+  - `e2e/content-portal.spec.ts` — 34 tests, one serial flow as owner then editor: every section opens;
+    festival draft -> preview -> publish -> revise (back to draft) -> archive, checking the public page and
+    sitemap at each step; performance and press publish/archive; media link add/rename/delete; profile
+    visibility; settings screen; inquiry bell/read/replied/archived (inquiry inserted by
+    `e2e/fixtures/content-db-cli.ts` so no staff email is sent); adding an editor; history; editor
+    restrictions; deactivating the editor ends their session; sign-out. Needs `CONTENT_OWNER_EMAIL` and
+    `CONTENT_OWNER_PASSWORD` (skips without them). Every record it makes carries a per-run `E2E-<id>` tag and
+    the teardown deletes only rows with that tag; a read-only check after the final run found none left.
+  - **Not covered by browser tests:** real file uploads to Cloudinary, saving Website Settings or site
+    image choices (both would change the live site), a real contact-form submission (would email the studio),
+    and the admin/content switch confirmation (needs an admin login). The last-active-owner guard is covered
+    by `src/actions/content-users.test.ts` instead, since a failure there in a browser test would lock the
+    only owner out.
+  - **Found and fixed by these tests:** a wrong password showed no message on either sign-in page
+    (`portal-login.ts` now catches `CredentialsSignin`; the form reports other failures as "Unable to sign
+    in"); the bell announced its count twice. Also seen: a dev server started before a new table was added
+    keeps an old database client and fails on that table until restarted.
+  428 unit tests, lint and TypeScript pass.
+
+- **2026-10-14: Inquiries module in the Content Portal.** New table `Inquiry` (+ enum `InquiryStatus`),
+  migration `20261014000000_add_website_inquiries`, **applied to the hosted database**. The public contact
+  form (`src/actions/inquiries.ts`) now saves each inquiry first, then sends the existing staff email alert;
+  it reports failure to the visitor only if the inquiry can be neither saved nor emailed. Rate limit: five per
+  hour per sender, counted by a salted hash of `x-forwarded-for` (the address itself is not stored). Portal
+  side: `src/actions/content-inquiries.ts`, the page `src/app/content/(dashboard)/inquiries/page.tsx` (list,
+  filters, detail window, status changes) and `components/content/inquiry-bell.tsx` in the header (new count,
+  polled every 60s). Owners and editors both have access, by the owner's decision. Nothing under `/admin` was
+  changed; the email alert still shares the admin's "new registration" switch, also by decision. 420 tests,
+  lint and TypeScript pass. **Not verified:** no inquiry has been submitted end to end (doing so on this
+  machine would write to the live database and email the studio), and the page and bell have not been seen
+  signed in.
+
+- **2026-10-13 (late): the rest of the Facebook/Instagram scrape is in the bucket.** At the owner's request all
+  298 remaining images in `client-assets/facebook` and `client-assets/instagram` were stored in Cloudinary
+  under `malhaar/website/archive/client-assets/...` with `npm run content:archive-photos`
+  (`scripts/archive-photos-to-cloudinary.ts`), each verified byte-for-byte afterwards. 85 of them (800px or
+  larger) were also added to the Media Library; the 212 small previews and one certificate photo showing a
+  child's full name are archived only. Nothing was placed on a page. The library entries have a generic
+  title and description ("From Facebook: ...") that must be rewritten before a photo is used, and include
+  posters showing ticket prices, selfies and backstage shots; four duplicate photos already on the
+  Performances page under other entries. **`client-assets/` was then emptied at the owner's request** (336 files, 119 MB), keeping only
+  `README.md` and `performance-gallery-photos.json`. The two raw videos went with it: their web versions are
+  in the bucket and the originals are on the client's Drive and Facebook.
+
+- **2026-10-13 (late): the site's photos and videos were removed from the repo folder.** Thirteen files in
+  `public/` (nine in `images/client`, the two instructor portraits in `images/wix`, both videos in `media/`,
+  96 MB together) were deleted after each was confirmed in the Cloudinary bucket byte-for-byte; `public/` went
+  from 119 MB to 23 MB. None of them was ever committed to git, so the bucket copy
+  (`malhaar/website/site/...`) is now the only one — do not delete those from Cloudinary. The built-in
+  fallback content in `src/lib/public-site.ts` and `src/lib/site-media.ts` now points at the bucket through
+  `siteImage()` / `siteVideo()`, and `content:seed` no longer uploads anything: it only creates entries for
+  those addresses. **Kept on purpose:** `images/client/logo-no-bg.png` and `logo.jpg` (logo fallback and
+  search-engine logo), everything in `images/site` (section backgrounds, share image parts), and the tracked
+  favicons. **Not touched, and not in the bucket:** the other 15 old Wix photos in `public/images/wix` (unused
+  by any page), `images/site/hero-dancer.webp` (unused), and the whole `client-assets/` folder (raw scrape,
+  96 MB, 35 of its photos are in the bucket). Ask before removing those.
+
+- **2026-10-13 (late): one logo everywhere.** Every logo placement now reads `StudioSettings.logoUrl` through
+  `getSiteLogoUrl()` in `src/actions/public-content.ts` (public header and menu, `/register`, both login pages,
+  the Content Portal sidebar), falling back to `/images/client/logo-no-bg.png`. The current transparent logo was
+  uploaded as that setting with `npm run admin:set-logo` (`scripts/set-site-logo.ts`); the setting was empty
+  before. The command was run twice by mistake, so the Blob store holds one unused extra copy named
+  `studio-logo-EYqbAi39….png`. Not changed: the logo in the search-engine details (`/images/client/logo.jpg`
+  in `src/lib/seo.ts`). Caveat: the public header sits over photos, so a future upload should have a
+  transparent background.
+
+- **2026-10-13 (night): Cloudinary is live and the Performances gallery has 41 photos.** The owner added the
+  `CLOUDINARY_*` keys to `.env`. `content:move-media` moved all 11 Blob-held library files (Blob copies left
+  in place, unused); `content:seed` filled the seven site image/video places (the 76 MB home video now plays
+  from a ~25 MB compressed copy; large files are uploaded in 6 MB pieces because a single request timed out).
+  Then 35 photos scraped from the client's Facebook page were added to the "Performance Highlights" gallery
+  with `npm run content:add-gallery-photos` (`scripts/add-gallery-photos.ts`; the list with each photo's
+  description is `client-assets/performance-gallery-photos.json`). Selection: of 333 scraped images, 212 are
+  under 800px and unusable; of the 119 distinct larger ones, only on-stage/performance shots were taken —
+  posters, logos, selfies, backstage and trophy snapshots, an award ceremony and a certificate showing a
+  child's name were left out. Many of the photos show children; the client's instruction was "use from our fb
+  page", but per-photo consent has not been confirmed with them. **Still to do:** set the `CLOUDINARY_*` keys
+  in the hosting environment; a signed-in walk through the portal; `npm run build`. The entry below describes
+  how the Cloudinary side works.
+
+- **2026-10-13 (evening): Cloudinary for the Content Portal's images and videos — code done, waiting on
+  account keys.** Decision by the owner: Cloudinary for content-portal media, Vercel Blob stays for the admin
+  side (logo, receipts); PDFs in the Media Library also stay on Blob (small, and Cloudinary blocks PDF delivery
+  by default on new accounts).
+  - **How it works.** `src/lib/cloudinary.ts` (server only; plain HTTP API, no SDK) signs requests;
+    `src/lib/cloudinary-url.ts` holds the pure address helpers. Upload is two steps from
+    `components/content/media-modals.tsx`: `createContentUploadTicket` returns a signed, folder- and
+    format-limited ticket, the browser posts the file straight to Cloudinary, then `registerContentUpload`
+    verifies Cloudinary's own signature on the result before adding the library entry. Limits: images 10 MB,
+    videos 100 MB. Addresses are stored without a version segment. Videos are played from a `q_auto` copy that
+    is requested at upload (`eager`, async) because large videos cannot be transformed on demand; until it is
+    ready the video does not play. Deleting a library file removes it from Cloudinary or Blob, whichever holds it.
+  - **Site images and video.** New table `SiteMediaSlot` (migration `20261013120000_add_site_media_slots`,
+    **applied to the hosted database**). Slots are defined in `src/lib/site-media.ts`: home opening video and
+    still, founders photo, one per training program. Chosen in Website Settings (`site-media-card.tsx`,
+    `content-site-media.ts`, owner-only); pages read them with `getPublicSiteMedia`, falling back to the file
+    shipped with the site.
+  - **Not done, needs the owner:** add `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+    to `.env` (and to the hosting environment). Then run, in this order:
+    `npm run content:move-media -- --confirm-host=db.prisma.io:5432` (copies the eleven Blob-held images and
+    the festival video to Cloudinary and repoints their library entries; deletes nothing) and
+    `npm run content:seed -- --confirm-host=db.prisma.io:5432` (now uploads to Cloudinary; adds the seven site
+    image/video places, including the 76 MB home video). Until then uploads of images and videos in the portal
+    fail with a "not set up yet" message, and the public site keeps working from Blob and the shipped files.
+  - **Unverified:** nothing here has been exercised against a real Cloudinary account — the signing is covered
+    by unit tests only. In particular, confirm after the first video upload that the `q_auto` address plays;
+    if the account refuses it, `VIDEO_DELIVERY_TRANSFORMATION` in `cloudinary-url.ts` is the one place to change.
+    401 tests, lint and TypeScript pass.
+
+- **2026-10-13 (later the same day): database applied and seeded; portal layout now matches admin.**
+  The owner ran both migrations against the hosted database (`db.prisma.io`), and
+  `npm run content:seed -- --confirm-host=db.prisma.io:5432` (`scripts/seed-website-content.ts`) then added:
+  the saved website settings, the 2026 festival (published, two artists, two posters, the reel), the two
+  founder profiles (visible), and six Performances-page photos as Media Library files. All eleven files were
+  uploaded to the Vercel Blob store under `website/site/...` with fixed names. The seed only adds and is safe
+  to re-run. The public pages now show this content from the database and Blob (verified by requesting the
+  home, festival and Instructors pages from the running site). The static content in `src/lib/public-site.ts`
+  is now only the fallback for when the tables cannot be read.
+  The in-portal "Bring in current content" button and its action were removed; the seed script replaces them.
+  `/content` now uses the admin shell: `components/layout/app-sidebar.tsx`, `app-topbar.tsx` and `user-nav.tsx`
+  take optional props (admin passes none), and `components/content/content-shell.tsx` supplies the portal's
+  sections and sign-out. The old `content-portal-header.tsx` / `content-portal-nav.tsx` are deleted.
+  **Still open:** (1) a first Content Owner — check whether one exists before running
+  `npm run content:create-owner`; (2) nobody has yet looked at the portal screens signed in, including the new
+  sidebar layout; (3) done later that day: the seed now also creates one published performance, "Performance
+  Highlights" (`/performances/performance-highlights`, no cover), whose gallery is the six photos. The
+  Performances page's grid is every published performance's gallery photos; a performance with a cover also
+  gets a card. The home page's four photos use the same source. The title and the use of the page's second
+  intro sentence as its summary were my choice — the client has not seen them; (4) the home page's intro video and the photos on About/Training/home are still
+  files shipped with the site, since no portal section manages those pages; (5) the hosted database has a
+  recorded migration `20261009090000_monthly_class_tracking` that is missing from this repo's
+  `prisma/migrations`; (6) `npm run build` not run. The entry below is the earlier state, kept for its map of
+  where things are.
+
+- **2026-10-13: Content Portal — Phases 2–4 code complete; waiting on the owner before it can be used.**
+  Everything in `docs/content-portal-plan.md` is built, but **no database has been changed**, so nobody can sign
+  in yet and the portal screens have not been exercised in a browser.
+  - **Database.** Two additive migration files are staged and unapplied:
+    `prisma/migrations/20261009000000_add_content_portal_users` (the `ContentUser` table) and
+    `prisma/migrations/20261013000000_add_content_portal_records` (every content table: `MediaAsset`,
+    `Festival`, `FestivalArtist`, `FestivalMedia`, `Performance`, `PerformanceMedia`, `PressItem`,
+    `PublicProfile`, `WebsiteSettings`, `ContentAuditLog`, plus four enums). The second was generated offline
+    with `prisma migrate diff --from-schema <old> --to-schema prisma/schema.prisma --script`; it only creates
+    new objects, and its only `ALTER TABLE` statements add foreign keys between the new tables.
+    **Do not run `prisma migrate deploy`** to apply them — see the corrected database note under "Next /
+    Blocked": on this machine it would target the live database and also try to apply every older migration
+    the target is missing. Apply the two SQL files directly to the database the owner names, then record them
+    with `prisma migrate resolve --applied <name>` if that database tracks migrations.
+  - **Where things are.** Actions: `src/actions/content-*.ts` (each starts with `requireContentUser` or
+    `requireContentOwner`; shared helpers in `content-service.ts`; validation in `content.schema.ts`). Publishing
+    rules: `src/lib/content-publishing.ts`. Record-to-page mapping: `src/lib/content-mappers.ts`. Screens:
+    `src/app/content/(dashboard)/` with shared pieces in `src/components/content/`. Public readers:
+    `src/actions/public-content.ts` — published/visible records only, falling back to the fixed content in
+    `src/lib/public-site.ts` (`BUILT_IN_FESTIVALS`, `BUILT_IN_PROFILES`, `DEFAULT_SITE_SETTINGS`) when a table
+    is missing or has no rows. The festival and performance pages render through
+    `components/public/festival-view.tsx` and `performance-view.tsx`, which the portal's Preview pages reuse.
+  - **Behaviour worth knowing.** Editing a published festival, performance, or press item returns it to draft
+    (the plan's rule), which takes it off the website until an owner publishes again. Editors may change drafts
+    and hidden profiles only. Once the portal holds any festival (or any profile), the built-in one is no longer
+    used, even if none is published — so use "Bring in current content" in Website Settings before adding
+    editions, or the 2026 page will disappear until it is re-entered. Uploads go to the existing Vercel Blob
+    store (4 MB cap; `next.config.ts` raises the server-action body limit to 5 MB and allows the store's image
+    host). Videos are links, not uploads.
+  - **Checked.** 389 tests, lint, and TypeScript pass. With the tables absent, every public page, the festival
+    redirect, the 404s, the sitemap, and the `/content` login redirect were requested from the running local
+    site and returned the same content as before. **Not checked:** any portal screen after sign-in, uploads,
+    publishing end to end, the preview pages, and the portal-switch flow in a browser. A production build was
+    not run.
+  - **Next, in order:** (1) owner approves both SQL files and names the target database; (2) apply them;
+    (3) create the first Content Owner with `npm run content:create-owner -- --confirm-host=<host>` (reads
+    `CONTENT_OWNER_NAME`/`EMAIL`/`PASSWORD` from the environment and refuses if an active owner exists);
+    (4) sign in at `/content/login`, run "Bring in current content", and walk through each section in a
+    browser, including the admin/content switch confirmation; (5) run `npm run build`.
+
+- **2026-10-09: Separate Content Portal — Phase 1 in progress.** A planned independent `/content` portal will manage
+  public website content (festivals, performances, media, press, and profiles) without exposing studio operations.
+  It will use a separate content login/session from `/admin`, and one browser may have only one portal session at a
+  time. The plan is in `docs/content-portal-plan.md`. The separate Content login, session cookies, route guard,
+  switch confirmation, protected overview, Content-only sign-out, safe public-header avatar, and additive migration
+  file are staged. No database changes have been applied; the existing database safety restriction remains in force.
+  Next: obtain approval for the exact migration and target database, apply it only as authorized, then provision the
+  first Content Owner and complete browser-level login/switch tests.
+
+- **2026-10-05: Public website (redesign brief in `docs/Malhaar_Website_Redesign.docx`) — all
+  nine pages built, not committed.** The brief asks for separate pages, so the site is a home page
+  plus eight inner pages under the `(public)` route group:
+  - `src/app/(public)/page.tsx` — home: nine full-screen teaser sections, each linking to its page.
+    It owns the full-screen shell (`section-dots.tsx`, `section-pager.tsx`). The
+    pager runs on screens at least 1024px wide and 760px tall: it shrinks every section to 92%,
+    slides one screen in 0.8s, then grows back; smaller screens scroll normally.
+  - `src/app/(public)/(pages)/` — About, Training, Instructors, Performances, Ananta
+    (`/ananta` redirects to the newest year; `/ananta/[year]` is one page per edition), Press & Media,
+    Support, Contact. Shared layout there adds the header and `site-footer.tsx`.
+  - `site-header.tsx` is the same on every public page: fixed and always transparent at computer
+    sizes (1024px and wider), at the owner's request, so on inner pages content scrolls beneath the
+    logo and menu button. Below 1024px it gains a soft backdrop once content scrolls beneath it (it
+    watches the window, or the home page's own scroll container when given `scrollContainerId`).
+    `page-hero.tsx` carries extra top padding so inner-page headings clear the floating header.
+  - All text lives in `src/lib/public-site.ts` (taken from the brief). To add a festival year, add an
+    entry to `ANANTA_EDITIONS`; to add a performance photo, add a line to `PERFORMANCE_PHOTOS`.
+  - The Instructors page shows the two founders as fixed content from the brief (`INSTRUCTORS` in
+    `public-site.ts`; the brief lists both, Varsha as "Co-Founder & Instructor", so the old site's
+    "Guest Instructor" label is not used). Below them, "Our teaching team" lists every active row of
+    the admin Teachers table via `getPublicInstructors()` in `src/actions/teachers.ts` — a public
+    action that selects names only plus the programs of the teacher's active classes, and never
+    throws (a failed query is logged and the list degrades). Rows whose name matches a founder are
+    skipped. The page is `force-dynamic`. Type: `src/types/instructors.ts`; tests:
+    `src/actions/teachers.test.ts`. **Open point:** the Teachers table has no "show on website"
+    switch, bio, title or photo, so every active row is published by name (the local sample data
+    includes a row called "Guest Choreographer"); adding those fields needs a database change.
+  - The Performances page shows `PERFORMANCE_PHOTOS` in `components/public/slideshow.tsx`: a
+    scroll-snap track (native swipe) driven by arrows, dots, arrow keys, and a 5-second autoplay
+    that pauses on hover/focus and is off for reduced-motion visitors. All photos stay in the page
+    as real images.
+  - Shared pieces in `src/components/public/`: `page-hero`, `page-section`, `section-heading`,
+    `cta-link`, `panel`, `inquiry-form`. Fonts in `src/app/(public)/fonts.ts`; pager styles at the
+    end of `globals.css`.
+  - **SEO (2026-10-06), following Google's Search documentation.** `src/lib/site-url.ts` holds the
+    site address (`NEXT_PUBLIC_SITE_URL`, falling back to `NEXTAUTH_URL`). `src/lib/seo.ts` has
+    `pageMetadata()` — every public page uses it for its title, description, self-referencing
+    canonical, Open Graph and Twitter fields, and the share image — plus the structured-data
+    builders: WebSite + organization (home), BreadcrumbList (every inner page), Person (Instructors),
+    Course list (Training), DanceEvent (each festival year). `components/public/json-ld.tsx` renders
+    them. `src/app/opengraph-image.tsx` draws the 1200x630 share image from
+    `public/images/site/share-logo.png` and `share-photo.jpg`; it sits at the app root so its
+    address is fixed (`/opengraph-image`). Each page's `<h1>` contains its topic label plus the
+    headline (`PageHero`'s `eyebrowInHeading`). `/admin` and `/register` carry a `noindex` tag and
+    are no longer blocked in `robots.ts`, because Google can only obey `noindex` on pages it may
+    fetch; `robots.ts` blocks only `/api/`. `sitemap.ts` lists the nine canonical pages. The 404
+    page links to the home and contact pages and is `noindex`. Tests: `src/lib/seo.test.ts`.
+  - The old Wix site was scraped in full with a real browser (its Instructors page is a slideshow,
+    so a plain fetch only sees one instructor). All of its text and a photo-by-photo map of where
+    each image was and is now used are in `docs/old-wix-site-content.md`, along with what was
+    deliberately not carried over because the brief overrides it.
+  - Photos are the 17 old Wix originals in `public/images/wix/`; the two instructor portraits are
+    named after the person the old site showed them with. Embedded camera/location data was stripped
+    from `award-presentation.jpg` and `instructor-sreevidhya-vijayan.jpg`. The home hero figure is
+    `public/images/site/hero-dancer.webp`, a background-removed cut-out of
+    `wix/solo-bharatanatyam-blue-1.jpg` (made with `@imgly/background-removal-node` in a temp
+    folder, not a project dependency). That photo ends at the hips, so the figure is anchored to the
+    section's bottom edge.
+  - The contact form calls `submitWebsiteInquiry` (`src/actions/inquiries.ts`), which emails the
+    studio alert address through `sendAdminOperationalAlert` and stores nothing. Buttons such as
+    "Become a Sponsor" open `/contact?interest=…` with "Interested In" preselected.
+  - Checked: 281 tests, lint, and TypeScript pass. Every page was loaded in a browser at 1440x900
+    and 390x844 (status, title, one h1, no sideways overflow, no broken images), plus menu and button
+    navigation, the festival redirect and 404, the sitemap, and form preselection. A production build
+    has not been rerun since the inner pages were added.
+  **Content still needed from the client** (see `docs/Malhaar_Website_Design_Questions.pdf`):
+  full-size approved training and performance photos; performance names, years, venues, and videos;
+  press items; festival artist biographies and photos, orchestra details, sponsor logos, and a festival
+  logo; and confirmation that the supplied mobile number is the intended WhatsApp number. The client later supplied
+  the Sycamore Tickets destination, which is now linked from the festival's Book Tickets buttons.
+  **Left to do:** (1) Inquiries are email-only — add a stored Inquiries list in admin and their own
+  alert switch (they share the "new registration" alert setting, so turning that off makes the form
+  report a delivery failure). (2) No rate limiting on the form beyond a hidden anti-spam field.
+  (3) Nothing is admin-editable yet (brief section 14). (4) Confirm with the client that student
+  photos may be used, and whether the old-site achievements the brief's biographies omit should be
+  added back (listed at the end of `docs/old-wix-site-content.md`). (5) **SEO launch steps, none of
+  which can be done in code:** set `NEXT_PUBLIC_SITE_URL` to the real domain (until then canonical
+  links, the sitemap and structured data all say `localhost`); verify the site in Google Search
+  Console (paste the code into `GOOGLE_SITE_VERIFICATION`) and submit `/sitemap.xml`; create or
+  claim a Google Business Profile for the studio; point the old Wix site at the new one; test the
+  home and festival pages in Google's Rich Results Test once live. (6) SEO data still needed: the
+  festival venue's street address and postal code (both are in Google's event requirements; the
+  event markup currently has town and state only), and the studio's social media links for the
+  organization markup. (7) Rerun `npm run build`.
+  **Client answers received 2026-10-08** (filled-in `docs/Malhaar_Website_Design_Questions.pdf`).
+  Everything downloadable from their links is in `client-assets/` (index in its `README.md`): the
+  Drive intro video, the founders' photo, two festival posters, the festival reel, and the few
+  images the Facebook page and Instagram show without a login. Nothing from that folder is wired
+  into the site yet. Their answers require changes not yet made: no old-site photos anywhere, no
+  ticket information on the festival page, performances as a grid, instructors as cards that open
+  the biography (founders only), one contact button on Support, a WhatsApp button, social links,
+  a link to `/register`, and Semi Classical (adults only) as a fourth program. **Completed 2026-10-09:**
+  the supplied images and videos are now used by the public pages; all old-site images have been removed
+  from public-page use; Performances is a grid; founders use biography cards; Support has one contact action;
+  registration, WhatsApp, Facebook, and Instagram are linked; and Semi Classical is listed for adults.
+  The two raw videos are deliberately ignored by git while a deployment-ready video-hosting/compression choice
+  is made. New assets may be added to `client-assets/` during the task; use only clearly approved,
+  web-appropriate files. A further Facebook batch was reviewed on 2026-10-09: most images are 206px social
+  previews and were intentionally not enlarged for the site; one usable group photograph was added to the gallery.
+  Every public route returned 200 in local development. Desktop and 390px mobile visual checks passed for the
+  updated home, festival, and instructor pages; poster artwork was cropped so ticket pricing is not displayed.
+  TypeScript, lint, and 295 tests pass. The production build is blocked only because this environment cannot reach
+  Google Fonts, which the existing site fonts require.
+  **Completed 2026-10-09:** the home opening now uses the full-width video with animated overlay copy, a rose
+  motif, and the existing brand colour wash. The video hero has no floral overlay; all other home-page sections use
+  one of the client-supplied floral backgrounds, alternated with distinct placements.
+  **Completed 2026-10-09:** the founders now use their individual portraits from the former website instead of the
+  combined photograph, on both the home and Instructors pages.
+  **Completed 2026-10-09:** the festival's Book Tickets buttons now take visitors to Sycamore Tickets.
+  **Completed 2026-10-09:** the final home-page Contact section now includes linked Facebook, Instagram, and
+  WhatsApp icons.
+  **Completed 2026-10-09:** the website navigation now opens as a right-side panel, up to 400 pixels wide, instead
+  of covering the entire screen.
+  **Completed 2026-10-09:** the Malhaar logo now appears at the top of the navigation panel.
+  **Completed 2026-10-09:** the header wordmark is black with a soft white shadow, improving its legibility over
+  photos and floral backgrounds.
 
 ## Next / Blocked
 
@@ -14,13 +320,30 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   the remaining browser-only workflow checks can resume from enrollment controls onward. Temporary
   test code was removed and no test records were created.
 
-- **Local dev database is schema-drifted.** The local Postgres instance (`LOCAL_DATABASE_URL`,
-  `localhost:5432`) was originally set up via `prisma db push` and is missing the `StudioSettings`,
-  `EmailTemplate` tables and several newer columns that exist on the main database. Every table in
-  it is currently empty, so a `prisma db push --accept-data-loss` against it is safe, but this is a
-  destructive-capable command that Prisma's own safety guard requires explicit owner consent for
-  before an agent can run it — blocked pending that confirmation. Once approved: run the push, then
-  seed it (`tsx prisma/seed.ts` with `DATABASE_URL` pointed at the local DB).
+- **Databases — DO NOT reset, re-seed, or run destructive schema changes on either one.** On
+  2026-10-06 the owner said nothing in the database may be erased, and that the **live** database is
+  the hosted one whose connection strings are `PRISMA_DATABASE_URL` and `POSTGRES_URL` in `.env`
+  (Prisma Postgres, `*.prisma.io`). A read-only check that day found it up to date: every table the
+  app needs is present, `Class.programId` exists, and it holds 2 active teachers (both founders),
+  5 active programs and 8 active classes with a teacher.
+  **Correction, 2026-10-13:** `.env`'s `DATABASE_URL` now points at the hosted `db.prisma.io` database, the
+  same host as `PRISMA_DATABASE_URL` and `POSTGRES_URL`. So the app and every Prisma CLI command on this
+  machine currently act on the **live** database; only `LOCAL_DATABASE_URL` still names the localhost copy.
+  The rest of this paragraph describes the localhost copy as it was on 2026-10-06 and no longer describes
+  what `DATABASE_URL` reaches.
+  The app and the Prisma CLI on this machine use `DATABASE_URL`, which on 2026-10-06 (like `LOCAL_DATABASE_URL`)
+  pointed at a **working copy** on `localhost:5432/malhaar_dance_company`. That copy is behind the
+  schema. It is **not empty** (checked 2026-10-06: 8 students, 6 families, 6 classes, 12 enrollments,
+  4 teachers, 2 admin users, 1 settings row), and it is missing the `DanceProgram`,
+  `FamilyGuardian`, `ClassExtraSession` and `ClassBillingPause` tables and several newer columns. A
+  read-only preview (`npx prisma migrate diff --from-config-datasource --to-schema
+  prisma/schema.prisma --script`) shows a sync would drop `Class.danceStyle` and add required
+  columns to tables that already hold rows, so it cannot be applied without losing or inventing
+  data. Effects on this machine while it stays this way: `/register` returns an error, and the
+  Instructors page lists teachers by name without their programs. The owner has not said the
+  working copy is disposable, so any schema change to it, and certainly to the live database, needs
+  their explicit approval of the exact statements first. An earlier version of this note called a
+  destructive push "safe" — that was wrong.
 - **WhatsApp activation and live verification pending.** Template sending is implemented, including
   the explicit family send action, optional scheduled monthly notices/reminders, provider reference
   logging, and failures. Next: verify Meta credentials and the two approved templates, configure

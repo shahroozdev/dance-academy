@@ -6,12 +6,21 @@ interface AppBrandProps {
   href?: string;
   className?: string;
   showName?: boolean;
+  name?: string;
   size?: number;
   onClick?: () => void;
   logoSrc?: string | null;
 }
 
-export function AppBrand({ href = "/admin", className, showName = true, size = 30, onClick, logoSrc }: AppBrandProps) {
+export function AppBrand({
+  href = "/admin",
+  className,
+  showName = true,
+  name = "Malhaar Dance Company",
+  size = 30,
+  onClick,
+  logoSrc,
+}: AppBrandProps) {
   return (
     <Link
       href={href}
@@ -21,7 +30,7 @@ export function AppBrand({ href = "/admin", className, showName = true, size = 3
       <Logo size={size} className="shrink-0" src={logoSrc} />
       {showName ? (
         <span className="truncate font-heading text-[15px] leading-tight tracking-tight group-data-[collapsible=icon]:hidden">
-          Malhaar Dance Company
+          {name}
         </span>
       ) : null}
     </Link>

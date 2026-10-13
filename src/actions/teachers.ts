@@ -7,6 +7,7 @@ import { idSchema, booleanSchema , validateListQuery } from "@/actions/validatio
 import type { Prisma } from "@/generated/prisma/client";
 import { round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
+import type { PublicInstructor } from "@/types/instructors";
 
 // ---------- Queries ----------
 
@@ -98,6 +99,55 @@ export async function getTeacherById(id: string) {
     expenses: teacher.expenses.map((e) => ({ ...e, amount: Number(e.amount) })),
     totalPaid: round2(Number(paidAgg._sum.amount ?? 0)),
   };
+}
+
+/**
+ * Public (no session): the active teachers listed on the website's Instructors page, with the
+ * dance programs they currently teach. Selects names only — a teacher's email, phone and notes
+ * never leave the admin area.
+ *
+ * Never throws: the Instructors page must still show the founders if the database is unreachable,
+ * so a failure is logged and the list comes back empty (or without programs).
+ */
+export async function getPublicInstructors(): Promise<PublicInstructor[]> {
+  let teachers: { id: string; name: string }[];
+  try {
+    teachers = await db.teacher.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    });
+  } catch (error) {
+    console.error("[website] Could not load teachers for the Instructors page:", error);
+    return [];
+  }
+  if (teachers.length === 0) return [];
+
+  const programsByTeacher = new Map<string, Set<string>>();
+  try {
+    const classes = await db.class.findMany({
+      where: { isActive: true, teacherId: { in: teachers.map((teacher) => teacher.id) }, program: { isActive: true } },
+      select: { teacherId: true, program: { select: { name: true } } },
+    });
+    for (const taught of classes) {
+      if (!taught.teacherId) continue;
+      const programs = programsByTeacher.get(taught.teacherId) ?? new Set<string>();
+      programs.add(taught.program.name);
+      programsByTeacher.set(taught.teacherId, programs);
+    }
+  } catch (error) {
+    // A warning, not an error: the page still works, listing the teachers by name. Only the
+    // message is logged — the full database error would bury the log line that matters.
+    console.warn(
+      "[website] Instructors page is listing teachers without their programs:",
+      error instanceof Error ? error.message.trim().split("\n").pop() : error,
+    );
+  }
+
+  return teachers.map((teacher) => ({
+    name: teacher.name,
+    programs: [...(programsByTeacher.get(teacher.id) ?? [])].sort(),
+  }));
 }
 
 // ---------- Mutations ----------

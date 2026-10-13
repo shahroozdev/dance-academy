@@ -26,6 +26,7 @@ export type InputType =
   | "tel"
   | "date"
   | "month"
+  | "time"
   | "textarea"
   | "select"
   | "search-select";

@@ -28,9 +28,11 @@ const GENDER_OPTIONS = [
 type RegisterFormProps = {
   programOptions: { label: string; value: string }[];
   policy: PublicRegistrationPolicy;
+  /** The logo uploaded in Studio Admin; the site's own logo is used when there is none. */
+  logoSrc?: string | null;
 };
 
-export function RegisterForm({ programOptions, policy }: RegisterFormProps) {
+export function RegisterForm({ programOptions, policy, logoSrc }: RegisterFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { mutate: submitRegistration, isLoading: isSubmitting } = useMutate("createRegistrationRequest");
@@ -42,7 +44,7 @@ export function RegisterForm({ programOptions, policy }: RegisterFormProps) {
         contentClassName="flex flex-col items-center gap-5 py-10 text-center"
       >
         <div className="relative">
-          <Logo size={64} />
+          <Logo size={64} src={logoSrc} />
           <CheckCircle2
             className="absolute -right-1.5 -bottom-1.5 size-6 rounded-full bg-background text-primary"
             strokeWidth={2.5}
@@ -72,7 +74,7 @@ export function RegisterForm({ programOptions, policy }: RegisterFormProps) {
       className="w-full max-w-5xl"
       header={
         <div className="flex  gap-3 items-center">
-          <Logo size={56} />
+          <Logo size={56} src={logoSrc} />
           <div>
             <CardTitle>Malhaar Dance Company Registration</CardTitle>
             <CardDescription>

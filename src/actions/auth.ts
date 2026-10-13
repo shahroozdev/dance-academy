@@ -13,6 +13,7 @@ export type AdminSessionUser = {
   name: string;
   email: string;
   role: "OWNER" | "STAFF";
+  portal: "admin";
 };
 
 /** Looks up an active admin by email and verifies the password hash. Used only by src/auth.ts's Credentials authorize callback. */
@@ -26,5 +27,5 @@ export async function verifyAdminCredentials(
   const passwordMatches = await bcrypt.compare(password, admin.passwordHash);
   if (!passwordMatches) return null;
 
-  return { id: admin.id, name: admin.name, email: admin.email, role: admin.role };
+  return { id: admin.id, name: admin.name, email: admin.email, role: admin.role, portal: "admin" };
 }

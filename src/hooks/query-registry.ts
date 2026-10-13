@@ -1,6 +1,16 @@
 import { getMonthlyBillingById, getMonthlyBillings } from "@/actions/billing";
 import { getClassMonthlyFeeById, getClassMonthlyFees } from "@/actions/class-fees";
 import { getClasses, getClassById, getClassRoster } from "@/actions/classes";
+import { getContentFestivalById, getContentFestivals } from "@/actions/content-festivals";
+import { getContentInquiries, getContentInquirySummary } from "@/actions/content-inquiries";
+import { getContentMediaAssets } from "@/actions/content-media";
+import { getContentHistory, getContentOverview } from "@/actions/content-overview";
+import { getContentPerformanceById, getContentPerformances } from "@/actions/content-performances";
+import { getContentPressItemById, getContentPressItems } from "@/actions/content-press";
+import { getContentProfileById, getContentProfiles } from "@/actions/content-profiles";
+import { getContentWebsiteSettings } from "@/actions/content-settings";
+import { getContentSiteMedia } from "@/actions/content-site-media";
+import { getContentUsers } from "@/actions/content-users";
 import { getDashboardSummary } from "@/actions/dashboard";
 import { getEmailTemplates } from "@/actions/email-templates";
 import { getEnrollments } from "@/actions/enrollments";
@@ -67,6 +77,22 @@ export const queryRegistry = {
   getPendingNotifications,
   getNotificationLogs,
   getAdminNotificationSummary,
+  getContentOverview,
+  getContentHistory,
+  getContentFestivals,
+  getContentFestivalById,
+  getContentPerformances,
+  getContentPerformanceById,
+  getContentPressItems,
+  getContentPressItemById,
+  getContentMediaAssets,
+  getContentProfiles,
+  getContentProfileById,
+  getContentWebsiteSettings,
+  getContentSiteMedia,
+  getContentInquiries,
+  getContentInquirySummary,
+  getContentUsers,
 } as const;
 
 export type QueryRegistry = typeof queryRegistry;

@@ -25,13 +25,18 @@ function getInitials(name?: string | null, email?: string | null) {
   return email?.slice(0, 2).toUpperCase() ?? "AD";
 }
 
-export function UserNav() {
-  const { data: session } = useSession();
-  const user = session?.user;
+type UserMenuProps = {
+  name?: string | null;
+  email?: string | null;
+  /** Shown as a small badge, e.g. "owner" or "Content Editor". */
+  roleLabel?: string;
+  fallbackName?: string;
+  onSignOut: () => void;
+};
 
-  if (!user) return null;
-
-  const initials = getInitials(user.name, user.email);
+/** The avatar button and account menu at the right of the top bar, for either portal. */
+export function UserMenu({ name, email, roleLabel, fallbackName = "Admin", onSignOut }: UserMenuProps) {
+  const initials = getInitials(name, email);
 
   return (
     <DropdownMenu>
@@ -42,7 +47,7 @@ export function UserNav() {
           </AvatarFallback>
         </Avatar>
         <span className="hidden max-w-32 truncate text-xs font-medium text-foreground sm:inline-block">
-          {user.name ?? user.email}
+          {name ?? email}
         </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
@@ -55,26 +60,35 @@ export function UserNav() {
             </Avatar>
             <div className="flex min-w-0 flex-col items-center gap-1">
               <span className="max-w-full truncate text-sm font-semibold text-foreground">
-                {user.name ?? "Admin"}
+                {name ?? fallbackName}
               </span>
-              <span className="max-w-full truncate text-xs text-muted-foreground">{user.email}</span>
-              {user.role ? (
+              {email ? <span className="max-w-full truncate text-xs text-muted-foreground">{email}</span> : null}
+              {roleLabel ? (
                 <Badge variant="secondary" className="mt-0.5 capitalize">
-                  {user.role.toLowerCase()}
+                  {roleLabel}
                 </Badge>
               ) : null}
             </div>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          variant="destructive"
-          onClick={() => signOut({ callbackUrl: "/admin/login" })}
-        >
+        <DropdownMenuItem variant="destructive" onClick={onSignOut}>
           <LogOut />
           <span>Sign out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+const signOutOfAdmin = () => signOut({ callbackUrl: "/admin/login" });
+
+/** The Studio Admin account menu, read from the admin session. */
+export function UserNav() {
+  const { data: session } = useSession();
+  const user = session?.user;
+
+  if (!user) return null;
+
+  return <UserMenu name={user.name} email={user.email} roleLabel={user.role?.toLowerCase()} onSignOut={signOutOfAdmin} />;
 }

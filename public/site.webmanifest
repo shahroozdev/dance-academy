@@ -1,6 +1,8 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "Malhaar Dance Company",
+  "short_name": "Malhaar",
+  "description": "Indian classical and cinematic dance training, performances, and the Malhaar Ananta Arts Festival in Wood Dale and Elgin, Illinois.",
+  "start_url": "/",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
