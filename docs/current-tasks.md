@@ -23,7 +23,7 @@ Shared source of truth for what's in progress, what's next, and what's done — 
     the teardown deletes only rows with that tag; a read-only check after the final run found none left.
   - **Not covered by browser tests:** real file uploads to Cloudinary, saving Website Settings or site
     image choices (both would change the live site), a real contact-form submission (would email the studio),
-    and the admin/content switch confirmation (needs an admin login). The last-active-owner guard is covered
+   , and being signed in to admin and content at once (needs an admin login). The last-active-owner guard is covered
     by `src/actions/content-users.test.ts` instead, since a failure there in a browser test would lock the
     only owner out.
   - **Found and fixed by these tests:** a wrong password showed no message on either sign-in page
@@ -356,6 +356,20 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-10-14: Admin and Content Portal can be used at the same time.** Owner's decision: each portal signs
+  in on its own; one session only opens its own portal, and both together open both. Removed the
+  one-session-at-a-time rule: the other-session check in both `authorize` callbacks (`src/auth.ts`,
+  `src/content-auth.ts`), `switchPortal`/`switch-required` in `src/actions/portal-login.ts` and
+  `src/types/portal-auth.ts`, the switch notice in `portal-login-form.tsx`, and the now-unused
+  `getPortalSessionCookieName`. Public header account menu (`getPublicPortalIdentities` in
+  `src/actions/portal-session.ts`) now lists every signed-in portal with its own open/sign-out. `AppSidebar` takes an
+  optional `otherPortal` link, passed by the admin and content dashboard layouts only while the other session's JWT
+  exists. Sessions were already isolated (separate cookie names and auth base paths), and `src/proxy.ts` is unchanged.
+  Plan doc and the Content Portal guide updated, guide rebuilt. 444 unit tests, lint and TypeScript pass (TypeScript
+  needed a fresh `prisma generate` and `next typegen`). Not yet checked in a browser with both logins.
+
+- **2026-10-14: Content Portal user manual PDF.** Delivered a 23-page client-facing A4 guide for Content Owners and Content Editors, with real read-only Content Owner portal screenshots of lists, create forms, the file-upload dialog, and the new-user dialog; matching offline HTML; clickable contents and index; PDF bookmarks; publishing checklist; and troubleshooting. The screenshot pass only signed in and navigated or opened empty forms/dialogs; it did not save, publish, upload, update inquiries, or alter settings. The build verified all internal links and images and found no page/footer overlap. The PDF is at `docs/content-portal-manual/Malhaar-Content-Portal-User-Manual.pdf`; rebuild with `node docs/content-portal-manual/build-manual.mjs`.
 
 - **2026-10-12: Final Varsha-request and regression verification.** Rechecked the complete monthly
   billing scope, passed all 293 automated tests, TypeScript, schema validation, lint, and the

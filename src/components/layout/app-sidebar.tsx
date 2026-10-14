@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { ArrowLeftRight, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
@@ -30,6 +30,8 @@ type AppSidebarProps = {
   brandName?: string;
   groups?: NavGroup[];
   onSignOut?: () => void;
+  /** A shortcut to the other portal, passed only while this browser is signed in to it too. */
+  otherPortal?: { href: string; label: string };
 };
 
 /** The collapsible sidebar shared by Studio Admin (the defaults) and the Content Portal. */
@@ -39,6 +41,7 @@ export function AppSidebar({
   brandName,
   groups = navGroups,
   onSignOut = signOutOfAdmin,
+  otherPortal,
 }: AppSidebarProps) {
   const pathname = usePathname();
 
@@ -75,6 +78,16 @@ export function AppSidebar({
 
       <SidebarFooter>
         <SidebarMenu>
+          {otherPortal && (
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip={`Go to ${otherPortal.label}`}>
+                <Link href={otherPortal.href}>
+                  <ArrowLeftRight />
+                  <span className="truncate group-data-[collapsible=icon]:hidden">Go to {otherPortal.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton variant="destructive" tooltip="Sign out" onClick={onSignOut}>
               <LogOut />

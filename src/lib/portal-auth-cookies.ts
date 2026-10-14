@@ -62,7 +62,3 @@ export function getPortalAuthCookies(portal: Portal) {
     },
   };
 }
-
-export function getPortalSessionCookieName(portal: Portal) {
-  return getPortalAuthCookies(portal).sessionToken.name;
-}

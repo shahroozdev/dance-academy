@@ -7,11 +7,15 @@ export type PortalRole = "OWNER" | "STAFF" | "EDITOR";
 export type PortalLoginValues = {
   email: string;
   password: string;
-  switchPortal: boolean;
+};
+
+/** One portal the visitor is signed in to, as shown in the public site's account menu. */
+export type PublicPortalIdentity = {
+  name: string | null | undefined;
+  portal: Portal;
 };
 
 export type PortalLoginResult =
   | { status: "success" }
   | { status: "invalid-credentials" }
-  | { status: "switch-required"; activePortal: Portal }
   | { status: "invalid-request" };

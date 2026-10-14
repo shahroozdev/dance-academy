@@ -55,6 +55,8 @@ const NAV_GROUPS: NavGroup[] = [
 
 const ROLE_LABELS = { OWNER: "Content Owner", EDITOR: "Content Editor" };
 
+const ADMIN_PORTAL_LINK = { href: "/admin", label: "Studio Admin" };
+
 const signOut = () => {
   void signOutOfContentPortal();
 };
@@ -63,9 +65,15 @@ const signOut = () => {
  * The Content Portal's frame: the same sidebar and top bar as Studio Admin, with the portal's own
  * sections and its own sign-out (which clears only the content session).
  */
-type ContentShellProps = { name: string; logoSrc?: string | null; children: ReactNode };
+type ContentShellProps = {
+  name: string;
+  logoSrc?: string | null;
+  /** Whether this browser is also signed in to Studio Admin, which adds a shortcut to it. */
+  hasAdminSession: boolean;
+  children: ReactNode;
+};
 
-export function ContentShell({ name, logoSrc, children }: ContentShellProps) {
+export function ContentShell({ name, logoSrc, hasAdminSession, children }: ContentShellProps) {
   const { role, isOwner } = useContentUser();
   const groups = useMemo(
     () => NAV_GROUPS.filter((group) => isOwner || group.label !== OWNER_GROUP_LABEL),
@@ -75,7 +83,14 @@ export function ContentShell({ name, logoSrc, children }: ContentShellProps) {
 
   return (
     <SidebarProvider>
-      <AppSidebar logoSrc={logoSrc} homeHref={HOME_HREF} brandName="Malhaar Content" groups={groups} onSignOut={signOut} />
+      <AppSidebar
+        logoSrc={logoSrc}
+        homeHref={HOME_HREF}
+        brandName="Malhaar Content"
+        groups={groups}
+        onSignOut={signOut}
+        otherPortal={hasAdminSession ? ADMIN_PORTAL_LINK : undefined}
+      />
       <SidebarInset className="min-w-0">
         <AppTopbar
           homeHref={HOME_HREF}

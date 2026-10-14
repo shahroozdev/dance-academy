@@ -1,4 +1,4 @@
-import { getPublicPortalIdentity } from "@/actions/portal-session";
+import { getPublicPortalIdentities } from "@/actions/portal-session";
 import { getPublicSiteSettings, getSiteLogoUrl } from "@/actions/public-content";
 import { SiteHeader } from "@/components/public/site-header";
 
@@ -7,8 +7,8 @@ interface SiteHeaderContainerProps {
 }
 
 export async function SiteHeaderContainer({ scrollContainerId }: SiteHeaderContainerProps) {
-  const [portalIdentity, settings, logoSrc] = await Promise.all([
-    getPublicPortalIdentity(),
+  const [portalIdentities, settings, logoSrc] = await Promise.all([
+    getPublicPortalIdentities(),
     getPublicSiteSettings(),
     getSiteLogoUrl(),
   ]);
@@ -16,7 +16,7 @@ export async function SiteHeaderContainer({ scrollContainerId }: SiteHeaderConta
   return (
     <SiteHeader
       scrollContainerId={scrollContainerId}
-      portalIdentity={portalIdentity}
+      portalIdentities={portalIdentities}
       settings={settings}
       logoSrc={logoSrc}
     />

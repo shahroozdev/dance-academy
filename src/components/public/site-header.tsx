@@ -2,15 +2,16 @@
 
 import { CircleUserRound, LogOut, MessageCircle, Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
-import { signOutOfPublicPortal, type PublicPortalIdentity } from "@/actions/portal-session";
+import { signOutOfPublicPortal } from "@/actions/portal-session";
 import { PUBLIC_FONT_CLASS } from "@/app/(public)/fonts";
 import { Logo } from "@/components/layout/logo";
 import { Link } from "@/components/Link";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -20,6 +21,7 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle, SheetTri
 import { NAV_LINKS, SITE_NAME } from "@/lib/public-site";
 import { cn } from "@/lib/utils";
 import type { PublicSiteSettings } from "@/types/content";
+import type { PublicPortalIdentity } from "@/types/portal-auth";
 
 const SCROLLED_AFTER_PX = 8;
 
@@ -29,7 +31,8 @@ type SiteHeaderProps = {
    * its own full-screen container; every other page scrolls the window.
    */
   scrollContainerId?: string;
-  portalIdentity?: PublicPortalIdentity | null;
+  /** The portals this browser is signed in to; the account menu lists each one. */
+  portalIdentities?: PublicPortalIdentity[];
   /** Contact and social details, managed in the Content Portal's Website Settings. */
   settings: PublicSiteSettings;
   /** The logo uploaded in Studio Admin; the site's own logo is used when there is none. */
@@ -52,7 +55,7 @@ const portalLabels = {
   content: "Content Portal",
 };
 
-export function SiteHeader({ scrollContainerId, portalIdentity, settings, logoSrc }: SiteHeaderProps) {
+export function SiteHeader({ scrollContainerId, portalIdentities = [], settings, logoSrc }: SiteHeaderProps) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
@@ -82,31 +85,37 @@ export function SiteHeader({ scrollContainerId, portalIdentity, settings, logoSr
       </Link>
 
       <div className="pointer-events-auto flex items-center gap-1">
-        {portalIdentity ? (
+        {portalIdentities.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger className="flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-background/70 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" aria-label="Open account menu">
               <CircleUserRound className="size-6" strokeWidth={1.5} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="flex flex-col gap-1">
-                <span className="truncate">{portalIdentity.name ?? portalLabels[portalIdentity.portal]}</span>
-                <span className="text-xs font-normal text-muted-foreground">{portalLabels[portalIdentity.portal]}</span>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href={portalDestinations[portalIdentity.portal]}>Open dashboard</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild variant="destructive">
-                <form action={signOutOfPublicPortal.bind(null, portalIdentity.portal)}>
-                  <button type="submit" className="flex w-full items-center gap-2 text-left">
-                    <LogOut />
-                    Sign out
-                  </button>
-                </form>
-              </DropdownMenuItem>
+              {portalIdentities.map((identity, index) => (
+                <Fragment key={identity.portal}>
+                  {index > 0 && <DropdownMenuSeparator />}
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="flex flex-col gap-1">
+                      <span className="truncate">{identity.name ?? portalLabels[identity.portal]}</span>
+                      <span className="text-xs font-normal text-muted-foreground">{portalLabels[identity.portal]}</span>
+                    </DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                      <Link href={portalDestinations[identity.portal]}>Open {portalLabels[identity.portal]}</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild variant="destructive">
+                      <form action={signOutOfPublicPortal.bind(null, identity.portal)}>
+                        <button type="submit" className="flex w-full items-center gap-2 text-left">
+                          <LogOut />
+                          Sign out of {portalLabels[identity.portal]}
+                        </button>
+                      </form>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </Fragment>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
-        ) : null}
+        )}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <button

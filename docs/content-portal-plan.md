@@ -8,9 +8,9 @@ Create a separate, restricted portal for managing public website content. Studio
 
 - `/admin/login` and `/content/login` remain separate login pages.
 - Admin and content sessions use different secure, HTTP-only cookie names.
-- A browser may hold only one portal session at a time. Signing into one portal requires an explicit switch that signs out the other portal first.
+- A browser may be signed in to either portal, or to both at once (owner's decision, 2026-10-14). Each session is independent: signing in or out of one never affects the other. While both are active, each portal's sidebar shows a shortcut to the other.
 - `/admin/*` accepts an active admin session only. `/content/*` accepts an active content session only. A valid session for the other portal always redirects to that portal's login page, never grants access.
-- Public pages remain visible to everyone. When one portal session exists, the public header avatar links only to that portal's dashboard and offers its logout action.
+- Public pages remain visible to everyone. When a portal session exists, the public header avatar lists each signed-in portal with its own dashboard link and sign-out action.
 - Every content action independently checks the content session and role; hiding a control is never the access check.
 
 ## Route and session design
@@ -18,7 +18,7 @@ Create a separate, restricted portal for managing public website content. Studio
 - The existing Admin Auth.js instance remains responsible only for `/admin` and uses an Admin-only session cookie.
 - A second Content Auth.js instance will have its own credentials provider, route handler, callback configuration, and Content-only session cookie. The two cookies are never interchangeable.
 - Proxy checks provide early route redirects, while `requireAdmin` and `requireContent` access functions independently verify the appropriate session and current active account before protected data is read or changed.
-- Before either login is accepted, the server checks for an active session in the other portal. The login screen explains the conflict and requires an explicit “switch portal” confirmation; the current session is then cleared before the new one is issued.
+- Each login checks only its own portal's credentials. An existing session in the other portal is left untouched.
 - The public header reads only safe identity details from the single active portal session: display name, portal label, dashboard link, and sign-out action. It never receives password, role-management, student, family, payment, or billing data.
 - Content sign-out clears only the Content cookie; Admin sign-out clears only the Admin cookie. The explicit portal-switch operation clears the other portal’s cookie first.
 

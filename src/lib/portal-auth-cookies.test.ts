@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { getPortalAuthCookies, getPortalSessionCookieName } from "@/lib/portal-auth-cookies";
+import { getPortalAuthCookies } from "@/lib/portal-auth-cookies";
 
 describe("portal authentication cookies", () => {
   it("uses independent names for the Admin and Content session tokens", () => {
-    expect(getPortalSessionCookieName("admin")).not.toBe(getPortalSessionCookieName("content"));
-    expect(getPortalSessionCookieName("admin")).toContain("malhaar-admin");
-    expect(getPortalSessionCookieName("content")).toContain("malhaar-content");
+    const adminSession = getPortalAuthCookies("admin").sessionToken.name;
+    const contentSession = getPortalAuthCookies("content").sessionToken.name;
+
+    expect(adminSession).not.toBe(contentSession);
+    expect(adminSession).toContain("malhaar-admin");
+    expect(contentSession).toContain("malhaar-content");
   });
 
   it("keeps all Auth.js helper cookies separate between portals", () => {

@@ -33,20 +33,17 @@ const portalLabels: Record<Portal, string> = {
 
 interface PortalLoginFormProps {
   portal: Portal;
-  hasOtherPortalSession: boolean;
 }
 
-export function PortalLoginForm({ portal, hasOtherPortalSession }: PortalLoginFormProps) {
+export function PortalLoginForm({ portal }: PortalLoginFormProps) {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
-  const [shouldSwitchPortal, setShouldSwitchPortal] = useState(hasOtherPortalSession);
-  const otherPortal: Portal = portal === "admin" ? "content" : "admin";
 
   const handleSubmit = async (values: LoginValues) => {
     setFormError(null);
     let result: Awaited<ReturnType<(typeof portalActions)[Portal]>>;
     try {
-      result = await portalActions[portal]({ ...values, switchPortal: shouldSwitchPortal });
+      result = await portalActions[portal](values);
     } catch {
       setFormError("Unable to sign in right now. Please try again in a moment.");
       return;
@@ -57,18 +54,8 @@ export function PortalLoginForm({ portal, hasOtherPortalSession }: PortalLoginFo
       return;
     }
 
-    if (result.status === "switch-required") {
-      setShouldSwitchPortal(true);
-      setFormError(`You are signed in to ${portalLabels[result.activePortal]}. Confirm the switch to continue.`);
-      return;
-    }
-
     setFormError(result.status === "invalid-credentials" ? "Invalid email or password." : "Unable to sign in.");
   };
-
-  const submitLabel = shouldSwitchPortal
-    ? `Switch from ${portalLabels[otherPortal]} and sign in`
-    : `Sign in to ${portalLabels[portal]}`;
 
   return (
     <FORM
@@ -79,16 +66,11 @@ export function PortalLoginForm({ portal, hasOtherPortalSession }: PortalLoginFo
     >
       {(form) => (
         <>
-          {shouldSwitchPortal ? (
-            <p className="rounded-md border border-primary/30 bg-primary/10 p-3 text-sm text-foreground">
-              Continuing signs you out of {portalLabels[otherPortal]} in this browser. Only one portal session can be active at a time.
-            </p>
-          ) : null}
           <FormFeilds<LoginValues> name="email" label="Email" type="email" placeholder="you@example.com" />
           <FormFeilds<LoginValues> name="password" label="Password" type="password" placeholder="Enter your password" />
           {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
           <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Signing in..." : submitLabel}
+            {form.formState.isSubmitting ? "Signing in..." : `Sign in to ${portalLabels[portal]}`}
           </Button>
         </>
       )}

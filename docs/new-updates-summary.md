@@ -2,6 +2,17 @@
 
 ## 2026-10-14
 
+- You can now be signed in to Studio Admin and the Content Portal at the same time in the same browser. Signing in to one no longer signs you out of the other, and there's no more "switch portal" message on the sign-in pages.
+- Each portal still has its own sign-in. Signed in to only one, you can open only that one. Signed in to both, you can use both.
+- While you are signed in to both, the sidebar shows a "Go to Content Portal" or "Go to Studio Admin" link to jump straight to the other.
+- Signing out of one portal leaves the other signed in. On a shared computer, sign out of each portal you used.
+- The account menu at the top of the public website now lists every portal you are signed in to, each with its own open and sign-out option.
+
+- A new printable Content Portal guide is now available for the website team. It explains signing in, using the Content and Admin portals together, each person's role, and the full process for preparing, reviewing, publishing, and checking website updates.
+- The guide includes step-by-step instructions for festivals, performances, press items, public profiles, the Media Library, website inquiries, website settings, user access, and change history, plus troubleshooting and a ready-to-use publishing checklist.
+- The guide now includes real views of the Content Portal, so the website team can recognise each area before using it.
+- The Content Portal guide now also shows the actual forms used to add festivals, performances, press items, and public profiles, plus the file-upload and new-user windows. This makes it easier to follow each step while entering website content.
+
 - The Content Portal has a new Inquiries section. Every message sent from the website's contact form is now kept there, newest first, with the visitor's name, topic, message, and the date it arrived.
 - Opening an inquiry shows the full message with the visitor's email, phone, and student details, and marks it as read. From there it can be marked as replied, archived, or put back to new, and a Reply by email button opens a ready-addressed email.
 - The list can be searched by name, email, or message and filtered by topic and by status. Archived inquiries are hidden unless asked for.
