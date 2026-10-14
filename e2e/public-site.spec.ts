@@ -298,10 +298,4 @@ test.describe("what a visitor cannot reach", () => {
     await expect(page.getByText("Invalid email or password.")).toBeVisible();
     await expect(page).toHaveURL(/\/content\/login$/);
   });
-
-  test("no account menu is shown to a signed-out visitor", async ({ page }) => {
-    await page.goto("/about");
-
-    await expect(page.getByRole("button", { name: "Open account menu" })).toHaveCount(0);
-  });
 });

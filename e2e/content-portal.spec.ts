@@ -356,15 +356,6 @@ test.describe("signed in as a Content Owner", () => {
     await expect(page.getByText(`Published the ${FESTIVAL_YEAR} festival.`)).toBeVisible();
     await expect(page.getByText(new RegExp(`Added ${EDITOR_NAME} as a Content Editor`))).toBeVisible();
   });
-
-  test("the public website shows the owner an account menu leading back to the portal", async () => {
-    await page.goto("/about");
-    await page.getByRole("button", { name: "Open account menu" }).click();
-
-    await expect(page.getByRole("menu")).toContainText("Content Portal");
-    await expect(page.getByRole("menuitem", { name: "Open dashboard" })).toHaveAttribute("href", "/content");
-    await page.keyboard.press("Escape");
-  });
 });
 
 test.describe("signed in as a Content Editor", () => {

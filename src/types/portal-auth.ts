@@ -9,12 +9,6 @@ export type PortalLoginValues = {
   password: string;
 };
 
-/** One portal the visitor is signed in to, as shown in the public site's account menu. */
-export type PublicPortalIdentity = {
-  name: string | null | undefined;
-  portal: Portal;
-};
-
 export type PortalLoginResult =
   | { status: "success" }
   | { status: "invalid-credentials" }

@@ -10,7 +10,7 @@ Create a separate, restricted portal for managing public website content. Studio
 - Admin and content sessions use different secure, HTTP-only cookie names.
 - A browser may be signed in to either portal, or to both at once (owner's decision, 2026-10-14). Each session is independent: signing in or out of one never affects the other. While both are active, each portal's sidebar shows a shortcut to the other.
 - `/admin/*` accepts an active admin session only. `/content/*` accepts an active content session only. A valid session for the other portal always redirects to that portal's login page, never grants access.
-- Public pages remain visible to everyone. When a portal session exists, the public header avatar lists each signed-in portal with its own dashboard link and sign-out action.
+- Public pages remain visible to everyone and show no signed-in state: the public header has no account avatar or portal links (removed 2026-10-14 at the owner's request). Staff reach each portal from its own address.
 - Every content action independently checks the content session and role; hiding a control is never the access check.
 
 ## Route and session design
@@ -19,8 +19,7 @@ Create a separate, restricted portal for managing public website content. Studio
 - A second Content Auth.js instance will have its own credentials provider, route handler, callback configuration, and Content-only session cookie. The two cookies are never interchangeable.
 - Proxy checks provide early route redirects, while `requireAdmin` and `requireContent` access functions independently verify the appropriate session and current active account before protected data is read or changed.
 - Each login checks only its own portal's credentials. An existing session in the other portal is left untouched.
-- The public header reads only safe identity details from the single active portal session: display name, portal label, dashboard link, and sign-out action. It never receives password, role-management, student, family, payment, or billing data.
-- Content sign-out clears only the Content cookie; Admin sign-out clears only the Admin cookie. The explicit portal-switch operation clears the other portal’s cookie first.
+- Content sign-out clears only the Content cookie; Admin sign-out clears only the Admin cookie. Neither login or sign-out touches the other portal’s cookie.
 
 ## Phase 1 integration map
 
@@ -30,13 +29,12 @@ The existing Admin authentication is already isolated behind an Admin credential
 | --- | --- |
 | Admin credential verification | Content credential verification against active Content User records only. |
 | Admin Auth.js handler | A separate Content Auth.js handler and a separately named session cookie. |
-| `/admin/login` | `/content/login`, with a server-rendered active-session conflict message and explicit switch confirmation. |
+| `/admin/login` | `/content/login`, which signs in to the Content Portal only and leaves any Admin session untouched. |
 | `/admin/*` proxy protection | `/content/*` proxy protection, checking the Content session only. |
 | `getActiveAdmin` / `requireAdmin` | `getActiveContentUser` / `requireContentUser` / `requireContentOwner`, each rechecking active status from the database. |
 | Admin dashboard layout and sign-out | Minimal Content Overview layout and Content-only sign-out. |
-| Public website header | A safe, server-provided active-portal summary for the avatar menu. |
 
-The portal switch cannot rely only on a client-side sign-out. The target login server action/route must verify the opposite cookie, require a submitted switch intent, clear that cookie, and only then allow the target credentials to create a session. Direct requests to protected routes remain rejected unless their matching server-side access function succeeds.
+Direct requests to protected routes remain rejected unless their matching server-side access function succeeds.
 
 ## Roles
 
@@ -68,7 +66,7 @@ The portal switch cannot rely only on a client-side sign-out. The target login s
 ### Phase 1 — portal isolation and authentication
 
 - Add content-user records and roles.
-- Add the independently scoped content session, `/content/login`, route protection, explicit portal-switch flow, and public-header avatar state.
+- Add the independently scoped content session, `/content/login`, route protection, and independent sessions (either portal, or both at once).
 - Add a minimal Content Overview page and content logout.
 
 ### Phase 2 — festivals

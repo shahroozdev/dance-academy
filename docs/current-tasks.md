@@ -362,8 +362,9 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   one-session-at-a-time rule: the other-session check in both `authorize` callbacks (`src/auth.ts`,
   `src/content-auth.ts`), `switchPortal`/`switch-required` in `src/actions/portal-login.ts` and
   `src/types/portal-auth.ts`, the switch notice in `portal-login-form.tsx`, and the now-unused
-  `getPortalSessionCookieName`. Public header account menu (`getPublicPortalIdentities` in
-  `src/actions/portal-session.ts`) now lists every signed-in portal with its own open/sign-out. `AppSidebar` takes an
+  `getPortalSessionCookieName`. Then, at the owner's request, the public header's account
+  avatar/menu was removed entirely, together with `src/actions/portal-session.ts`, the `PublicPortalIdentity` type and
+  the two browser tests that covered it, so public pages no longer read either session. `AppSidebar` takes an
   optional `otherPortal` link, passed by the admin and content dashboard layouts only while the other session's JWT
   exists. Sessions were already isolated (separate cookie names and auth base paths), and `src/proxy.ts` is unchanged.
   Plan doc and the Content Portal guide updated, guide rebuilt. 444 unit tests, lint and TypeScript pass (TypeScript

@@ -6,7 +6,7 @@
 - Each portal still has its own sign-in. Signed in to only one, you can open only that one. Signed in to both, you can use both.
 - While you are signed in to both, the sidebar shows a "Go to Content Portal" or "Go to Studio Admin" link to jump straight to the other.
 - Signing out of one portal leaves the other signed in. On a shared computer, sign out of each portal you used.
-- The account menu at the top of the public website now lists every portal you are signed in to, each with its own open and sign-out option.
+- The account icon at the top of the public website has been removed, leaving just the logo and the menu button. To reach Studio Admin or the Content Portal, use their usual addresses. Each portal has its own sign-out button.
 
 - A new printable Content Portal guide is now available for the website team. It explains signing in, using the Content and Admin portals together, each person's role, and the full process for preparing, reviewing, publishing, and checking website updates.
 - The guide includes step-by-step instructions for festivals, performances, press items, public profiles, the Media Library, website inquiries, website settings, user access, and change history, plus troubleshooting and a ready-to-use publishing checklist.
