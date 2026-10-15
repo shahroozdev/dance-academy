@@ -9,6 +9,26 @@
 
 ## 2026-10-15
 
+- Saving changes to an inactive class (for example renaming it) no longer resets its last class date to the day of the edit, which could have removed that class's charges from the current month's bills. Editing a class also no longer risks switching a seasonal class back to regular pricing.
+- Re-enrolling a student in a class now starts a new enrollment and keeps the earlier one exactly as it was, so months already billed for the earlier enrollment stay correct.
+- A student who leaves and rejoins a class in the same month is charged for the classes in both periods, once.
+- A student can no longer be given two overlapping enrollments in the same class, and an enrollment's last class date can no longer be set before its first billable date.
+- A student who joins partway through a month is never charged more than a full-month student, and is not charged for weeks after a class has ended.
+- Deactivating a student no longer removes the sibling discount from their brother's or sister's earlier bills for months both children attended.
+- A seasonal or performance fee is charged only once per student, even if the student is removed from and added back to that program.
+- If a payment was recorded for a class that later stops being charged on that bill, the payment is kept and the bill is marked for review so you can decide where it belongs.
+- Monthly billing no longer creates empty $0 bills for students with nothing to pay that month.
+- Refunds can now be edited without accidentally turning them into payments.
+- The dashboard's outstanding amount now shows only money still owed; a family's credit no longer lowers the total other families owe.
+- Saving changes to an inactive dance program or teacher can no longer accidentally make it active again.
+- The leftover test sign-in account, test class, and test registration from earlier system checks were removed. No real student, family, bill, or payment was affected.
+
+- Monthly billing now refreshes the complete month even when a bill already has an amount or recorded payments. Newly added classes, corrected session counts, and class-status changes can no longer leave part of a student's bill stale or missing.
+- Recalculating an older month can no longer duplicate a one-time seasonal or performance fee that is already recorded in another month.
+- The Bharatanatyam summer break now correctly ends in August. September charges for active students were restored from their enrollment dates, while Hannah's uncertain final bill was left unchanged for manual confirmation.
+- September and October billing was fully cross-checked and repaired: stale class amounts were updated, missing October Onam charges were restored, and all existing payments were preserved.
+- The remaining isolated browser-test student, family, class, and empty bill were removed after confirming they had no payments or shared records.
+
 - Saving the actual number of regular classes held now immediately updates that month’s class fee and every affected student balance. Existing payments stay recorded and are applied to the newly calculated amount.
 - Recalculate now works on bills with payments. It refreshes class fees and discounts without deleting or changing payment history, then updates the remaining balance or credit automatically.
 - Empty zero-dollar monthly bills are repaired when an eligible enrollment exists, rather than remaining incorrectly marked as paid.

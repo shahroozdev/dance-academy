@@ -26,11 +26,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const month = normalizeMonth(monthValue);
   const paymentDateFilter = periodDateFilter({ type: "MONTH", month: monthValue });
 
-  const [billingAgg, paymentsAgg, activeStudentCount, unpaidCount, partialCount] = await Promise.all([
-    db.monthlyStudentBilling.aggregate({
-      where: { month },
-      _sum: { finalAmountDue: true, balance: true },
-    }),
+  const [billingAgg, outstandingAgg, paymentsAgg, activeStudentCount, unpaidCount, partialCount] = await Promise.all([
+    db.monthlyStudentBilling.aggregate({ where: { month }, _sum: { finalAmountDue: true } }),
+    // Only amounts still owed. A family's credit (negative balance) must not hide what others owe.
+    db.monthlyStudentBilling.aggregate({ where: { month, balance: { gt: 0 } }, _sum: { balance: true } }),
     db.payment.aggregate({ where: { paymentDate: paymentDateFilter }, _sum: { amount: true } }),
     db.student.count({ where: { isActive: true } }),
     db.monthlyStudentBilling.count({ where: { month, status: "UNPAID" } }),
@@ -41,7 +40,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     month: monthValue,
     currentMonthTuitionDue: round2(Number(billingAgg._sum.finalAmountDue ?? 0)),
     currentMonthCollected: round2(Number(paymentsAgg._sum.amount ?? 0)),
-    currentMonthOutstanding: round2(Number(billingAgg._sum.balance ?? 0)),
+    currentMonthOutstanding: round2(Number(outstandingAgg._sum.balance ?? 0)),
     activeStudentCount,
     unpaidCount,
     partialCount,

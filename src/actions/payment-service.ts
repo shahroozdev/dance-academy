@@ -52,7 +52,8 @@ export async function updateBillPayment(id: string, data: PaymentUpdateInput) {
       data: {
         classId: data.classId || null,
         paymentDate: new Date(`${data.paymentDate}T00:00:00.000Z`),
-        amount: data.amount,
+        // The form edits a positive amount; a refund entry stays money returned (negative).
+        amount: Number(payment.amount) < 0 ? -data.amount : data.amount,
         method: data.method,
         reference: data.reference || null,
         notes: data.notes || null,

@@ -85,7 +85,7 @@ describe("historical enrollment billing", () => {
       where.status === "ACTIVE" ? [] : [ended, { ...ended, id: "rejoined" }]);
     mocks.tx.classMonthlyFee.findUnique.mockResolvedValue({ id: "fee", monthlyClassFee: 100 });
     const result = await buildLineItemInputs(mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0], "student", month);
-    expect(result).toEqual([{ enrollmentId: "ended", classMonthlyFeeId: "fee", amount: 100, discountEligible: true }]);
+    expect(result).toEqual([{ classId: "class", enrollmentId: "ended", classMonthlyFeeId: "fee", amount: 100, discountEligible: true }]);
   });
   it("excludes an enrollment that ended before the billed month", async () => {
     mocks.tx.enrollment.findMany.mockResolvedValue([{ ...ended, endDate: new Date("2026-08-31") }]);
@@ -143,7 +143,7 @@ describe("historical enrollment billing", () => {
       mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0],
       "student",
       month,
-    )).toEqual([{ enrollmentId: "ended", classMonthlyFeeId: "fee", amount: 160, discountEligible: true }]);
+    )).toEqual([{ classId: "class", enrollmentId: "ended", classMonthlyFeeId: "fee", amount: 160, discountEligible: true }]);
   });
 
   it("does not count a paused enrollment toward the sibling discount", async () => {
@@ -195,7 +195,7 @@ describe("seasonal charge-once billing", () => {
     endDate: null,
     class: { id: "seasonalClass", discountEligible: true, pricingType: "SEASONAL", dayOfWeek: null, standardRate: 45, firstClassDate: new Date("2026-01-01"), inactiveFromMonth: null },
   };
-  it("skips a seasonal enrollment already billed in an earlier month", async () => {
+  it("skips a seasonal enrollment already billed in another month", async () => {
     mocks.tx.enrollment.findMany.mockResolvedValue([seasonal]);
     mocks.tx.monthlyBillingLineItem.findFirst.mockResolvedValue({ id: "priorLineItem" });
     mocks.tx.classMonthlyFee.findUnique.mockResolvedValue({ id: "seasonFee", monthlyClassFee: 45, rate: null });
@@ -211,25 +211,75 @@ describe("seasonal charge-once billing", () => {
       mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0],
       "student",
       month,
-    )).toEqual([{ enrollmentId: "sEnroll", classMonthlyFeeId: "seasonFee", amount: 30, discountEligible: false }]);
+    )).toEqual([{ classId: "seasonalClass", enrollmentId: "sEnroll", classMonthlyFeeId: "seasonFee", amount: 30, discountEligible: false }]);
   });
   it("bills a seasonal enrollment the first month it overlaps, excluded from either discount", async () => {
     mocks.tx.enrollment.findMany.mockResolvedValue([seasonal]);
     mocks.tx.monthlyBillingLineItem.findFirst.mockResolvedValue(null);
     mocks.tx.classMonthlyFee.findUnique.mockResolvedValue({ id: "seasonFee", monthlyClassFee: 45, rate: null });
     const result = await buildLineItemInputs(mocks.tx as unknown as Parameters<typeof buildLineItemInputs>[0], "student", month);
-    expect(result).toEqual([{ enrollmentId: "sEnroll", classMonthlyFeeId: "seasonFee", amount: 45, discountEligible: false }]);
+    expect(result).toEqual([{ classId: "seasonalClass", enrollmentId: "sEnroll", classMonthlyFeeId: "seasonFee", amount: 45, discountEligible: false }]);
     expect(mocks.tx.monthlyBillingLineItem.findFirst).toHaveBeenCalledWith({
       where: {
-        enrollmentId: "sEnroll",
         classMonthlyFee: { classId: "seasonalClass" },
-        billing: { month: { lt: month } },
+        billing: { studentId: "student", month: { not: month } },
       },
     });
   });
 });
 
 describe("monthly billing regeneration", () => {
+  it("repairs a non-zero bill missing an eligible class and preserves recorded payments", async () => {
+    const cls = {
+      id: "class",
+      firstClassDate: new Date("2026-09-01T00:00:00.000Z"),
+      inactiveFromMonth: null,
+      pricingType: "REGULAR",
+      dayOfWeek: "THURSDAY",
+      standardRate: 20,
+      discountEligible: true,
+      billingPauses: [],
+    };
+    const enrollment = {
+      id: "enrollment",
+      classId: "class",
+      startDate: new Date("2026-09-10T00:00:00.000Z"),
+      endDate: null,
+      billingPauses: [],
+      class: cls,
+    };
+    mocks.tx.student.findMany
+      .mockResolvedValueOnce([{
+        id: "student",
+        fullName: "Student",
+        familyId: "family",
+        enrollments: [enrollment],
+        monthlyBillings: [{ id: "bill", finalAmountDue: 40, amountPaid: 20, lineItems: [] }],
+      }])
+      .mockResolvedValueOnce([{ enrollments: [enrollment] }]);
+    mocks.tx.monthlyStudentBilling.findUnique.mockResolvedValue({
+      id: "bill",
+      status: "PARTIAL",
+      adjustment: 0,
+      payments: [{ amount: 20 }],
+    });
+    mocks.tx.enrollment.findMany.mockResolvedValue([enrollment]);
+    mocks.tx.classMonthlyFee.findUnique.mockResolvedValue({ id: "fee", monthlyClassFee: 80, rate: 20 });
+    mocks.tx.monthlyStudentBilling.upsert.mockResolvedValue({ id: "bill" });
+
+    await expect(generateMonthlyBilling("2026-09")).resolves.toMatchObject({ updated: 1, skipped: 0 });
+    expect(mocks.tx.monthlyStudentBilling.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      update: expect.objectContaining({
+        finalAmountDue: 60,
+        amountPaid: 20,
+        balance: 40,
+        status: "PARTIAL",
+      }),
+    }));
+    expect(mocks.tx.monthlyBillingLineItem.deleteMany).toHaveBeenCalledWith({ where: { billingId: "bill" } });
+    expect(mocks.tx.monthlyBillingLineItem.createMany).toHaveBeenCalled();
+  });
+
   it("repairs an existing empty zero-dollar bill when billable enrollment data exists", async () => {
     const cls = {
       id: "class",
@@ -377,23 +427,22 @@ describe("paid bill recalculation", () => {
       class: cls,
     };
     mocks.tx.monthlyStudentBilling.findUniqueOrThrow.mockResolvedValue({
-      id: "bill",
       studentId: "student",
       month,
-      adjustment: 0,
-      payments: [{ amount: 60 }],
+      student: { familyId: "family" },
     });
-    mocks.tx.student.findUniqueOrThrow.mockResolvedValue({ id: "student", familyId: "family" });
+    mocks.tx.monthlyStudentBilling.findUnique.mockResolvedValue({ id: "bill", adjustment: 0, payments: [{ amount: 60, classId: null }] });
     mocks.tx.student.findMany.mockResolvedValue([]);
     mocks.tx.enrollment.findMany.mockResolvedValue([enrollment]);
     mocks.tx.classMonthlyFee.findUnique.mockResolvedValue({ id: "fee", monthlyClassFee: 80, rate: 20 });
-    mocks.tx.monthlyStudentBilling.update.mockResolvedValue({ id: "bill" });
+    mocks.tx.monthlyStudentBilling.upsert.mockResolvedValue({ id: "bill" });
 
     await recalculateBilling("bill");
 
-    expect(mocks.tx.monthlyStudentBilling.update).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: "bill" },
-      data: expect.objectContaining({
+    expect(mocks.tx.monthlyBillingLineItem.deleteMany).toHaveBeenCalledWith({ where: { billingId: "bill" } });
+    expect(mocks.tx.monthlyStudentBilling.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      where: { studentId_month: { studentId: "student", month } },
+      update: expect.objectContaining({
         finalAmountDue: 80,
         amountPaid: 60,
         balance: 20,

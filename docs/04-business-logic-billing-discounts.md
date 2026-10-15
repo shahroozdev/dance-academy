@@ -68,11 +68,13 @@ per [01-architecture-and-tech-stack.md](./01-architecture-and-tech-stack.md).
   togglable per class in `/admin/classes/[id]/edit`, but a class with `pricingType = SEASONAL` is
   **always** treated as non-discount-eligible in the billing logic itself, regardless of that flag
   — see 4.3.
-- **Sibling discount eligibility**: family has 2+ students where `Student.isActive = true` **and**
-  that student has at least one active enrollment in the billing month (a sibling who has fully
-  withdrawn shouldn't make an otherwise-only-child eligible for a discount they no longer share
-  with anyone). Every qualifying sibling gets the discount on their own Subtotal A — not split,
-  not based on family total.
+- **Sibling discount eligibility**: family has 2+ students who each have a billable enrollment in
+  the billing month (dates overlap, class within its first/last boundary, no class or enrollment
+  pause). A sibling who has withdrawn stops counting after their last class date, but still counts
+  for the months they attended, so recalculating an older bill keeps its discount. For an
+  inactive student only enrollments with an end date count — an open enrollment on an inactive
+  student is incomplete data and never extends the discount. Every qualifying sibling gets the
+  discount on their own Subtotal A — not split, not based on family total.
 - **Both discounts can apply to the same student** (confirmed by the Nia example) and are always
   computed in the fixed order above.
 - **Neither discount ever touches a seasonal/special-program charge**: as of §4.1 step 2/7, a
@@ -123,13 +125,17 @@ button):
 
 1. Compute the set of "should have a bill" students for `month` (active students with an active
    enrollment overlapping the month).
-2. For each: `upsert` on the unique `(studentId, month)` key.
-   - **If no row exists**: create it, running the full calculation in §4.1.
-   - **If a row exists with `status = DRAFT` or `UNPAID` and zero linked Payments**: recompute and
-     overwrite (safe — nothing has been communicated or collected against the old numbers yet).
-   - **If a row exists with any linked Payment, or `status = PARTIAL`/`PAID`/`OVERPAID`**: leave it
-     untouched and report it in the job's summary as "skipped — has payments." This is the guard
-     that prevents a re-run from ever silently changing a bill a parent has already paid against.
+2. For each: `upsert` on the unique `(studentId, month)` key through `recomputeStudentMonthBill`
+   (`src/actions/billing-service.ts`), the same function the per-bill Recalculate action uses.
+   - **If no row exists**: create it, running the full calculation in §4.1 — unless there is
+     nothing to charge (e.g. the seasonal fee already sits in another month), in which case no
+     empty $0 bill is created and the student is reported as skipped.
+   - **If a row exists** (paid or not): rebuild its line items and discounts from current data,
+     keep its adjustment, and re-sum every payment ledger entry into `amountPaid`/`balance`/
+     `status`. Payments are never deleted, changed, or moved. If a payment is assigned to a class
+     that is no longer charged on the bill, the bill is flagged for manual review naming that
+     class. (Superseded rule: older versions skipped any bill with payments, which left partial
+     months stale after enrollment or session-count corrections.)
 3. Return a summary: `{ created: n, updated: n, skipped: n, students: [...] }`, shown to the admin
    after a manual trigger and logged (not emailed) after the scheduled cron run.
 
@@ -165,11 +171,17 @@ Three rules that round out the calculation, each enforced in the single shared c
   has been fully flat-overridden (no per-session rate on file), it falls back to a calendar-day
   ratio of the full-month amount. An enrollment covering the whole month is unaffected. SEASONAL
   classes are never prorated by date — see the next point instead.
-- **Seasonal/special-program charge-once**: a SEASONAL enrollment is billed exactly once, on the
-  first month it overlaps — not recreated on every later run just because the enrollment (which
-  has no natural end date) still overlaps subsequent months. `buildLineItemInputs` checks whether a
-  `MonthlyBillingLineItem` already links this enrollment to this class from *any other month*
-  before billing it again.
+- **Seasonal/special-program charge-once**: a SEASONAL class is billed exactly once per student,
+  on the first month it is generated with a non-zero fee — not recreated on every later run just
+  because the enrollment (which has no natural end date) still overlaps subsequent months.
+  `buildLineItemInputs` checks whether a `MonthlyBillingLineItem` already charges this student for
+  this class in *any other month* (earlier or later, through any enrollment row) before billing it.
+- **Several enrollment periods in one class**: leaving and re-enrolling creates a new enrollment
+  row; the ended row keeps its dates so older months stay correct. Periods for the same class may
+  not overlap. Within a month, every billable period of one class is merged into one line
+  (`computeClassMonthAmount`), cut off at the class's last class date, and never more than the
+  class's full-month fee (when staff lower a month's session count the system doesn't know which
+  dates were cancelled, so a part-month student is capped at what a full-month student pays).
 - **Finalization gate**: `ClassMonthlyFee.isFinalized` / `finalizedAt` record staff sign-off on a
   class's billable session count for the month (via `/admin/class-fees`' per-row Finalize button or
   "Finalize All"). Editing an already-finalized fee clears the flag automatically. Every

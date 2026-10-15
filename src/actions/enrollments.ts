@@ -7,6 +7,7 @@ import { enrollmentBillingPauseSchema, enrollmentCreateSchema, enrollmentStartDa
 import type { EnrollmentBillingPauseInput, EnrollmentCreateInput, EnrollmentStartDateUpdateInput } from "@/actions/enrollments.schema";
 import { serializableTransaction } from "@/actions/transaction";
 import { idSchema , validateListQuery } from "@/actions/validation.schema";
+import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { enrollmentCalendarDate } from "@/lib/enrollment-date";
 
@@ -58,10 +59,7 @@ export async function createEnrollment(data: EnrollmentCreateInput) {
     const cls = await tx.class.findUniqueOrThrow({ where: { id: data.classId } });
     if (!student.isActive || !cls.isActive) throw new Error("Select an active student and class.");
     assertNotBeforeClassStart(startDate, cls.firstClassDate);
-    const existing = await tx.enrollment.findFirst({
-      where: { studentId: data.studentId, classId: data.classId, status: "ACTIVE" },
-    });
-    if (existing) throw new Error("This student is already enrolled in this class.");
+    await assertNoOverlappingEnrollment(tx, { studentId: data.studentId, classId: data.classId, startDate });
     return tx.enrollment.create({
       data: { studentId: data.studentId, classId: data.classId, startDate },
     });
@@ -78,10 +76,15 @@ export async function createEnrollment(data: EnrollmentCreateInput) {
 export async function endEnrollment(id: string, endDateInput: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  const { startDate: endDate } = enrollmentStartDateUpdateSchema.parse({ startDate: endDateInput });
+  const { startDate: endDateValue } = enrollmentStartDateUpdateSchema.parse({ startDate: endDateInput });
+  const endDate = new Date(`${endDateValue}T00:00:00.000Z`);
+  const current = await db.enrollment.findUniqueOrThrow({ where: { id }, select: { startDate: true } });
+  if (endDate < enrollmentCalendarDate(current.startDate)) {
+    throw new Error("The last class date cannot be before the enrollment's first billable date.");
+  }
   const enrollment = await db.enrollment.update({
     where: { id, status: "ACTIVE" },
-    data: { status: "ENDED", endDate: new Date(`${endDate}T00:00:00.000Z`) },
+    data: { status: "ENDED", endDate },
   });
   await recalculateEnrollmentRangeBills(
     id,
@@ -100,12 +103,20 @@ export async function updateEnrollmentStartDate(id: string, data: EnrollmentStar
 
   const enrollment = await db.enrollment.findUniqueOrThrow({
     where: { id },
-    select: { endDate: true, class: { select: { firstClassDate: true } } },
+    select: { studentId: true, classId: true, endDate: true, class: { select: { firstClassDate: true } } },
   });
   assertNotBeforeClassStart(startDate, enrollment.class.firstClassDate);
   if (enrollment.endDate && startDate > enrollmentCalendarDate(enrollment.endDate)) {
     throw new Error("Enrollment start date cannot be after its end date.");
   }
+  // Moving a period's start must not make it cover dates another period of the same class already covers.
+  await assertNoOverlappingEnrollment(db, {
+    studentId: enrollment.studentId,
+    classId: enrollment.classId,
+    startDate,
+    endDate: enrollment.endDate,
+    excludeId: id,
+  });
 
   const updated = await db.enrollment.update({ where: { id }, data: { startDate } });
   await recalculateEnrollmentRangeBills(
@@ -121,14 +132,44 @@ function parseEnrollmentStartDate(value?: string) {
   return value ? new Date(value) : new Date();
 }
 
+// One student may hold several periods in the same class (leaving and rejoining), but the periods
+// must not overlap: overlapping rows would describe the same sessions twice.
+async function assertNoOverlappingEnrollment(
+  tx: Prisma.TransactionClient,
+  { studentId, classId, startDate, endDate = null, excludeId }: {
+    studentId: string;
+    classId: string;
+    startDate: Date;
+    endDate?: Date | null;
+    excludeId?: string;
+  },
+) {
+  const overlapping = await tx.enrollment.findFirst({
+    where: {
+      studentId,
+      classId,
+      ...(excludeId && { id: { not: excludeId } }),
+      ...(endDate && { startDate: { lte: endDate } }),
+      OR: [{ endDate: null }, { endDate: { gte: startDate } }],
+    },
+    select: { endDate: true },
+  });
+  if (!overlapping) return;
+  if (!overlapping.endDate) throw new Error("This student is already enrolled in this class.");
+  throw new Error(
+    `This student's earlier enrollment in this class ran until ${overlapping.endDate.toISOString().slice(0, 10)}. Choose a first billable date after that.`,
+  );
+}
+
 function assertNotBeforeClassStart(enrollmentStart: Date, firstClassDate: Date) {
   if (enrollmentStart < enrollmentCalendarDate(firstClassDate)) {
     throw new Error("The first billable date cannot be before the class's first class date.");
   }
 }
 
-// Reactivates the same enrollment record (rather than creating a new one) so a student's
-// enrollment in a given class stays a single row across an end/re-enroll cycle.
+// Re-enrolling starts a new enrollment period and keeps the ended one unchanged. Rewriting the
+// ended row's dates would erase the months it covered, dropping the class from those older bills
+// the next time they are recalculated.
 export async function reactivateEnrollment(id: string, firstBillableDate: string) {
   await requireAdmin();
   id = idSchema.parse(id);
@@ -142,20 +183,16 @@ export async function reactivateEnrollment(id: string, firstBillableDate: string
       tx.class.findUniqueOrThrow({ where: { id: enrollment.classId } }),
     ]);
     if (!student.isActive || !cls.isActive) throw new Error("Both the student and class must be active to re-enroll.");
-    assertNotBeforeClassStart(new Date(`${startDate}T00:00:00.000Z`), cls.firstClassDate);
+    const start = new Date(`${startDate}T00:00:00.000Z`);
+    assertNotBeforeClassStart(start, cls.firstClassDate);
+    await assertNoOverlappingEnrollment(tx, { studentId: enrollment.studentId, classId: enrollment.classId, startDate: start });
 
-    const existingActive = await tx.enrollment.findFirst({
-      where: { studentId: enrollment.studentId, classId: enrollment.classId, status: "ACTIVE" },
-    });
-    if (existingActive) throw new Error("This student is already enrolled in this class.");
-
-    return tx.enrollment.update({
-      where: { id },
-      data: { status: "ACTIVE", startDate: new Date(`${startDate}T00:00:00.000Z`), endDate: null },
+    return tx.enrollment.create({
+      data: { studentId: enrollment.studentId, classId: enrollment.classId, startDate: start },
     });
   });
   await recalculateEnrollmentRangeBills(
-    id,
+    enrollment.id,
     undefined,
     undefined,
     "A reactivated enrollment affects this family bill after payment was recorded. Review the bill and add an adjustment if needed.",

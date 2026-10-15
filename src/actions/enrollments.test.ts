@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   db: {
     enrollment: {
       findUniqueOrThrow: vi.fn(),
+      findFirst: vi.fn(),
       update: vi.fn(),
     },
     enrollmentBillingPause: {

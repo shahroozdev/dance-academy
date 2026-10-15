@@ -50,6 +50,11 @@ type EditablePayment = {
   notes: string | null;
 };
 
+function initialAmount(billing: { balance: number; amountPaid: number }, isRefund: boolean, existingPayment?: EditablePayment): number {
+  if (existingPayment) return Math.abs(existingPayment.amount);
+  return isRefund ? Math.min(-billing.balance, billing.amountPaid) : Math.max(0, billing.balance);
+}
+
 export function PaymentModal({ billingId, onClose, payment: existingPayment }: { billingId: string; onClose: () => void; payment?: EditablePayment }) {
   const [selectedBillingId, setSelectedBillingId] = useState(billingId);
   const { data: billing, isLoading } = useQuery("getMonthlyBillingById", [selectedBillingId]);
@@ -58,7 +63,9 @@ export function PaymentModal({ billingId, onClose, payment: existingPayment }: {
     [billing?.studentId ?? ""],
     { enabled: Boolean(billing?.studentId) },
   );
-  const isRefund = !existingPayment && (billing?.balance ?? 0) < 0;
+  const isEditing = Boolean(existingPayment);
+  // Refund entries are stored as negative amounts; editing one keeps it a refund.
+  const isRefund = existingPayment ? existingPayment.amount < 0 : (billing?.balance ?? 0) < 0;
   const title = isRefund ? "Record Refund" : "Record Payment";
   const {
     mutate,
@@ -72,7 +79,6 @@ export function PaymentModal({ billingId, onClose, payment: existingPayment }: {
     invalidateKeys: ["getMonthlyBillings", "getMonthlyBillingById", "getPayments", "getFinancialSummary", "getMonthlyTrend", "getDashboardSummary"],
     onSuccess: onClose,
   });
-  const isEditing = Boolean(existingPayment);
   const saveError = error || updateError;
   const saveErrorMessage = saveError instanceof Error ? saveError.message : "Could not save. Please try again.";
   const readySubmitLabel = { editing: "Save Payment", creating: title }[isEditing ? "editing" : "creating"];
@@ -103,7 +109,7 @@ export function PaymentModal({ billingId, onClose, payment: existingPayment }: {
               schema={isRefund ? refundEntryFormSchema : paymentEntryFormSchema}
               defaultValues={{
                 paymentDate: existingPayment ? new Date(existingPayment.paymentDate).toISOString().slice(0, 10) : todayValue(),
-                amount: existingPayment?.amount ?? (isRefund ? Math.min(-billing.balance, billing.amountPaid) : Math.max(0, billing.balance)),
+                amount: initialAmount(billing, isRefund, existingPayment),
                 method: existingPayment?.method ?? "ZELLE",
                 classId: existingPayment?.classId ?? "",
                 reference: existingPayment?.reference ?? "",
@@ -121,7 +127,7 @@ export function PaymentModal({ billingId, onClose, payment: existingPayment }: {
               {(form) => (
                 <div className="space-y-4">
                   {isRefund && <p className="text-sm text-muted-foreground">Record this only after returning the money. It reduces collected income on the refund date.</p>}
-                  {!isRefund && (
+                  {!isRefund && !isEditing && (
                     <div className="space-y-2">
                       <Label htmlFor="payment-billing-month">Payment For Month</Label>
                       <Input

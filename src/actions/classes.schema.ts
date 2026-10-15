@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const classCreateSchema = z.object({
+const classFields = z.object({
   name: z.string().min(1, "Class name is required"),
   programId: z.string().min(1, "Dance program is required"),
   level: z.string().or(z.literal("")).optional(),
@@ -14,12 +14,24 @@ export const classCreateSchema = z.object({
   // Soft cap only — enrolling past it is still allowed, just shows a warning. Optional since the
   // requirements doc never specifies a max class size.
   capacity: z.coerce.number().int().positive("Capacity must be a positive whole number").optional(),
-  pricingType: z.enum(["REGULAR", "SEASONAL"]).default("REGULAR"),
-  discountEligible: z.boolean().default(true),
-  isActive: z.boolean().default(true),
+  pricingType: z.enum(["REGULAR", "SEASONAL"]),
+  discountEligible: z.boolean(),
+  isActive: z.boolean(),
 });
 
-export const classUpdateSchema = classCreateSchema.partial();
+export const classCreateSchema = classFields.extend({
+  pricingType: classFields.shape.pricingType.default("REGULAR"),
+  discountEligible: classFields.shape.discountEligible.default(true),
+  isActive: classFields.shape.isActive.default(true),
+});
+
+// Active status is deliberately not editable here: deactivation needs an exact last class date
+// and goes through toggleClassActive. The edit form submits the class's current isActive with
+// every save, and treating that as a status change reset an inactive class's last class date
+// and billing boundary to the day of the edit. Built from the default-free fields because Zod
+// still applies a `.default()` inside `.partial()`, which would reset an omitted pricing type
+// to REGULAR and discount eligibility to true.
+export const classUpdateSchema = classFields.omit({ isActive: true }).partial();
 
 export const classActiveStatusSchema = z.object({
   isActive: z.boolean(),

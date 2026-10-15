@@ -66,6 +66,28 @@ export function classIsBillableForMonth(
   return billingMonth >= firstMonth && (inactiveFrom === null || billingMonth < inactiveFrom) && (lastMonth === null || billingMonth <= lastMonth);
 }
 
+type MonthlyPause = { startMonth: Date; endMonth: Date };
+
+// The single eligibility rule for "does this enrollment produce a charge this month": its dates
+// overlap the month, the class is within its own first/last boundaries, and neither the
+// enrollment nor the class is on a billing pause.
+export function enrollmentIsBillableForMonth(
+  enrollment: {
+    startDate: Date;
+    endDate: Date | null;
+    billingPauses?: MonthlyPause[];
+    class: { firstClassDate: Date; inactiveFromMonth?: Date | null; lastClassDate?: Date | null; billingPauses?: MonthlyPause[] };
+  },
+  month: Date,
+): boolean {
+  return (
+    enrollmentOverlapsMonth(enrollment, month) &&
+    classIsBillableForMonth(enrollment.class, month) &&
+    !enrollmentIsPausedForMonth(enrollment.billingPauses, month) &&
+    !enrollmentIsPausedForMonth(enrollment.class.billingPauses, month)
+  );
+}
+
 const DAY_OF_WEEK_INDEX: Record<string, number> = {
   SUNDAY: 0,
   MONDAY: 1,
@@ -164,6 +186,47 @@ export function computeProratedLineItemAmount({
   const totalDays = daysInclusiveUTC(monthStart, monthEnd);
   const activeDays = daysInclusiveUTC(effectiveStart, effectiveEnd);
   return round2((fullMonthAmount * activeDays) / totalDays);
+}
+
+export type BillableRange = { start: Date; end: Date | null };
+
+// Sorts and joins overlapping or back-to-back calendar-date ranges so a session is never counted twice.
+export function mergeBillableRanges(ranges: BillableRange[]): BillableRange[] {
+  const sorted = ranges
+    .map((range) => ({ start: enrollmentCalendarDate(range.start), end: range.end === null ? null : enrollmentCalendarDate(range.end) }))
+    .sort((a, b) => a.start.getTime() - b.start.getTime());
+  const merged: BillableRange[] = [];
+  for (const range of sorted) {
+    const last = merged.at(-1);
+    if (last && (last.end === null || range.start.getTime() <= addDays(last.end, 1).getTime())) {
+      last.end = last.end === null || range.end === null ? null : new Date(Math.max(last.end.getTime(), range.end.getTime()));
+    } else {
+      merged.push({ ...range });
+    }
+  }
+  return merged;
+}
+
+// One REGULAR class's charge for one month across every period the student was enrolled in it
+// (a re-enrollment creates a second period). Each period is cut off at the class's last class
+// date, and the total never exceeds the class's full-month fee: when staff lower a month's
+// session count (holiday, festival) the system doesn't know which dates were cancelled, so a
+// part-month student must not be charged more than a full-month student.
+export function computeClassMonthAmount({
+  ranges,
+  classLastDate,
+  ...fee
+}: Omit<ProratedLineItemInput, "enrollmentStart" | "enrollmentEnd"> & {
+  ranges: BillableRange[];
+  classLastDate: Date | null;
+}): number {
+  const lastDate = classLastDate === null ? null : enrollmentCalendarDate(classLastDate);
+  const total = mergeBillableRanges(ranges).reduce((sum, range) => {
+    const end = lastDate !== null && (range.end === null || isBefore(lastDate, range.end)) ? lastDate : range.end;
+    if (end !== null && isBefore(end, range.start)) return sum;
+    return sum + computeProratedLineItemAmount({ ...fee, enrollmentStart: range.start, enrollmentEnd: end });
+  }, 0);
+  return round2(Math.min(total, fee.fullMonthAmount));
 }
 
 // ---------- computeStudentBilling — the single code path for a Final Amount Due ----------

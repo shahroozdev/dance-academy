@@ -9,13 +9,13 @@ const mocks = vi.hoisted(() => {
     tx,
     transaction: vi.fn(),
     requireAdmin: vi.fn(),
-    recalculateEnrollmentRangeBills: vi.fn(),
+    recalculateAffectedBills: vi.fn(),
   };
 });
 
 vi.mock("@/actions/access", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/actions/billing-impact", () => ({
-  recalculateEnrollmentRangeBills: mocks.recalculateEnrollmentRangeBills,
+  recalculateAffectedBills: mocks.recalculateAffectedBills,
 }));
 vi.mock("@/lib/db", () => ({ db: { $transaction: mocks.transaction } }));
 
@@ -25,11 +25,11 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.requireAdmin.mockResolvedValue({ id: "admin" });
   mocks.transaction.mockImplementation((work: (tx: typeof mocks.tx) => Promise<unknown>) => work(mocks.tx));
-  mocks.tx.student.update.mockResolvedValue({ id: "student", isActive: false });
+  mocks.tx.student.update.mockResolvedValue({ id: "student", familyId: "family", isActive: false });
   mocks.tx.enrollment.findMany.mockResolvedValue([
     { id: "enrollment", startDate: new Date("2026-09-10T00:00:00.000Z") },
   ]);
-  mocks.recalculateEnrollmentRangeBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 0 });
+  mocks.recalculateAffectedBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 0 });
 });
 
 describe("student deactivation", () => {
@@ -40,12 +40,12 @@ describe("student deactivation", () => {
       where: { id: { in: ["enrollment"] } },
       data: { status: "ENDED", endDate: new Date("2026-09-24T00:00:00.000Z") },
     });
-    expect(mocks.recalculateEnrollmentRangeBills).toHaveBeenCalledWith(
-      "enrollment",
-      undefined,
-      undefined,
-      expect.stringContaining("last class date"),
-    );
+    // Only the family's bills from the last class month onward; earlier months are unaffected.
+    expect(mocks.recalculateAffectedBills).toHaveBeenCalledOnce();
+    expect(mocks.recalculateAffectedBills).toHaveBeenCalledWith({
+      month: { gte: new Date("2026-09-01T00:00:00.000Z") },
+      student: { familyId: "family" },
+    });
   });
 
   it("rejects a last class date before an active enrollment started", async () => {

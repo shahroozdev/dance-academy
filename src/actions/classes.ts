@@ -195,11 +195,6 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
       ...(data.capacity !== undefined && { capacity: data.capacity ?? null }),
       ...(data.pricingType !== undefined && { pricingType: data.pricingType }),
       ...(data.discountEligible !== undefined && { discountEligible: data.discountEligible }),
-      ...(data.isActive !== undefined && {
-        isActive: data.isActive,
-        inactiveFromMonth: data.isActive ? null : normalizeMonth(new Date()),
-        lastClassDate: data.isActive ? null : new Date(),
-      }),
       },
     });
     if (data.firstClassDate !== undefined) {
@@ -247,13 +242,6 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
     await db.classMonthlyFee.deleteMany({
       where: { classId: id, month: { lt: firstBillingMonth }, lineItems: { none: {} } },
     });
-  }
-  if (data.isActive !== undefined) {
-    await recalculateClassFamilyBillsFromMonth(
-      id,
-      normalizeMonth(new Date()),
-      "The class active status changed after a payment was recorded. Review this month and move or adjust the payment if needed.",
-    );
   }
   return { ...cls, standardRate: Number(cls.standardRate) };
 }

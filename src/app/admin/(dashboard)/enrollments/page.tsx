@@ -318,7 +318,7 @@ function EnrollmentActions({
       <Modal open={action === "reenroll"} onOpenChange={(open) => setAction(open ? "reenroll" : null)} className="max-w-sm" title={
         <div>
           Re-enroll?
-          <p className="text-sm font-normal text-muted-foreground">This will reactivate {studentName}&apos;s enrollment in {className}, starting today.</p>
+          <p className="text-sm font-normal text-muted-foreground">This starts a new enrollment for {studentName} in {className} from today. The earlier enrollment and the months it was billed stay unchanged.</p>
         </div>
       }>
         {() => (

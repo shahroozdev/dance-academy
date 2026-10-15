@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeBillingStatus,
   classIsBillableForMonth,
+  computeClassMonthAmount,
   computeDueDate,
   computeProratedLineItemAmount,
   computeStudentBilling,
@@ -12,6 +13,7 @@ import {
   enrollmentIsPausedForMonth,
   enrollmentOverlapsMonth,
   isPaymentReminderDue,
+  mergeBillableRanges,
   normalizeMonth,
 } from "@/lib/billing";
 
@@ -425,5 +427,57 @@ describe("isPaymentReminderDue", () => {
 
   it("stays due any time after the threshold", () => {
     expect(isPaymentReminderDue(september, 5, 7, new Date("2026-10-01T00:00:00.000Z"))).toBe(true);
+  });
+});
+
+describe("computeClassMonthAmount", () => {
+  // October 2026 has five Thursdays: the 1st, 8th, 15th, 22nd and 29th.
+  const october = new Date("2026-10-01T00:00:00.000Z");
+  const day = (value: string) => new Date(`${value}T00:00:00.000Z`);
+  const fee = { month: october, dayOfWeek: "THURSDAY", fullMonthAmount: 100, perSessionRate: 20, classLastDate: null };
+
+  it("charges every session from both periods when a student leaves and rejoins in the same month", () => {
+    expect(computeClassMonthAmount({
+      ...fee,
+      ranges: [{ start: day("2026-10-01"), end: day("2026-10-08") }, { start: day("2026-10-22"), end: null }],
+    })).toBe(80);
+  });
+
+  it("never counts a session twice when legacy enrollment periods overlap", () => {
+    expect(computeClassMonthAmount({
+      ...fee,
+      ranges: [{ start: day("2026-10-01"), end: day("2026-10-20") }, { start: day("2026-10-10"), end: null }],
+    })).toBe(100);
+  });
+
+  it("stops at the class's last class date even when the enrollment stays open", () => {
+    expect(computeClassMonthAmount({
+      ...fee,
+      fullMonthAmount: 40,
+      classLastDate: day("2026-10-09"),
+      ranges: [{ start: day("2026-10-05"), end: null }],
+    })).toBe(20);
+  });
+
+  it("does not charge a part-month student more than the full-month fee after sessions are reduced", () => {
+    expect(computeClassMonthAmount({
+      ...fee,
+      fullMonthAmount: 40,
+      ranges: [{ start: day("2026-10-10"), end: null }],
+    })).toBe(40);
+  });
+});
+
+describe("mergeBillableRanges", () => {
+  const day = (value: string) => new Date(`${value}T00:00:00.000Z`);
+  it("joins back-to-back periods and keeps separate ones apart", () => {
+    expect(mergeBillableRanges([
+      { start: day("2026-10-22"), end: null },
+      { start: day("2026-10-01"), end: day("2026-10-08") },
+      { start: day("2026-10-09"), end: day("2026-10-12") },
+    ])).toEqual([
+      { start: day("2026-10-01"), end: day("2026-10-12") },
+      { start: day("2026-10-22"), end: null },
+    ]);
   });
 });

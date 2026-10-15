@@ -94,4 +94,14 @@ describe("updateClass billing impact", () => {
     expect(mocks.db.classMonthlyFee.update).not.toHaveBeenCalled();
     expect(mocks.recalculateAllClassFamilyBills).toHaveBeenCalledWith("class", expect.any(String));
   });
+
+  it("keeps an inactive class's last class date and pricing when only some fields are saved", async () => {
+    // The edit form always sends the class's current isActive; it must not count as deactivating today.
+    // Omitted fields (pricing type, discount eligibility) must not fall back to their create-time defaults.
+    await updateClass("class", { name: "Onam Dance 2026 SJ", isActive: false } as Parameters<typeof updateClass>[1]);
+
+    const { data } = mocks.tx.class.update.mock.calls[0][0];
+    expect(data).toEqual({ name: "Onam Dance 2026 SJ" });
+    expect(mocks.recalculateClassFamilyBillsFromMonth).not.toHaveBeenCalled();
+  });
 });
