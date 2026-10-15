@@ -61,6 +61,7 @@ export async function getMonthlyBillings(params: {
       include: {
         student: { select: { id: true, fullName: true, familyId: true, family: { select: { familyName: true } } } },
         lineItems: { include: { enrollment: { include: { class: { select: { id: true, name: true } } } } } },
+        payments: { select: { classId: true, amount: true } },
       },
       orderBy: [{ student: { family: { familyName: "asc" } } }, { student: { fullName: "asc" } }],
       skip: (page - 1) * pageSize,
@@ -70,14 +71,21 @@ export async function getMonthlyBillings(params: {
   ]);
 
   return {
-    data: data.map((b) => ({
-      id: b.id,
+    data: data.map((b) => {
+      const paidByClass = new Map<string, number>();
+      for (const payment of b.payments) {
+        if (payment.classId) paidByClass.set(payment.classId, (paidByClass.get(payment.classId) ?? 0) + Number(payment.amount));
+      }
+      return {
+        id: b.id,
       studentId: b.studentId,
       studentName: b.student.fullName,
       familyId: b.student.familyId,
       familyName: b.student.family.familyName,
       month: b.month,
-      classNames: b.lineItems.map((li) => li.enrollment.class.name),
+      classNames: b.lineItems
+        .filter((li) => (paidByClass.get(li.enrollment.class.id) ?? 0) < Number(li.amount))
+        .map((li) => li.enrollment.class.name),
       baseTuition: Number(b.baseTuition),
       multiClassDiscount: Number(b.multiClassDiscount),
       siblingDiscount: Number(b.siblingDiscount),
@@ -90,7 +98,8 @@ export async function getMonthlyBillings(params: {
       needsManualReview: b.needsManualReview,
       manualReviewReason: b.manualReviewReason,
       manualReviewAt: b.manualReviewAt,
-    })),
+      };
+    }),
     total,
     pages: Math.ceil(total / pageSize),
   };
@@ -106,7 +115,7 @@ export async function getMonthlyBillingById(id: string) {
     include: {
       student: { include: { family: true } },
       lineItems: { include: { enrollment: { include: { class: true } }, classMonthlyFee: true } },
-      payments: { orderBy: { paymentDate: "desc" } },
+      payments: { include: { class: { select: { id: true, name: true } } }, orderBy: { paymentDate: "desc" } },
     },
   });
 
@@ -211,9 +220,9 @@ export async function resolveBillingManualReview(id: string) {
   });
 }
 
-// Only safe before any payment exists — pulls in the latest ClassMonthlyFee amounts and
-// re-runs the discount calc, but preserves the existing adjustment (§4.4: a one-bill change,
-// never reset by a fee update elsewhere).
+// Pulls in the latest class amounts and re-runs discounts while preserving both the existing
+// adjustment and every payment ledger entry. This lets corrected class counts/dates update the
+// amount due without losing or rewriting money already received.
 export async function recalculateBilling(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
@@ -222,10 +231,6 @@ export async function recalculateBilling(id: string) {
 
   return serializableTransaction(async (tx) => {
     const billing = await tx.monthlyStudentBilling.findUniqueOrThrow({ where: { id }, include: { payments: true } });
-    if (billing.payments.length > 0) {
-      throw new Error("This bill has payments recorded against it and can no longer be recalculated.");
-    }
-
     const student = await tx.student.findUniqueOrThrow({ where: { id: billing.studentId } });
     const siblingCount = await familyQualifyingSiblingCount(tx, student.familyId, billing.month);
     const lineItemInputs = await buildLineItemInputs(tx, student.id, billing.month);
@@ -237,7 +242,9 @@ export async function recalculateBilling(id: string) {
       multiClassDiscountPct,
       siblingDiscountPct,
     });
-    const status = computeBillingStatus(computed.finalAmountDue, 0);
+    const amountPaid = round2(billing.payments.reduce((sum, payment) => sum + Number(payment.amount), 0));
+    const balance = round2(computed.finalAmountDue - amountPaid);
+    const status = computeBillingStatus(computed.finalAmountDue, amountPaid);
 
     const updated = await tx.monthlyStudentBilling.update({
       where: { id },
@@ -246,7 +253,8 @@ export async function recalculateBilling(id: string) {
         multiClassDiscount: computed.multiClassDiscount,
         siblingDiscount: computed.siblingDiscount,
         finalAmountDue: computed.finalAmountDue,
-        balance: computed.finalAmountDue,
+        amountPaid,
+        balance,
         status,
         needsManualReview: false,
         manualReviewReason: null,

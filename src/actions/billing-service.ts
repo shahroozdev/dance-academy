@@ -34,7 +34,7 @@ async function getOrCreateClassMonthlyFee(tx: Prisma.TransactionClient, cls: Cla
     });
   }
 
-  const billableSessions = countClassSessionsForMonth(month, cls.dayOfWeek, cls.firstClassDate);
+  const billableSessions = countClassSessionsForMonth(month, cls.dayOfWeek, cls.firstClassDate, cls.lastClassDate);
   const rate = round2(Number(cls.standardRate));
   const monthlyClassFee = round2(billableSessions * rate);
   return tx.classMonthlyFee.create({
@@ -214,7 +214,7 @@ export async function generateMonthlyBilling(monthInput: string): Promise<Genera
       ],
     },
     include: {
-      enrollments: { include: { class: { select: { firstClassDate: true, inactiveFromMonth: true } } } },
+      enrollments: { include: { class: { select: { firstClassDate: true, inactiveFromMonth: true, lastClassDate: true } } } },
       monthlyBillings: {
         where: { month },
         select: {
@@ -224,7 +224,7 @@ export async function generateMonthlyBilling(monthInput: string): Promise<Genera
           lineItems: {
             select: {
               classMonthlyFee: {
-                select: { class: { select: { firstClassDate: true, inactiveFromMonth: true } } },
+                select: { class: { select: { firstClassDate: true, inactiveFromMonth: true, lastClassDate: true } } },
               },
             },
           },
@@ -244,7 +244,8 @@ export async function generateMonthlyBilling(monthInput: string): Promise<Genera
       const hasInactiveLine = existing?.lineItems.some(
         (lineItem) => !classIsBillableForMonth(lineItem.classMonthlyFee.class, month),
       ) ?? false;
-      return existing && !hasInactiveLine;
+      const hasEmptyZeroBill = existing && Number(existing.finalAmountDue) === 0 && Number(existing.amountPaid) === 0 && existing.lineItems.length === 0;
+      return existing && !hasInactiveLine && !hasEmptyZeroBill;
     })
     .map((student) => ({ studentId: student.id, studentName: student.fullName, result: "skipped" }));
   const studentsToProcess = eligibleStudents.filter((student) => {
@@ -252,7 +253,8 @@ export async function generateMonthlyBilling(monthInput: string): Promise<Genera
     const hasInactiveLine = existing?.lineItems.some(
       (lineItem) => !classIsBillableForMonth(lineItem.classMonthlyFee.class, month),
     ) ?? false;
-    return !existing || hasInactiveLine;
+    const hasEmptyZeroBill = existing && Number(existing.finalAmountDue) === 0 && Number(existing.amountPaid) === 0 && existing.lineItems.length === 0;
+    return !existing || hasInactiveLine || hasEmptyZeroBill;
   });
 
   const processStudent = async (student: (typeof eligibleStudents)[number]) => serializableTransaction(async (tx) => {

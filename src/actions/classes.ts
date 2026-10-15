@@ -2,9 +2,9 @@
 
 import { requireAdmin } from "@/actions/access";
 import { recalculateAllClassFamilyBills, recalculateClassFamilyBillsFromMonth } from "@/actions/billing-impact";
-import { classCreateSchema, classUpdateSchema } from "@/actions/classes.schema";
+import { classActiveStatusSchema, classCreateSchema, classUpdateSchema } from "@/actions/classes.schema";
 import type { ClassCreateInput, ClassUpdateInput } from "@/actions/classes.schema";
-import { idSchema, booleanSchema , validateListQuery } from "@/actions/validation.schema";
+import { idSchema, validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { countClassSessionsForMonth, normalizeMonth, round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
@@ -159,6 +159,7 @@ export async function createClass(data: ClassCreateInput) {
       discountEligible: data.discountEligible,
       isActive: data.isActive,
       inactiveFromMonth: data.isActive ? null : normalizeMonth(new Date()),
+      lastClassDate: data.isActive ? null : new Date(),
     },
   });
   return { ...cls, standardRate: Number(cls.standardRate) };
@@ -197,6 +198,7 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
       ...(data.isActive !== undefined && {
         isActive: data.isActive,
         inactiveFromMonth: data.isActive ? null : normalizeMonth(new Date()),
+        lastClassDate: data.isActive ? null : new Date(),
       }),
       },
     });
@@ -256,15 +258,40 @@ export async function updateClass(id: string, data: ClassUpdateInput) {
   return { ...cls, standardRate: Number(cls.standardRate) };
 }
 
-export async function toggleClassActive(id: string, isActive: boolean) {
+export async function toggleClassActive(id: string, isActive: boolean, lastClassDateInput?: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  isActive = booleanSchema.parse(isActive);
-  const inactiveFromMonth = isActive ? null : normalizeMonth(new Date());
-  const cls = await db.class.update({ where: { id }, data: { isActive, inactiveFromMonth } });
+  const parsed = classActiveStatusSchema.parse({ isActive, lastClassDate: lastClassDateInput });
+  const lastClassDate = parsed.isActive ? null : new Date(`${parsed.lastClassDate}T00:00:00.000Z`);
+  const inactiveFromMonth = parsed.isActive
+    ? null
+    : new Date(Date.UTC(lastClassDate!.getUTCFullYear(), lastClassDate!.getUTCMonth() + 1, 1));
+  const cls = await db.class.update({
+    where: { id },
+    data: { isActive: parsed.isActive, inactiveFromMonth, lastClassDate },
+  });
+  if (lastClassDate && cls.pricingType === "REGULAR") {
+    const month = normalizeMonth(lastClassDate);
+    const existingFee = await db.classMonthlyFee.findUnique({ where: { classId_month: { classId: id, month } } });
+    if (existingFee) {
+      const rate = existingFee.rate === null ? Number(cls.standardRate) : Number(existingFee.rate);
+      const billableSessions = countClassSessionsForMonth(month, cls.dayOfWeek, cls.firstClassDate, lastClassDate);
+      await db.classMonthlyFee.update({
+        where: { id: existingFee.id },
+        data: {
+          billableSessions,
+          monthlyClassFee: round2(billableSessions * rate),
+          isOverridden: true,
+          isFinalized: false,
+          finalizedAt: null,
+          notes: `Class ended ${parsed.lastClassDate}`,
+        },
+      });
+    }
+  }
   await recalculateClassFamilyBillsFromMonth(
     id,
-    normalizeMonth(new Date()),
+    lastClassDate ? normalizeMonth(lastClassDate) : normalizeMonth(new Date()),
     "The class active status changed after a payment was recorded. Review this month and move or adjust the payment if needed.",
   );
   return { ...cls, standardRate: Number(cls.standardRate) };

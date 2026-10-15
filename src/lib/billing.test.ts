@@ -28,6 +28,12 @@ describe("classIsBillableForMonth", () => {
   it("does not bill before the first class month", () => {
     expect(classIsBillableForMonth({ firstClassDate, inactiveFromMonth: null }, new Date("2026-08-01T00:00:00.000Z"))).toBe(false);
   });
+
+  it("bills the final class month but excludes every later month", () => {
+    const cls = { firstClassDate, inactiveFromMonth: null, lastClassDate: new Date("2026-10-14T00:00:00.000Z") };
+    expect(classIsBillableForMonth(cls, new Date("2026-10-01T00:00:00.000Z"))).toBe(true);
+    expect(classIsBillableForMonth(cls, new Date("2026-11-01T00:00:00.000Z"))).toBe(false);
+  });
 });
 
 // Worked cases mirror docs/04-business-logic-billing-discounts.md §4.6, which mirrors the
@@ -267,6 +273,15 @@ describe("countClassSessionsForMonth", () => {
       "WEDNESDAY",
       new Date("2026-09-16T00:00:00.000Z"),
     )).toBe(3);
+  });
+
+  it("counts only scheduled days through the last class date", () => {
+    expect(countClassSessionsForMonth(
+      normalizeMonth("2026-10-01"),
+      "WEDNESDAY",
+      new Date("2026-09-16T00:00:00.000Z"),
+      new Date("2026-10-14T00:00:00.000Z"),
+    )).toBe(2);
   });
 });
 

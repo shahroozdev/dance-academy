@@ -56,12 +56,12 @@ export default function ClassFeesPage() {
   });
   const { mutate: markNoClasses, isLoading: isMarkingBreak } = useMutate("markClassMonthlyFeeNoClasses", {
     invalidateKeys: ["getClassMonthlyFees", "getClassMonthlyFeeById", "getMonthlyBillings", "getAdminNotificationSummary"],
-    onSuccess: () => setOperationMessage("The class fee is now $0 for this month. Affected unpaid bills were recalculated automatically; bills with payments were protected."),
+    onSuccess: () => setOperationMessage("The class fee is now $0 for this month. Affected bills and balances were recalculated automatically; recorded payments were preserved."),
   });
   const { mutate: recalculateBills, isLoading: isRecalculating } = useMutate("recalculateClassMonthlyFeeBills", {
     invalidateKeys: ["getClassMonthlyFees", "getMonthlyBillings", "getMonthlyBillingById", "getAdminNotificationSummary"],
     onSuccess: (result) => setOperationMessage(
-      `Recalculated ${result.recalculated} unpaid bill(s). ${result.skippedWithPayments} bill(s) with payments were left unchanged.`,
+      `Recalculated ${result.recalculated} bill(s). Recorded payments were preserved.`,
     ),
   });
   const { mutate: applyReported, isLoading: isApplyingReported } = useMutate("applyReportedClassSessions", {

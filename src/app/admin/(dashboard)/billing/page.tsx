@@ -268,7 +268,7 @@ export default function BillingPage() {
           <CircleAlert className="mt-0.5 size-5 shrink-0 text-destructive" />
           <div>
             <p className="font-medium">Manual billing review</p>
-            <p className="text-muted-foreground">These bills had payments when a billing-related change occurred, so their saved amounts were protected. Open each bill, review the reason, and use Adjust to apply the required correction. Saving an adjustment clears the alert.</p>
+            <p className="text-muted-foreground">These bills were flagged by an earlier billing change. Open each bill to verify its classes and payment history, then mark it reviewed or use Adjust if a one-time correction is still needed.</p>
           </div>
         </div>
       )}

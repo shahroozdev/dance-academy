@@ -38,6 +38,7 @@ export default function BillingDetailPage() {
   const id = params.id as string;
   const [isAdjusting, setIsAdjusting] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
+  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
 
   const { data: billing, isLoading } = useQuery("getMonthlyBillingById", [id]);
   const {
@@ -60,7 +61,13 @@ export default function BillingDetailPage() {
     );
   }
 
-  const hasPayments = billing.payments.length > 0;
+  const paidByClass = new Map<string, number>();
+  for (const payment of billing.payments) {
+    if (payment.classId) {
+      paidByClass.set(payment.classId, (paidByClass.get(payment.classId) ?? 0) + payment.amount);
+    }
+  }
+  const editingPayment = billing.payments.find((payment) => payment.id === editingPaymentId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -94,14 +101,14 @@ export default function BillingDetailPage() {
             )}
             <TooltipWrapper
               label={
-                hasPayments
-                  ? "Payments exist — cannot recalculate"
+                billing.payments.length > 0
+                  ? "Recalculate fees while preserving recorded payments"
                   : "Recalculate billing"
               }
             >
               <Button
                 variant="outline"
-                disabled={hasPayments || isRecalculating}
+                disabled={isRecalculating}
                 onClick={() => recalculate(id)}
               >
                 {isRecalculating ? "Recalculating..." : "Recalculate"}
@@ -150,16 +157,23 @@ export default function BillingDetailPage() {
                   <TableHead>Class</TableHead>
                   <TableHead>Discount Eligible</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right">Paid for Class</TableHead>
+                  <TableHead className="text-right">Class Balance</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {billing.lineItems.map((li) => (
-                  <TableRow key={li.id}>
-                    <TableCell className="font-medium">{li.enrollment.class.name}</TableCell>
-                    <TableCell>{li.enrollment.class.discountEligible ? "Yes" : "No"}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(li.amount)}</TableCell>
-                  </TableRow>
-                ))}
+                {billing.lineItems.map((li) => {
+                  const classPaid = paidByClass.get(li.enrollment.class.id) ?? 0;
+                  return (
+                    <TableRow key={li.id}>
+                      <TableCell className="font-medium">{li.enrollment.class.name}</TableCell>
+                      <TableCell>{li.enrollment.class.discountEligible ? "Yes" : "No"}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(li.amount)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(classPaid)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(li.amount - classPaid)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -202,19 +216,29 @@ export default function BillingDetailPage() {
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Amount</TableHead>
+                <TableHead>Class</TableHead>
                 <TableHead>Method</TableHead>
                 <TableHead>Reference</TableHead>
                 <TableHead>Notes</TableHead>
+                <TableHead resizable={false}>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {billing.payments.map((p) => (
                 <TableRow key={p.id}>
-                  <TableCell>{new Date(p.paymentDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(p.paymentDate).toLocaleDateString("en-US", { timeZone: "UTC" })}</TableCell>
                   <TableCell>{formatCurrency(p.amount)}</TableCell>
+                  <TableCell>{p.class?.name ?? "General / multiple classes"}</TableCell>
                   <TableCell>{p.method}</TableCell>
                   <TableCell>{p.reference ?? "—"}</TableCell>
                   <TableCell className="max-w-md whitespace-normal">{p.notes ?? "—"}</TableCell>
+                  <TableCell>
+                    {p.amount > 0 && (
+                      <Button variant="outline" size="sm" onClick={() => setEditingPaymentId(p.id)}>
+                        Edit
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -224,6 +248,13 @@ export default function BillingDetailPage() {
 
       {isAdjusting && <AdjustmentModal billingId={id} onClose={() => setIsAdjusting(false)} />}
       {isPaying && <PaymentModal billingId={id} onClose={() => setIsPaying(false)} />}
+      {editingPayment && (
+        <PaymentModal
+          billingId={id}
+          payment={editingPayment}
+          onClose={() => setEditingPaymentId(null)}
+        />
+      )}
     </div>
   );
 }

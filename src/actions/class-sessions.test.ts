@@ -66,7 +66,7 @@ describe("monthly class session reporting", () => {
     expect(row.reportedSessions).toBeNull();
   });
 
-  it("saves a teacher count as a draft without changing billing", async () => {
+  it("saves a teacher count and immediately updates the fee and unpaid bills", async () => {
     mocks.db.class.findUniqueOrThrow.mockResolvedValue({
       id: "class",
       dayOfWeek: "THURSDAY",
@@ -75,13 +75,27 @@ describe("monthly class session reporting", () => {
       pricingType: "REGULAR",
     });
     mocks.db.classMonthlyFee.upsert.mockResolvedValue({ id: "fee" });
+    mocks.db.classMonthlyFee.findUniqueOrThrow.mockResolvedValue({
+      id: "fee",
+      reportedSessions: 3,
+      reportNotes: "One cancellation",
+      rate: 20,
+      class: { standardRate: 20, pricingType: "REGULAR" },
+    });
 
-    await reportMonthlyClassSessions({ classId: "class", month: "2026-10", reportedSessions: 3, reportNotes: "One cancellation" });
+    await expect(reportMonthlyClassSessions({ classId: "class", month: "2026-10", reportedSessions: 3, reportNotes: "One cancellation" })).resolves.toMatchObject({
+      applied: true,
+      recalculated: 2,
+      skippedWithPayments: 1,
+    });
 
     expect(mocks.db.classMonthlyFee.upsert).toHaveBeenCalledWith(expect.objectContaining({
       update: expect.objectContaining({ reportedSessions: 3, reportNotes: "One cancellation" }),
     }));
-    expect(mocks.recalculateClassMonthlyFeeBills).not.toHaveBeenCalled();
+    expect(mocks.db.classMonthlyFee.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ billableSessions: 3, monthlyClassFee: 60 }),
+    }));
+    expect(mocks.recalculateClassMonthlyFeeBills).toHaveBeenCalledWith("fee");
   });
 
   it("applies a reported count only after explicit review and recalculates unpaid bills", async () => {

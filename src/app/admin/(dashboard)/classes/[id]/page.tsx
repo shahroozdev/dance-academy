@@ -2,9 +2,11 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
+import { FORM, FormFeilds } from "@/components/common/form";
 import { Modal } from "@/components/common/modal";
 import { Link } from "@/components/Link";
 import { PageHeader } from "@/components/shared/page-header";
@@ -14,9 +16,12 @@ import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
 import { formatEnrollmentCalendarDate } from "@/lib/enrollment-date";
+import { todayIsoDate } from "@/lib/utils";
 
 import { ClassBreaksModal } from "./class-breaks-modal";
 import { ExtraSessionsModal } from "../../class-fees/extra-sessions-modal";
+
+const lastClassDateSchema = z.object({ lastClassDate: z.iso.date("Enter a valid last class date") });
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
@@ -90,18 +95,28 @@ export default function ClassDetailPage() {
                 </div>
               }
             >
-              {({ close }) => (
+              {({ close }) => cls.isActive ? (
+                <FORM
+                  schema={lastClassDateSchema}
+                  defaultValues={{ lastClassDate: todayIsoDate() }}
+                  onSubmit={async ({ lastClassDate }) => {
+                    await toggleActive(id, false, lastClassDate);
+                    close();
+                  }}
+                >
+                  <div className="space-y-4">
+                    <FormFeilds name="lastClassDate" label="Last Class Date" type="date" required />
+                    <p className="text-sm text-muted-foreground">The final month will include only scheduled classes through this date. Later months will not be billed.</p>
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={close}>Cancel</Button>
+                      <Button type="submit" variant="destructive">Deactivate</Button>
+                    </div>
+                  </div>
+                </FORM>
+              ) : (
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={close}>Cancel</Button>
-                  <Button
-                    variant={cls.isActive ? "destructive" : "default"}
-                    onClick={async () => {
-                      await toggleActive(id, !cls.isActive);
-                      close();
-                    }}
-                  >
-                    {cls.isActive ? "Deactivate" : "Activate"}
-                  </Button>
+                  <Button onClick={async () => { await toggleActive(id, true); close(); }}>Activate</Button>
                 </div>
               )}
             </Modal>

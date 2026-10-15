@@ -11,7 +11,7 @@ export type BillingImpactSummary = {
 
 export async function recalculateAffectedBills(
   where: Prisma.MonthlyStudentBillingWhereInput,
-  reviewReason = "A billing-related change could not be applied automatically because this bill has payments.",
+  _reviewReason = "A billing-related change could not be applied automatically because this bill has payments.",
 ): Promise<BillingImpactSummary> {
   const bills = await db.monthlyStudentBilling.findMany({
     where,
@@ -19,29 +19,13 @@ export async function recalculateAffectedBills(
   });
   const uniqueBills = [...new Map(bills.map((bill) => [bill.id, bill])).values()];
   let recalculated = 0;
-  let skippedWithPayments = 0;
+  const skippedWithPayments = 0;
 
   for (const bill of uniqueBills) {
-    if (bill.payments.length > 0) {
-      await db.monthlyStudentBilling.update({
-        where: { id: bill.id },
-        data: { needsManualReview: true, manualReviewReason: reviewReason, manualReviewAt: new Date() },
-      });
-      skippedWithPayments++;
-      continue;
-    }
     try {
       await recalculateBilling(bill.id);
       recalculated++;
     } catch (error) {
-      if (error instanceof Error && error.message.includes("has payments recorded")) {
-        await db.monthlyStudentBilling.update({
-          where: { id: bill.id },
-          data: { needsManualReview: true, manualReviewReason: reviewReason, manualReviewAt: new Date() },
-        });
-        skippedWithPayments++;
-        continue;
-      }
       throw error;
     }
   }

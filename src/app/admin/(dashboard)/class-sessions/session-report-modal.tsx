@@ -52,15 +52,15 @@ export function SessionReportModal({
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Enter regular classes only. The {additionalSessions} separately recorded extra rehearsal(s) are
-              already added to billing and shown in the monthly total. Saving this count does not change parent
-              bills; staff must review and apply it from Class Fees.
+              already added to billing and shown in the monthly total. Saving automatically updates the expected
+              class fee and every student bill for this month. Recorded payments remain unchanged while balances update.
             </p>
             <FormFeilds name="reportedSessions" label="Regular Classes Actually Held" type="number" min="0" required />
             <FormFeilds name="reportNotes" label="Notes" type="textarea" placeholder="Holiday, cancellation, additional class, etc." />
             {Boolean(error) && <p className="text-sm text-destructive">{error instanceof Error ? error.message : "Could not save the class count."}</p>}
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={close}>Cancel</Button>
-              <Button type="submit" disabled={isLoading}>{isLoading ? "Saving..." : "Save Count"}</Button>
+              <Button type="submit" disabled={isLoading}>{isLoading ? "Updating fees..." : "Save & Update Fees"}</Button>
             </div>
           </div>
         </FORM>

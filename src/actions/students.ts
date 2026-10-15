@@ -2,11 +2,12 @@
 
 import { requireAdmin } from "@/actions/access";
 import { recalculateBilling } from "@/actions/billing";
+import { recalculateEnrollmentRangeBills } from "@/actions/billing-impact";
 import { deleteStudentRecords } from "@/actions/record-deletion";
-import { studentCreateSchema, studentImportSchema, studentUpdateSchema } from "@/actions/students.schema";
+import { studentActiveStatusSchema, studentCreateSchema, studentImportSchema, studentUpdateSchema } from "@/actions/students.schema";
 import type { StudentCreateInput, StudentImportRow, StudentUpdateInput } from "@/actions/students.schema";
 import { serializableTransaction } from "@/actions/transaction";
-import { booleanSchema, idSchema, validateListQuery } from "@/actions/validation.schema";
+import { idSchema, validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { matchRegistrationFamily } from "@/lib/family-matching";
@@ -192,11 +193,36 @@ export async function updateStudent(id: string, data: StudentUpdateInput) {
   return updated;
 }
 
-export async function toggleStudentActive(id: string, isActive: boolean) {
+export async function toggleStudentActive(id: string, isActive: boolean, lastClassDateInput?: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  isActive = booleanSchema.parse(isActive);
-  return db.student.update({ where: { id }, data: { isActive } });
+  const parsed = studentActiveStatusSchema.parse({ isActive, lastClassDate: lastClassDateInput });
+  const endDate = parsed.isActive ? null : new Date(`${parsed.lastClassDate}T00:00:00.000Z`);
+  const result = await serializableTransaction(async (tx) => {
+    const student = await tx.student.update({ where: { id }, data: { isActive: parsed.isActive } });
+    if (!endDate) return { student, enrollmentIds: [] as string[] };
+    const enrollments = await tx.enrollment.findMany({
+      where: { studentId: id, status: "ACTIVE" },
+      select: { id: true, startDate: true },
+    });
+    if (enrollments.some((enrollment) => endDate < enrollment.startDate)) {
+      throw new Error("Last class date cannot be before an enrollment start date.");
+    }
+    await tx.enrollment.updateMany({
+      where: { id: { in: enrollments.map(({ id: enrollmentId }) => enrollmentId) } },
+      data: { status: "ENDED", endDate },
+    });
+    return { student, enrollmentIds: enrollments.map(({ id: enrollmentId }) => enrollmentId) };
+  });
+  for (const enrollmentId of result.enrollmentIds) {
+    await recalculateEnrollmentRangeBills(
+      enrollmentId,
+      undefined,
+      undefined,
+      "The student was deactivated with a last class date after payment was recorded. Review the final bill and adjust it if needed.",
+    );
+  }
+  return result.student;
 }
 
 export async function deleteStudent(id: string, confirmationName: string) {

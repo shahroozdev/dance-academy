@@ -23,7 +23,7 @@ beforeEach(() => {
 });
 
 describe("central billing-impact recalculation", () => {
-  it("recalculates each unpaid bill once and protects bills with payments", async () => {
+  it("recalculates each bill once while payment ledgers remain preserved", async () => {
     mocks.db.monthlyStudentBilling.findMany.mockResolvedValue([
       { id: "unpaid", payments: [] },
       { id: "unpaid", payments: [] },
@@ -31,31 +31,22 @@ describe("central billing-impact recalculation", () => {
     ]);
 
     await expect(recalculateAffectedBills({ id: { in: ["unpaid", "paid"] } })).resolves.toEqual({
-      recalculated: 1,
-      skippedWithPayments: 1,
+      recalculated: 2,
+      skippedWithPayments: 0,
     });
-    expect(mocks.recalculateBilling).toHaveBeenCalledTimes(1);
+    expect(mocks.recalculateBilling).toHaveBeenCalledTimes(2);
     expect(mocks.recalculateBilling).toHaveBeenCalledWith("unpaid");
-    expect(mocks.db.monthlyStudentBilling.update).toHaveBeenCalledWith({
-      where: { id: "paid" },
-      data: {
-        needsManualReview: true,
-        manualReviewReason: expect.any(String),
-        manualReviewAt: expect.any(Date),
-      },
-    });
+    expect(mocks.recalculateBilling).toHaveBeenCalledWith("paid");
+    expect(mocks.db.monthlyStudentBilling.update).not.toHaveBeenCalled();
   });
 
-  it("treats a payment recorded during recalculation as protected", async () => {
+  it("does not hide a genuine recalculation failure", async () => {
     mocks.db.monthlyStudentBilling.findMany.mockResolvedValue([{ id: "bill", payments: [] }]);
     mocks.recalculateBilling.mockRejectedValue(
       new Error("This bill has payments recorded against it and can no longer be recalculated."),
     );
 
-    await expect(recalculateAffectedBills({ id: "bill" })).resolves.toEqual({
-      recalculated: 0,
-      skippedWithPayments: 1,
-    });
+    await expect(recalculateAffectedBills({ id: "bill" })).rejects.toThrow("payments recorded");
   });
 
   it("targets enrolled students for a class-month change", async () => {

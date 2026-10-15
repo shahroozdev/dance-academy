@@ -49,7 +49,7 @@ import { combineFamilies, createFamilyGuardian, deleteFamilyGuardian, setPrimary
 import { submitWebsiteInquiry } from "@/actions/inquiries";
 import { markFamilyNotificationSent, sendFamilyNotificationEmail, sendFamilyPaymentReminder } from "@/actions/notifications";
 import { createOtherIncome, deleteOtherIncome, updateOtherIncome } from "@/actions/other-income";
-import { createPayment, createRefund } from "@/actions/payments";
+import { createPayment, createRefund, updatePayment } from "@/actions/payments";
 import { createProgram, toggleProgramActive, updateProgram } from "@/actions/programs";
 import {
   approveRegistrationRequest,
@@ -117,6 +117,7 @@ export const mutationRegistry = {
   applyReportedClassSessions,
   createPayment,
   createRefund,
+  updatePayment,
   createProgram,
   updateProgram,
   toggleProgramActive,

@@ -1,5 +1,18 @@
 # Updates Summary
 
+## 2026-10-15
+
+- Saving the actual number of regular classes held now immediately updates that month’s class fee and every affected student balance. Existing payments stay recorded and are applied to the newly calculated amount.
+- Recalculate now works on bills with payments. It refreshes class fees and discounts without deleting or changing payment history, then updates the remaining balance or credit automatically.
+- Empty zero-dollar monthly bills are repaired when an eligible enrollment exists, rather than remaining incorrectly marked as paid.
+- Deactivating a student or ending an enrollment now asks for the last class date and charges the final month only through that date. An inactive student who still has an active enrollment now shows a Set Last Class Date action so older records can also be completed correctly.
+- Deactivating a class now asks for its last class date, limits the final month’s session count to that date, and excludes later months.
+- Payments can now be assigned to a specific class or kept as a general payment covering multiple classes. Each payment can be edited later, and a bill shows how much was paid toward each class.
+- The payment form now clearly supports a custom amount for either a partial payment or an overpayment.
+- Jia Mathew’s missing September bill has been restored at $60 for three Bharatanatyam classes.
+- Evaniya Ann Moolayil’s $160 October payment is now assigned to Onam Dance. Her corrected October bill is $217, with $160 paid and $57 remaining; Onam no longer appears as an outstanding class.
+- Hannah Mariam Cherian’s account was audited. No $20 September payment is stored in her payment history, so no payment or last attendance date was invented; her exact last class date still needs to be entered before her final bill can be corrected.
+
 ## 2026-10-14
 
 - You can now be signed in to Studio Admin and the Content Portal at the same time in the same browser. Signing in to one no longer signs you out of the other, and there's no more "switch portal" message on the sign-in pages.

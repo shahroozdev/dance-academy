@@ -56,13 +56,14 @@ export function enrollmentIsPausedForMonth(
 }
 
 export function classIsBillableForMonth(
-  cls: { firstClassDate: Date; inactiveFromMonth?: Date | null },
+  cls: { firstClassDate: Date; inactiveFromMonth?: Date | null; lastClassDate?: Date | null },
   month: Date,
 ): boolean {
   const billingMonth = normalizeMonth(month).getTime();
   const firstMonth = normalizeMonth(cls.firstClassDate).getTime();
   const inactiveFrom = cls.inactiveFromMonth ? normalizeMonth(cls.inactiveFromMonth).getTime() : null;
-  return billingMonth >= firstMonth && (inactiveFrom === null || billingMonth < inactiveFrom);
+  const lastMonth = cls.lastClassDate ? normalizeMonth(cls.lastClassDate).getTime() : null;
+  return billingMonth >= firstMonth && (inactiveFrom === null || billingMonth < inactiveFrom) && (lastMonth === null || billingMonth <= lastMonth);
 }
 
 const DAY_OF_WEEK_INDEX: Record<string, number> = {
@@ -84,14 +85,17 @@ export function countWeekdayOccurrencesInMonth(month: Date, dayOfWeek: string): 
   return countWeekdayOccurrencesInRange(dayOfWeek, startOfMonthUTC(month), endOfMonthUTC(month));
 }
 
-export function countClassSessionsForMonth(month: Date, dayOfWeek: string | null, firstClassDate: Date): number {
+export function countClassSessionsForMonth(month: Date, dayOfWeek: string | null, firstClassDate: Date, lastClassDate?: Date | null): number {
   if (!dayOfWeek) return 4;
   const monthStart = startOfMonthUTC(month);
   const monthEnd = endOfMonthUTC(month);
   const classStart = enrollmentCalendarDate(firstClassDate);
   if (isAfter(classStart, monthEnd)) return 0;
+  const classEnd = lastClassDate ? enrollmentCalendarDate(lastClassDate) : null;
+  if (classEnd && isBefore(classEnd, monthStart)) return 0;
   const effectiveStart = isAfter(classStart, monthStart) ? classStart : monthStart;
-  return countWeekdayOccurrencesInRange(dayOfWeek, effectiveStart, monthEnd);
+  const effectiveEnd = classEnd && isBefore(classEnd, monthEnd) ? classEnd : monthEnd;
+  return countWeekdayOccurrencesInRange(dayOfWeek, effectiveStart, effectiveEnd);
 }
 
 // Same weekday-count as above, but over an arbitrary date range rather than a whole month —

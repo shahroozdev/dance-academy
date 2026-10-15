@@ -21,5 +21,13 @@ export const classCreateSchema = z.object({
 
 export const classUpdateSchema = classCreateSchema.partial();
 
+export const classActiveStatusSchema = z.object({
+  isActive: z.boolean(),
+  lastClassDate: z.iso.date("Enter a valid last class date").optional(),
+}).refine((value) => value.isActive || Boolean(value.lastClassDate), {
+  message: "Last class date is required when deactivating a class",
+  path: ["lastClassDate"],
+});
+
 export type ClassCreateInput = z.infer<typeof classCreateSchema>;
 export type ClassUpdateInput = z.infer<typeof classUpdateSchema>;
