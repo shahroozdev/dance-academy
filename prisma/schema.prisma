@@ -798,6 +798,7 @@ model WebsiteSettings {
   instagramUrl   String?
   seoDescription String   @db.Text
   homeIntro      String   @db.Text
+  heroThemes     Json?
   updatedByName  String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

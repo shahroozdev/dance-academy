@@ -15,6 +15,7 @@ import {
 } from "@/lib/content-mappers";
 import { db } from "@/lib/db";
 import { BUILT_IN_FESTIVALS, BUILT_IN_PROFILES, DEFAULT_SITE_SETTINGS } from "@/lib/public-site";
+import { DEFAULT_HERO_THEMES, readHeroThemes } from "@/lib/site-appearance";
 import { SITE_MEDIA_SLOTS } from "@/lib/site-media";
 import type {
   PublicPerformance,
@@ -23,6 +24,7 @@ import type {
   PublicSiteSettings,
   PublicSocialLink,
 } from "@/types/content";
+import type { HeroThemes } from "@/types/site-appearance";
 
 // What the public website reads (no session). Only published or explicitly visible records ever
 // leave these functions — drafts and archived items are filtered here, not in the pages.
@@ -128,6 +130,18 @@ export const getPublicSiteMedia = cache(() =>
       };
     },
     BUILT_IN_SITE_MEDIA,
+  ),
+);
+
+/** The selected, curated hero style for every public inner page. */
+export const getPublicHeroThemes = cache(() =>
+  fromPortal<HeroThemes>(
+    "hero styles",
+    async () => {
+      const settings = await db.websiteSettings.findUnique({ where: { id: "default" }, select: { heroThemes: true } });
+      return settings ? readHeroThemes(settings.heroThemes) : null;
+    },
+    DEFAULT_HERO_THEMES,
   ),
 );
 

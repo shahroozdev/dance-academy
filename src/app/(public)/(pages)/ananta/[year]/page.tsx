@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { getPublicFestivals, getPublicSiteSettings } from "@/actions/public-content";
+import { getPublicFestivals, getPublicHeroThemes, getPublicSiteSettings } from "@/actions/public-content";
 import { FestivalView } from "@/components/public/festival-view";
 import { JsonLd } from "@/components/public/json-ld";
 import { breadcrumbJsonLd, festivalJsonLd, jsonLdGraph, pageMetadata } from "@/lib/seo";
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps<"/ananta/[year]">):
 
 export default async function AnantaEditionPage({ params }: PageProps<"/ananta/[year]">) {
   const { year } = await params;
-  const [festivals, settings] = await Promise.all([getPublicFestivals(), getPublicSiteSettings()]);
+  const [festivals, settings, heroThemes] = await Promise.all([getPublicFestivals(), getPublicSiteSettings(), getPublicHeroThemes()]);
   const edition = festivals.find((festival) => festival.year === year);
   if (!edition) notFound();
 
@@ -36,7 +36,7 @@ export default async function AnantaEditionPage({ params }: PageProps<"/ananta/[
           festivalJsonLd(edition),
         )}
       />
-      <FestivalView edition={edition} years={festivals.map((festival) => festival.year)} contactEmail={settings.email} />
+      <FestivalView edition={edition} years={festivals.map((festival) => festival.year)} contactEmail={settings.email} heroTheme={heroThemes.festival} />
     </>
   );
 }

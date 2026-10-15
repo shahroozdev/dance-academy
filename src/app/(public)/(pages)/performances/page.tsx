@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { getPublicPerformances } from "@/actions/public-content";
+import { getPublicHeroThemes, getPublicPerformances } from "@/actions/public-content";
 import { Link } from "@/components/Link";
 import { CtaLink } from "@/components/public/cta-link";
 import { JsonLd } from "@/components/public/json-ld";
@@ -86,7 +86,7 @@ function PerformancePhotoGrid({ photos }: { photos: readonly PublicImage[] }) {
 }
 
 export default async function PerformancesPage() {
-  const performances = await getPublicPerformances();
+  const [performances, heroThemes] = await Promise.all([getPublicPerformances(), getPublicHeroThemes()]);
   // A performance appears as a card once it has a cover image; its gallery photos always join
   // the grid. The built-in photos are only used when the portal's content cannot be read.
   const featured = performances.filter((performance) => performance.cover);
@@ -97,6 +97,7 @@ export default async function PerformancesPage() {
     <>
       <JsonLd data={jsonLdGraph(breadcrumbJsonLd([{ name: "Performances", path: "/performances" }]))} />
       <PageHero
+        theme={heroThemes.performances}
         eyebrow="Performances"
         heading={[
           { text: "From training" },

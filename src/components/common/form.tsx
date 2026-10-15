@@ -14,7 +14,7 @@ import {
   type UseFormReturn,
 } from "react-hook-form";
 
-import { Input, type InputOption, type InputType } from "@/components/common/input";
+import { Input, type InputOption, type InputOptionRenderer, type InputType } from "@/components/common/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 import type { ZodType } from "zod";
@@ -76,6 +76,7 @@ type FormFeildsProps<T extends FieldValues> = {
   label?: ReactNode;
   type?: InputType;
   options?: InputOption[];
+  renderOption?: InputOptionRenderer;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -95,6 +96,7 @@ export function FormFeilds<T extends FieldValues = FieldValues>({
   label,
   type,
   options,
+  renderOption,
   placeholder,
   disabled,
   className,
@@ -130,6 +132,7 @@ export function FormFeilds<T extends FieldValues = FieldValues>({
             id={name}
             type={type}
             options={options}
+            renderOption={renderOption}
             placeholder={placeholder}
             disabled={disabled}
             className={className}

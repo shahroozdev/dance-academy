@@ -12,6 +12,32 @@ import { SiteMediaCard } from "@/components/content/site-media-card";
 import { PageHeader } from "@/components/shared/page-header";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
+import { HERO_THEME_OPTIONS, HERO_THEME_STYLES } from "@/lib/site-appearance";
+import { HERO_PAGE_KEYS, type HeroTheme } from "@/types/site-appearance";
+import { cn } from "@/lib/utils";
+
+const HERO_PAGE_LABELS = {
+  about: "About",
+  training: "Training",
+  instructors: "Instructors",
+  performances: "Performances",
+  festival: "Ananta Festival",
+  press: "Press & Media",
+  support: "Support",
+  contact: "Contact",
+} as const;
+const HERO_THEME_SELECT_OPTIONS = Object.entries(HERO_THEME_OPTIONS).map(([value, label]) => ({ value, label }));
+
+function renderHeroThemeOption({ label, value }: { label: string; value: string }) {
+  const style = HERO_THEME_STYLES[value as HeroTheme];
+
+  return (
+    <span className="flex items-center gap-2">
+      <span aria-hidden="true" className={cn("h-5 w-12 shrink-0 rounded-md border border-foreground/10 bg-linear-to-br", style.background)} />
+      {label}
+    </span>
+  );
+}
 
 export default function WebsiteSettingsPage() {
   const { isOwner } = useContentUser();
@@ -76,6 +102,20 @@ export default function WebsiteSettingsPage() {
                 type="textarea"
                 required
               />
+            </FormSection>
+            <FormSection title="Page hero styles" description="Choose a coordinated background treatment for the top of each public page.">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {HERO_PAGE_KEYS.map((page) => (
+                  <FormFeilds<WebsiteSettingsInput>
+                    key={page}
+                    name={`heroThemes.${page}`}
+                    label={HERO_PAGE_LABELS[page]}
+                    type="select"
+                    options={HERO_THEME_SELECT_OPTIONS}
+                    renderOption={renderHeroThemeOption}
+                  />
+                ))}
+              </div>
             </FormSection>
             <FormFooter error={error} cancelHref="/content" isSaving={isSaving} submitLabel="Save settings" disabled={!isOwner} />
           </fieldset>

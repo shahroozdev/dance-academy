@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { getPublicPressItems, getPublicSiteSettings } from "@/actions/public-content";
+import { getPublicHeroThemes, getPublicPressItems, getPublicSiteSettings } from "@/actions/public-content";
 import { CtaLink } from "@/components/public/cta-link";
 import { JsonLd } from "@/components/public/json-ld";
 import { PageHero } from "@/components/public/page-hero";
@@ -66,12 +66,13 @@ function PressItems({ items }: { items: PublicPressItem[] }) {
 }
 
 export default async function PressPage() {
-  const [items, settings] = await Promise.all([getPublicPressItems(), getPublicSiteSettings()]);
+  const [items, settings, heroThemes] = await Promise.all([getPublicPressItems(), getPublicSiteSettings(), getPublicHeroThemes()]);
 
   return (
     <>
       <JsonLd data={jsonLdGraph(breadcrumbJsonLd([{ name: "Press & Media", path: "/press" }]))} />
       <PageHero
+        theme={heroThemes.press}
         eyebrow="Press & Media"
         heading={[
           { text: "Malhaar" },

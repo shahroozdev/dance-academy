@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { getPublicSiteMedia } from "@/actions/public-content";
+import { getPublicHeroThemes, getPublicSiteMedia } from "@/actions/public-content";
 import { Link } from "@/components/Link";
 import { CtaLink } from "@/components/public/cta-link";
 import { JsonLd } from "@/components/public/json-ld";
@@ -22,12 +22,13 @@ export const metadata: Metadata = pageMetadata({
 const BODY_CLASS = "font-public text-base leading-relaxed text-muted-foreground lg:text-lg";
 
 export default async function AboutPage() {
-  const { founders } = await getPublicSiteMedia();
+  const [{ founders }, heroThemes] = await Promise.all([getPublicSiteMedia(), getPublicHeroThemes()]);
 
   return (
     <>
       <JsonLd data={jsonLdGraph(breadcrumbJsonLd([{ name: "About", path: "/about" }]))} />
       <PageHero
+        theme={heroThemes.about}
         eyebrow="About Malhaar Dance Company"
         heading={[
           { text: "A shared" },

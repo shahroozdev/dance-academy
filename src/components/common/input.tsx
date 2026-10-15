@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 export type InputOption = { label: string; value: string };
+export type InputOptionRenderer = (option: InputOption) => ReactNode;
 
 export type InputType =
   | "text"
@@ -35,6 +36,7 @@ type InputProps = {
   id?: string;
   type?: InputType;
   options?: InputOption[];
+  renderOption?: InputOptionRenderer;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -56,7 +58,7 @@ type InputProps = {
 export const Input = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   InputProps
->(function Input({ type = "text", options, onChange, ...props }, ref) {
+>(function Input({ type = "text", options, renderOption, onChange, ...props }, ref) {
   const renderers: Record<"textarea" | "select", () => ReactNode> = {
     textarea: () => (
       <Textarea
@@ -90,7 +92,7 @@ export const Input = forwardRef<
         <SelectContent>
           {options?.map((option) => (
             <SelectItem key={option.value} value={option.value}>
-              {option.label}
+              {renderOption ? renderOption(option) : option.label}
             </SelectItem>
           ))}
         </SelectContent>

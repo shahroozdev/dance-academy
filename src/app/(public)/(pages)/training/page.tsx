@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { getPublicSiteMedia } from "@/actions/public-content";
+import { getPublicHeroThemes, getPublicSiteMedia } from "@/actions/public-content";
 import { CtaLink } from "@/components/public/cta-link";
 import { JsonLd } from "@/components/public/json-ld";
 import { PageHero } from "@/components/public/page-hero";
@@ -23,12 +23,13 @@ export const metadata: Metadata = pageMetadata({
 const BODY_CLASS = "font-public text-base leading-relaxed text-muted-foreground lg:text-lg";
 
 export default async function TrainingPage() {
-  const siteMedia = await getPublicSiteMedia();
+  const [siteMedia, heroThemes] = await Promise.all([getPublicSiteMedia(), getPublicHeroThemes()]);
 
   return (
     <>
       <JsonLd data={jsonLdGraph(breadcrumbJsonLd([{ name: "Training", path: "/training" }]), trainingJsonLd())} />
       <PageHero
+        theme={heroThemes.training}
         eyebrow="Dance Training"
         heading={[
           { text: "More than" },

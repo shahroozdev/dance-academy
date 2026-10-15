@@ -1,3 +1,4 @@
+import { getPublicHeroThemes } from "@/actions/public-content";
 import { CtaLink } from "@/components/public/cta-link";
 import { JsonLd } from "@/components/public/json-ld";
 import { PageHero } from "@/components/public/page-hero";
@@ -15,11 +16,13 @@ export const metadata: Metadata = pageMetadata({
   path: "/support",
 });
 
-export default function SupportPage() {
+export default async function SupportPage() {
+  const heroThemes = await getPublicHeroThemes();
   return (
     <>
       <JsonLd data={jsonLdGraph(breadcrumbJsonLd([{ name: "Support", path: "/support" }]))} />
       <PageHero
+        theme={heroThemes.support}
         eyebrow="Support Malhaar"
         heading={[
           { text: "Help keep the" },

@@ -9,6 +9,7 @@ import { SectionHeading } from "@/components/public/section-heading";
 import { ANANTA_FUTURE, ANANTA_INTEREST, ANANTA_INTRO, inquiryHref } from "@/lib/public-site";
 import { cn } from "@/lib/utils";
 import type { PublicFestival, PublicImage } from "@/types/content";
+import type { HeroTheme } from "@/types/site-appearance";
 
 const BODY_CLASS = "font-public text-base leading-relaxed text-muted-foreground lg:text-lg";
 
@@ -17,6 +18,7 @@ type FestivalViewProps = {
   /** Every published year, for the year switcher. */
   years: readonly string[];
   contactEmail: string;
+  heroTheme: HeroTheme;
 };
 
 function PosterGrid({ images, aspectClass }: { images: readonly PublicImage[]; aspectClass: string }) {
@@ -25,11 +27,20 @@ function PosterGrid({ images, aspectClass }: { images: readonly PublicImage[]; a
       {images.map((image) => (
         <div key={image.src} className={cn("relative overflow-hidden bg-card shadow-sm", aspectClass)}>
           <Image
+            aria-hidden="true"
+            src={image.src}
+            alt=""
+            fill
+            sizes="(min-width: 640px) 30rem, 90vw"
+            className="scale-110 object-cover opacity-30 blur-2xl"
+            style={{ objectPosition: image.position }}
+          />
+          <Image
             src={image.src}
             alt={image.alt}
             fill
             sizes="(min-width: 640px) 30rem, 90vw"
-            className="object-cover"
+            className="object-contain p-2"
             style={{ objectPosition: image.position }}
           />
         </div>
@@ -42,12 +53,14 @@ function PosterGrid({ images, aspectClass }: { images: readonly PublicImage[]; a
  * The whole of one festival edition's page below the site header. Rendered by the public page
  * for published editions and by the Content Portal's preview for drafts, so both always match.
  */
-export function FestivalView({ edition, years, contactEmail }: FestivalViewProps) {
+export function FestivalView({ edition, years, contactEmail, heroTheme }: FestivalViewProps) {
   const hasHighlights = edition.posters.length + edition.gallery.length + edition.videos.length > 0;
 
   return (
     <>
       <PageHero
+        theme={heroTheme}
+        titlePlacement="raised"
         eyebrowInHeading={false}
         eyebrow={`Presented by Malhaar Dance Company · ${edition.label}`}
         heading={[

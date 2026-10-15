@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { CONTENT_ENTITIES } from "@/types/content";
+import { HERO_THEME_KEYS } from "@/types/site-appearance";
 
 // Validation for everything the Content Portal saves. Form fields are plain strings (an empty
 // string means "not provided"), so the same schema drives the form and the server action.
@@ -156,6 +157,18 @@ export type ProfileInput = z.infer<typeof profileSchema>;
 
 // ---------- Website settings ----------
 
+const heroThemeSchema = z.enum(HERO_THEME_KEYS);
+export const heroThemesSchema = z.object({
+  about: heroThemeSchema,
+  training: heroThemeSchema,
+  instructors: heroThemeSchema,
+  performances: heroThemeSchema,
+  festival: heroThemeSchema,
+  press: heroThemeSchema,
+  support: heroThemeSchema,
+  contact: heroThemeSchema,
+});
+
 export const websiteSettingsSchema = z.object({
   contactEmail: z.email("Enter a valid email address").trim().toLowerCase(),
   contactPhone: text("Phone number", 40),
@@ -164,6 +177,7 @@ export const websiteSettingsSchema = z.object({
   instagramUrl: optionalLinkSchema,
   seoDescription: text("Search description", 320),
   homeIntro: text("Home page introduction", 600),
+  heroThemes: heroThemesSchema,
 });
 export type WebsiteSettingsInput = z.infer<typeof websiteSettingsSchema>;
 

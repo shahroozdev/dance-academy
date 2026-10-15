@@ -1,4 +1,4 @@
-import { getPublicSiteSettings } from "@/actions/public-content";
+import { getPublicHeroThemes, getPublicSiteSettings } from "@/actions/public-content";
 import { InquiryForm } from "@/components/public/inquiry-form";
 import { JsonLd } from "@/components/public/json-ld";
 import { PageHero } from "@/components/public/page-hero";
@@ -18,12 +18,13 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default async function ContactPage({ searchParams }: PageProps<"/contact">) {
-  const [{ interest }, settings] = await Promise.all([searchParams, getPublicSiteSettings()]);
+  const [{ interest }, settings, heroThemes] = await Promise.all([searchParams, getPublicSiteSettings(), getPublicHeroThemes()]);
 
   return (
     <>
       <JsonLd data={jsonLdGraph(breadcrumbJsonLd([{ name: "Contact", path: "/contact" }]))} />
       <PageHero
+        theme={heroThemes.contact}
         eyebrow="Contact Malhaar Dance Company"
         heading={[
           { text: "Get in" },

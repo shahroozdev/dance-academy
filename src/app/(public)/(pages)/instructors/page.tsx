@@ -1,4 +1,4 @@
-import { getPublicProfiles } from "@/actions/public-content";
+import { getPublicHeroThemes, getPublicProfiles } from "@/actions/public-content";
 import { CtaLink } from "@/components/public/cta-link";
 import { InstructorCards } from "@/components/public/instructor-cards";
 import { JsonLd } from "@/components/public/json-ld";
@@ -17,7 +17,7 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default async function InstructorsPage() {
-  const profiles = await getPublicProfiles();
+  const [profiles, heroThemes] = await Promise.all([getPublicProfiles(), getPublicHeroThemes()]);
 
   return (
     <>
@@ -28,6 +28,7 @@ export default async function InstructorsPage() {
         )}
       />
       <PageHero
+        theme={heroThemes.instructors}
         eyebrow="Instructors & Artistic Team"
         heading={[
           { text: "Meet the" },

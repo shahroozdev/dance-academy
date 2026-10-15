@@ -1,5 +1,12 @@
 # Updates Summary
 
+## 2026-10-15
+
+- Each public page hero now has its own more visibly different default colour treatment. The available choices use clearly distinct blush, gold, violet, teal, deep plum, crimson, sunset, and sage green backgrounds, with matching background artwork instead of a near-identical wash across pages.
+- In Website Settings, each hero background choice now shows its colour treatment in the dropdown, so the website team can choose visually as well as by name.
+- The hero colour choices and their previews are now more clearly separated, making every colour family easy to tell apart before selecting one.
+- The Ananta Festival page now shows a page-shaped loading view while it finds the newest festival edition and loads its details, rather than briefly showing a blank page.
+
 ## 2026-10-14
 
 - You can now be signed in to Studio Admin and the Content Portal at the same time in the same browser. Signing in to one no longer signs you out of the other, and there's no more "switch portal" message on the sign-in pages.

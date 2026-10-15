@@ -315,6 +315,8 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Next / Blocked
 
+- **2026-10-15: Public-page hero styles and full festival image fitting — code complete; pending production database approval.** The website now has eight curated hero presets (Blush, Gold, Violet, Orchid, Deep Plum, Crimson, Sunset, Rose), with a different default for About, Training, Instructors, Performances, Ananta Festival, Press & Media, Support, and Contact. Content Owners choose them in Website Settings. The Ananta hero heading is raised, and Festival posters/gallery photos now preserve the complete picture over a matching blurred backdrop rather than cropping it. TypeScript, focused public-content tests, and lint pass (the pre-existing temporary helper warnings remain); production build reached app compilation but could not download the existing Google Fonts in this offline environment. **Before deployment, apply only the reviewed additive SQL in `prisma/migrations/20261015090000_add_website_hero_themes/migration.sql` to the approved hosted database, then deploy the matching code.** Do not run blanket Prisma migration commands against the live database.
+
 - **Live production verification was paused for the new-class August-fee question.** The finalized
   action-menu icons are deployed. Live checks confirmed Jazlyn Arackal has no August student bill;
   the remaining browser-only workflow checks can resume from enrollment controls onward. Temporary
@@ -356,6 +358,18 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-10-15: Fully distinct hero colour families.** The formerly similar Orchid and Rose choices are now Teal and Sage Green. Every hero choice has a separate colour family: blush, violet, gold, crimson, deep plum, teal, sunset, or sage green. TypeScript, formatting, and changed-file lint checks pass.
+
+- **2026-10-15: More distinguishable hero palette previews.** Hero choices now use more clearly separated hues and wider gradient-strip previews in Website Settings. The preview and the public-page background use the same colour settings. TypeScript, formatting, and changed-file lint checks pass.
+
+- **2026-10-15: Hero colour swatches in Website Settings.** Each hero-style dropdown now shows a gradient colour strip next to every choice and the selected value. The same shared style data drives both the preview and the public-page background, so the preview is accurate. TypeScript, formatting, and changed-file lint checks pass.
+
+- **2026-10-15: Unique default hero palettes.** The eight public inner pages now each start with a different hero treatment: blush, gold, violet, teal, deep plum, crimson, sunset, and sage green. These eight choices are also available to Content Owners in Website Settings; any colours they have already chosen remain unchanged. TypeScript, formatting, and changed-file lint checks pass.
+
+- **2026-10-15: Stronger public-page hero colour distinction.** Each selectable hero style now has its own stronger gradient and matching decorative artwork: warm blush, violet, gold, crimson, or deep plum. The Ananta loading view shares its matching deep-plum artwork. TypeScript, formatting, and changed-file lint checks pass.
+
+- **2026-10-15: Ananta Festival loading state.** The Ananta route now has a responsive, page-shaped loading view for both the newest-edition redirect and each published festival year. It keeps the hero, content, festival highlights, artists, support, and contact areas visibly structured while public festival information is being read. TypeScript and formatting checks pass.
 
 - **2026-10-14: Admin and Content Portal can be used at the same time.** Owner's decision: each portal signs
   in on its own; one session only opens its own portal, and both together open both. Removed the
