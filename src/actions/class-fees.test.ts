@@ -49,8 +49,8 @@ describe("markClassMonthlyFeeNoClasses", () => {
 });
 
 describe("updateClassMonthlyFee", () => {
-  it("automatically applies an override to unpaid bills and flags paid bills for review", async () => {
-    mocks.recalculateClassMonthBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 1 });
+  it("automatically applies an override to affected bills while preserving payments", async () => {
+    mocks.recalculateClassMonthBills.mockResolvedValue({ recalculated: 2, skippedWithPayments: 0 });
 
     await updateClassMonthlyFee("fee", {
       billableSessions: 3,
@@ -69,12 +69,12 @@ describe("updateClassMonthlyFee", () => {
 });
 
 describe("recalculateClassMonthlyFeeBills", () => {
-  it("recalculates each unpaid bill once and protects bills that already have payments", async () => {
-    mocks.recalculateClassMonthBills.mockResolvedValue({ recalculated: 1, skippedWithPayments: 1 });
+  it("recalculates each affected bill while preserving recorded payments", async () => {
+    mocks.recalculateClassMonthBills.mockResolvedValue({ recalculated: 2, skippedWithPayments: 0 });
 
     await expect(recalculateClassMonthlyFeeBills("fee")).resolves.toEqual({
-      recalculated: 1,
-      skippedWithPayments: 1,
+      recalculated: 2,
+      skippedWithPayments: 0,
     });
     expect(mocks.recalculateClassMonthBills).toHaveBeenCalledWith(
       "class",

@@ -1,9 +1,11 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { z } from "zod";
 
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
+import { FORM, FormFeilds } from "@/components/common/form";
 import { Modal } from "@/components/common/modal";
 import { PermanentDeleteModal } from "@/components/common/permanent-delete-modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/common/table";
@@ -16,6 +18,9 @@ import { useQuery } from "@/hooks/useQuery";
 import { useRouter } from "@/hooks/useRouter";
 import { formatEnrollmentCalendarDate } from "@/lib/enrollment-date";
 import { formatStudentDuration, formatStudentJoinDate } from "@/lib/student-duration";
+import { todayIsoDate } from "@/lib/utils";
+
+const lastClassDateSchema = z.object({ lastClassDate: z.iso.date("Enter a valid last class date") });
 
 const BILLING_STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   PAID: "default",
@@ -70,6 +75,21 @@ export default function StudentDetailPage() {
     );
   }
 
+  const hasActiveEnrollments = student.enrollments.some((enrollment) => enrollment.status === "ACTIVE");
+  const needsDeactivationCompletion = !student.isActive && hasActiveEnrollments;
+  const isEndingEnrollments = student.isActive || needsDeactivationCompletion;
+  const actionKey = {
+    "active-false": "deactivate",
+    "active-true": "deactivate",
+    "inactive-false": "activate",
+    "inactive-true": "complete",
+  }[`${student.isActive ? "active" : "inactive"}-${hasActiveEnrollments}`] as "activate" | "complete" | "deactivate";
+  const actionLabels = {
+    activate: { button: "Activate", title: "Activate Student?" },
+    complete: { button: "Set Last Class Date", title: "Complete Student Deactivation" },
+    deactivate: { button: "Deactivate", title: "Deactivate Student?" },
+  }[actionKey];
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -82,34 +102,44 @@ export default function StudentDetailPage() {
             </Button>
             <Modal
               trigger={
-                <Button variant={student.isActive ? "destructive" : "default"}>
-                  {student.isActive ? "Deactivate" : "Activate"}
+                <Button variant={isEndingEnrollments ? "destructive" : "default"}>
+                  {actionLabels.button}
                 </Button>
               }
               className="max-w-sm"
               title={
                 <div>
-                  {student.isActive ? "Deactivate Student?" : "Activate Student?"}
+                  {actionLabels.title}
                   <p className="text-sm font-normal text-muted-foreground">
-                    {student.isActive
+                    {isEndingEnrollments
                       ? "This student will be excluded from future billing generation."
                       : "This student will be included in future billing generation."}
                   </p>
                 </div>
               }
             >
-              {({ close }) => (
+              {({ close }) => isEndingEnrollments ? (
+                <FORM
+                  schema={lastClassDateSchema}
+                  defaultValues={{ lastClassDate: todayIsoDate() }}
+                  onSubmit={async ({ lastClassDate }) => {
+                    await toggleActive(id, false, lastClassDate);
+                    close();
+                  }}
+                >
+                  <div className="space-y-4">
+                    <FormFeilds name="lastClassDate" label="Last Class Date" type="date" required />
+                    <p className="text-sm text-muted-foreground">All active enrollments will end on this date. The final month will charge only scheduled classes through this date.</p>
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={close}>Cancel</Button>
+                      <Button type="submit" variant="destructive">{actionLabels.button}</Button>
+                    </div>
+                  </div>
+                </FORM>
+              ) : (
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={close}>Cancel</Button>
-                  <Button
-                    variant={student.isActive ? "destructive" : "default"}
-                    onClick={async () => {
-                      await toggleActive(id, !student.isActive);
-                      close();
-                    }}
-                  >
-                    {student.isActive ? "Deactivate" : "Activate"}
-                  </Button>
+                  <Button onClick={async () => { await toggleActive(id, true); close(); }}>Activate</Button>
                 </div>
               )}
             </Modal>

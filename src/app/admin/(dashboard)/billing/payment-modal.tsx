@@ -40,7 +40,17 @@ function formatMonth(value: Date | string): string {
   return new Date(value).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 }
 
-export function PaymentModal({ billingId, onClose }: { billingId: string; onClose: () => void }) {
+type EditablePayment = {
+  id: string;
+  paymentDate: Date | string;
+  amount: number;
+  method: "ZELLE" | "CASH" | "CHECK" | "OTHER";
+  classId: string | null;
+  reference: string | null;
+  notes: string | null;
+};
+
+export function PaymentModal({ billingId, onClose, payment: existingPayment }: { billingId: string; onClose: () => void; payment?: EditablePayment }) {
   const [selectedBillingId, setSelectedBillingId] = useState(billingId);
   const { data: billing, isLoading } = useQuery("getMonthlyBillingById", [selectedBillingId]);
   const { data: billOptions } = useQuery(
@@ -48,7 +58,7 @@ export function PaymentModal({ billingId, onClose }: { billingId: string; onClos
     [billing?.studentId ?? ""],
     { enabled: Boolean(billing?.studentId) },
   );
-  const isRefund = (billing?.balance ?? 0) < 0;
+  const isRefund = !existingPayment && (billing?.balance ?? 0) < 0;
   const title = isRefund ? "Record Refund" : "Record Payment";
   const {
     mutate,
@@ -58,6 +68,15 @@ export function PaymentModal({ billingId, onClose }: { billingId: string; onClos
     invalidateKeys: ["getMonthlyBillings", "getMonthlyBillingById", "getPayments", "getFinancialSummary", "getMonthlyTrend", "getDashboardSummary"],
     onSuccess: onClose,
   });
+  const { mutate: updateExisting, isLoading: isUpdating, error: updateError } = useMutate("updatePayment", {
+    invalidateKeys: ["getMonthlyBillings", "getMonthlyBillingById", "getPayments", "getFinancialSummary", "getMonthlyTrend", "getDashboardSummary"],
+    onSuccess: onClose,
+  });
+  const isEditing = Boolean(existingPayment);
+  const saveError = error || updateError;
+  const saveErrorMessage = saveError instanceof Error ? saveError.message : "Could not save. Please try again.";
+  const readySubmitLabel = { editing: "Save Payment", creating: title }[isEditing ? "editing" : "creating"];
+  const submitLabel = isSaving || isUpdating ? "Saving..." : readySubmitLabel;
 
   return (
     <Modal
@@ -66,7 +85,7 @@ export function PaymentModal({ billingId, onClose }: { billingId: string; onClos
       className="max-w-sm"
       title={
         <div>
-          {title}
+          {isEditing ? "Edit Payment" : title}
           {billing && (
             <p className="text-sm font-normal text-muted-foreground">
               {billing.student.fullName} — {formatMonth(billing.month)} — {isRefund ? "credit available" : "balance due"} {formatCurrency(Math.abs(billing.balance))}
@@ -83,22 +102,20 @@ export function PaymentModal({ billingId, onClose }: { billingId: string; onClos
             <FORM
               schema={isRefund ? refundEntryFormSchema : paymentEntryFormSchema}
               defaultValues={{
-                paymentDate: todayValue(),
-                amount: isRefund ? Math.min(-billing.balance, billing.amountPaid) : Math.max(0, billing.balance),
-                method: "ZELLE",
-                reference: "",
-                notes: "",
-                paymentKind: "FULL",
+                paymentDate: existingPayment ? new Date(existingPayment.paymentDate).toISOString().slice(0, 10) : todayValue(),
+                amount: existingPayment?.amount ?? (isRefund ? Math.min(-billing.balance, billing.amountPaid) : Math.max(0, billing.balance)),
+                method: existingPayment?.method ?? "ZELLE",
+                classId: existingPayment?.classId ?? "",
+                reference: existingPayment?.reference ?? "",
+                notes: existingPayment?.notes ?? "",
+                paymentKind: existingPayment ? "PARTIAL" : "FULL",
               }}
               onSubmit={async (data: PaymentFormInput) => {
                 const { paymentKind, ...payment } = data;
                 const amount = isRefund || paymentKind === "PARTIAL" ? payment.amount : Math.max(0, billing.balance);
-                await mutate({
-                  billingId: selectedBillingId,
-                  ...payment,
-                  amount,
-                  notes: payment.notes ?? "",
-                });
+                const normalized = { ...payment, amount, notes: payment.notes ?? "" };
+                if (isEditing) await updateExisting(existingPayment!.id, normalized);
+                else await mutate({ billingId: selectedBillingId, ...normalized });
               }}
             >
               {(form) => (
@@ -123,12 +140,26 @@ export function PaymentModal({ billingId, onClose }: { billingId: string; onClos
                   )}
                   {!isRefund && (
                     <FormFeilds
+                      name="classId"
+                      label="Payment For Class"
+                      type="select"
+                      options={[
+                        { value: "", label: "General payment / multiple classes" },
+                        ...billing.lineItems.map((lineItem) => ({
+                          value: lineItem.enrollment.class.id,
+                          label: lineItem.enrollment.class.name,
+                        })),
+                      ]}
+                    />
+                  )}
+                  {!isRefund && (
+                    <FormFeilds
                       name="paymentKind"
                       label="Payment Amount Type"
                       type="select"
                       options={[
                         { value: "FULL", label: `Full remaining balance (${formatCurrency(billing.balance)})` },
-                        { value: "PARTIAL", label: "Partial payment" },
+                        { value: "PARTIAL", label: "Custom amount (partial or overpayment)" },
                       ]}
                     />
                   )}
@@ -139,15 +170,15 @@ export function PaymentModal({ billingId, onClose }: { billingId: string; onClos
                   <FormFeilds name="method" label="Method" type="select" options={METHOD_OPTIONS} />
                   <FormFeilds name="reference" label="Reference" placeholder="e.g. Zelle confirmation #" />
                   <FormFeilds name="notes" label={isRefund ? "Refund Reason" : "Notes"} type="textarea" />
-                  {Boolean(error) && (
-                    <p className="text-sm text-destructive">{error instanceof Error ? error.message : "Could not save. Please try again."}</p>
+                  {Boolean(saveError) && (
+                    <p className="text-sm text-destructive">{saveErrorMessage}</p>
                   )}
                   <div className="flex justify-end gap-2 pt-2">
                     <Button type="button" variant="outline" onClick={close}>
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={isSaving || !form.formState.isValid}>
-                      {isSaving ? "Saving..." : title}
+                    <Button type="submit" disabled={isSaving || isUpdating || !form.formState.isValid}>
+                      {submitLabel}
                     </Button>
                   </div>
                 </div>

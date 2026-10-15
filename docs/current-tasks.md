@@ -371,6 +371,16 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 - **2026-10-15: Ananta Festival loading state.** The Ananta route now has a responsive, page-shaped loading view for both the newest-edition redirect and each published festival year. It keeps the hero, content, festival highlights, artists, support, and contact areas visibly structured while public festival information is being read. TypeScript and formatting checks pass.
 
+- **2026-10-15: Corrected Varsha's remaining billing and lifecycle issues.** Reported class counts
+  now update fees and all affected balances automatically while preserving payments; paid bills can
+  be safely recalculated; student, enrollment, and class endings use an exact last class date;
+  payments can be assigned to a class and edited. The hosted database change was applied. Jia's
+  missing September $60 charge and Evaniya's October Onam allocation/balance were repaired and
+  verified. Hannah's stored records were audited, but her missing $20 payment and exact final date
+  were deliberately not invented. Added regression coverage for empty bill repair, paid-bill
+  recalculation, date-bounded sessions, automatic session-count application, deactivation, and
+  payment editing/allocation.
+
 - **2026-10-14: Admin and Content Portal can be used at the same time.** Owner's decision: each portal signs
   in on its own; one session only opens its own portal, and both together open both. Removed the
   one-session-at-a-time rule: the other-session check in both `authorize` callbacks (`src/auth.ts`,

@@ -43,15 +43,19 @@ beforeEach(() => {
 
 describe("class deactivation billing boundary", () => {
   it("stops new billing from the current month and recalculates affected bills", async () => {
-    await toggleClassActive("class", false);
+    await toggleClassActive("class", false, "2026-10-14");
 
     expect(mocks.db.class.update).toHaveBeenCalledWith({
       where: { id: "class" },
-      data: { isActive: false, inactiveFromMonth: expect.any(Date) },
+      data: {
+        isActive: false,
+        inactiveFromMonth: new Date("2026-11-01T00:00:00.000Z"),
+        lastClassDate: new Date("2026-10-14T00:00:00.000Z"),
+      },
     });
     expect(mocks.recalculateClassFamilyBillsFromMonth).toHaveBeenCalledWith(
       "class",
-      expect.any(Date),
+      new Date("2026-10-01T00:00:00.000Z"),
       expect.stringContaining("active status changed"),
     );
   });

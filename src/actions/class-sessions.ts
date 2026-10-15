@@ -31,7 +31,7 @@ export async function getMonthlyClassSessionTracking(monthInput: string) {
 
   return classes.map((cls) => {
     const fee = cls.monthlyFees[0] ?? null;
-    const scheduledSessions = countClassSessionsForMonth(month, cls.dayOfWeek, cls.firstClassDate);
+    const scheduledSessions = countClassSessionsForMonth(month, cls.dayOfWeek, cls.firstClassDate, cls.lastClassDate);
     const standardRate = Number(cls.standardRate);
     const estimatedMonthlyFee = cls.pricingType === "SEASONAL"
       ? standardRate
@@ -61,13 +61,13 @@ export async function reportMonthlyClassSessions(data: ClassSessionReportInput) 
   data = classSessionReportSchema.parse(data);
   const month = normalizeMonth(data.month);
   const cls = await db.class.findUniqueOrThrow({ where: { id: data.classId } });
-  const scheduledSessions = countClassSessionsForMonth(month, cls.dayOfWeek, cls.firstClassDate);
+  const scheduledSessions = countClassSessionsForMonth(month, cls.dayOfWeek, cls.firstClassDate, cls.lastClassDate);
   const rate = round2(Number(cls.standardRate));
   const defaults = cls.pricingType === "SEASONAL"
     ? { billableSessions: null, rate: null, flatFee: rate, monthlyClassFee: rate }
     : { billableSessions: scheduledSessions, rate, flatFee: null, monthlyClassFee: round2(scheduledSessions * rate) };
 
-  return db.classMonthlyFee.upsert({
+  const fee = await db.classMonthlyFee.upsert({
     where: { classId_month: { classId: cls.id, month } },
     create: {
       classId: cls.id,
@@ -83,6 +83,9 @@ export async function reportMonthlyClassSessions(data: ClassSessionReportInput) 
       reportedAt: new Date(),
     },
   });
+  if (cls.pricingType === "SEASONAL") return { fee, applied: false, recalculated: 0, skippedWithPayments: 0 };
+  const result = await applyReportedClassSessions(fee.id);
+  return { fee, ...result };
 }
 
 export async function applyReportedClassSessions(classMonthlyFeeId: string) {

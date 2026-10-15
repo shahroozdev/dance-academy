@@ -2,9 +2,9 @@
 
 import { requireAdmin } from "@/actions/access";
 import { sendAdminOperationalAlert } from "@/actions/email";
-import { recordBillTransaction } from "@/actions/payment-service";
-import { paymentCreateSchema, refundCreateSchema } from "@/actions/payments.schema";
-import type { PaymentCreateInput, RefundCreateInput } from "@/actions/payments.schema";
+import { recordBillTransaction, updateBillPayment } from "@/actions/payment-service";
+import { paymentCreateSchema, paymentUpdateSchema, refundCreateSchema } from "@/actions/payments.schema";
+import type { PaymentCreateInput, PaymentUpdateInput, RefundCreateInput } from "@/actions/payments.schema";
 import { validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
@@ -81,6 +81,7 @@ export async function getPayments(params?: {
       method: p.method,
       reference: p.reference,
       notes: p.notes,
+      classId: p.classId,
     })),
     total,
     pages: Math.ceil(total / pageSize),
@@ -113,4 +114,9 @@ export async function createPayment(data: PaymentCreateInput) {
 export async function createRefund(data: RefundCreateInput) {
   await requireAdmin();
   return recordBillTransaction(refundCreateSchema.parse(data), true);
+}
+
+export async function updatePayment(id: string, data: PaymentUpdateInput) {
+  await requireAdmin();
+  return updateBillPayment(id, paymentUpdateSchema.parse(data));
 }

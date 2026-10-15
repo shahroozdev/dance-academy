@@ -296,15 +296,23 @@ function EnrollmentActions({
         </div>
       }>
         {() => (
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={closeAction}>Cancel</Button>
-            <Button variant="destructive" disabled={isEnding} onClick={async () => {
-              await endEnroll(id, todayIsoDate());
+          <FORM
+            schema={enrollmentStartDateUpdateSchema}
+            defaultValues={{ startDate: todayIsoDate() }}
+            onSubmit={async ({ startDate: lastClassDate }) => {
+              await endEnroll(id, lastClassDate);
               closeAction();
-            }}>
-              {isEnding ? "Ending..." : "End Enrollment"}
-            </Button>
-          </div>
+            }}
+          >
+            <div className="space-y-4">
+              <FormFeilds name="startDate" label="Last Class Date" type="date" required />
+              <p className="text-sm text-muted-foreground">The final month will charge only scheduled classes through this date.</p>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={closeAction}>Cancel</Button>
+                <Button type="submit" variant="destructive" disabled={isEnding}>{isEnding ? "Ending..." : "End Enrollment"}</Button>
+              </div>
+            </div>
+          </FORM>
         )}
       </Modal>
       <Modal open={action === "reenroll"} onOpenChange={(open) => setAction(open ? "reenroll" : null)} className="max-w-sm" title={
@@ -388,7 +396,7 @@ function EditEnrollmentStartDate({
                 Sessions before this date are excluded. A class held on this date or later is included.
               </p>
               <p className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-                Affected unpaid family bills are recalculated automatically after saving. Bills that already have payments are protected and must be corrected with an adjustment instead.
+                Affected family bills are recalculated automatically after saving. Recorded payments remain unchanged while balances update.
               </p>
               {Boolean(error) && <p role="alert" className="text-sm text-destructive">{error instanceof Error ? error.message : "Could not update the enrollment start date."}</p>}
               <div className="flex justify-end gap-2">
