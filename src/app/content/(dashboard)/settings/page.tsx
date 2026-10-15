@@ -13,8 +13,8 @@ import { PageHeader } from "@/components/shared/page-header";
 import { useMutate } from "@/hooks/useMutate";
 import { useQuery } from "@/hooks/useQuery";
 import { HERO_THEME_OPTIONS, HERO_THEME_STYLES } from "@/lib/site-appearance";
-import { HERO_PAGE_KEYS, type HeroTheme } from "@/types/site-appearance";
 import { cn } from "@/lib/utils";
+import { HERO_PAGE_KEYS, type HeroTheme } from "@/types/site-appearance";
 
 const HERO_PAGE_LABELS = {
   about: "About",
