@@ -70,6 +70,18 @@ for (const [label, viewport] of [["desktop", { width: 1440, height: 900 }], ["mo
       await expect(page.getByText(`${studentLabel} have fees still due: ${currency(expected.due)}`)).toBeVisible();
       await expect(page.getByText(`${expected.bills} ${expected.bills === 1 ? "bill" : "bills"}`, { exact: true })).toBeVisible();
       await expect(page.getByLabel("Class", { exact: true })).toContainText("All classes");
+
+      // The server already supplied the data, so loading the page must not fetch it a second time
+      // (a server-action POST). Each duplicate doubled the database connections a visit used.
+      const refetches: string[] = [];
+      page.on("request", (request) => {
+        // Only this page's data request carries a pageSize argument (the bell and sidebar make their own).
+        if (request.method() === "POST" && request.headers()["next-action"] && request.postData()?.includes("pageSize")) refetches.push(request.url());
+      });
+      await page.reload();
+      await expect(page.getByText(`${studentLabel} have fees still due: ${currency(expected.due)}`)).toBeVisible();
+      await page.waitForLoadState("networkidle");
+      expect(refetches).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
       await expectRowsBalance(page);
     });
