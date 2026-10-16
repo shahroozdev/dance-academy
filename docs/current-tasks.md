@@ -5,22 +5,6 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
-- **2026-10-17: Production "Too many database connections" after the f535173 deploy — fix ready,
-  NOT committed.** Deploy f535173 (Outstanding Fees + itemized notices) is live and Vercel reports
-  success. Between 01:17 and 01:22 (+05:00) production logged Prisma P2037 errors on admin pages,
-  Outstanding Fees and one `/register` request; the database role (`prisma_migration`) allows 45
-  connections and 43 were held idle by production instances (pg's default pool of 10 per instance;
-  idle timeouts cannot fire while Vercel suspends an instance). It cleared on its own (15 open later).
-  No billing data changed in that window, so any save attempted then did not happen.
-  Fix (uncommitted): `src/lib/db-pool.ts` caps each instance at 5 connections, 5s idle timeout, 15s
-  wait for a free connection (`src/lib/db.ts` uses it; test `src/lib/db-pool.test.ts`); `useQuery`
-  no longer refetches server-seeded data whose args are unchanged (its documented behavior — every
-  seeded page, including Outstanding Fees, the settings page and the theme injector, fetched twice;
-  the Strict-Mode double effect is handled too). Browser spec now asserts no duplicate data fetch on
-  load (fails without the fix, passes with it). Further hardening to consider: `attachDatabasePool`
-  from `@vercel/functions` (new dependency) to release idle connections before an instance is
-  suspended, or a pooled connection string for the hosted database.
-
 - **2026-10-14: Browser tests for the public site and the Content Portal.** Run both with
   `npm run test:e2e:site` (plain `npm run test:e2e` also runs the older admin acceptance flow, which writes
   billing data — do not run that against the live database).
@@ -398,6 +382,27 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-10-17: Production "Too many database connections" after the f535173 deploy — fixed and deployed (ceeab64).** Deploy f535173 (Outstanding Fees + itemized notices) is live and Vercel reports
+  success. Between 01:17 and 01:22 (+05:00) production logged Prisma P2037 errors on admin pages,
+  Outstanding Fees and one `/register` request; the database role (`prisma_migration`) allows 45
+  connections and 43 were held idle by production instances (pg's default pool of 10 per instance;
+  idle timeouts cannot fire while Vercel suspends an instance). It cleared on its own (15 open later).
+  No billing data changed in that window, so any save attempted then did not happen.
+  Fix: `src/lib/db-pool.ts` caps each instance at 5 connections, 5s idle timeout, 15s
+  wait for a free connection (`src/lib/db.ts` uses it; test `src/lib/db-pool.test.ts`); `useQuery`
+  no longer refetches server-seeded data whose args are unchanged (its documented behavior — every
+  seeded page, including Outstanding Fees, the settings page and the theme injector, fetched twice;
+  the Strict-Mode double effect is handled too). Browser spec now asserts no duplicate data fetch on
+  load (fails without the fix, passes with it). Further hardening to consider: `attachDatabasePool`
+  from `@vercel/functions` (new dependency) to release idle connections before an instance is
+  suspended, or a pooled connection string for the hosted database.
+  Verified on production after deploying ceeab64: the Outstanding Fees browser spec passed 7/7
+  against https://malhaar-dance-company.vercel.app (temporary tagged login removed); no P2037
+  errors since the deploy; 24 of 45 connections in use right after the test burst; public and login
+  pages 200; billing audit clean. Remaining log noise: pg's "SSL modes ... verify-full" warning,
+  logged at error level on successful requests — set `sslmode=verify-full` in the hosting
+  environment's DATABASE_URL to silence it.
 
 - **2026-10-17: Outstanding Fees and itemized parent fee notices completed.** Added the paginated,
   class-filterable Outstanding Fees page; exact-cent allocation prevents overlapping class balances.
