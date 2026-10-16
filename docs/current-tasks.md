@@ -5,7 +5,6 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
-
 - **2026-10-14: Browser tests for the public site and the Content Portal.** Run both with
   `npm run test:e2e:site` (plain `npm run test:e2e` also runs the older admin acceptance flow, which writes
   billing data — do not run that against the live database).
@@ -316,25 +315,31 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Next / Blocked
 
+- **Outstanding Fees class-filter scaling (deferred 2026-10-17).** The default all-classes view is
+  database-paginated. A single-class filter first narrows candidates in the database, then calculates
+  exact payment allocation and pagination in memory because the current schema does not persist each
+  class line's discounted outstanding share. The current studio dataset is small enough for this;
+  revisit the documented allocation-field migration before materially larger-scale use.
+- **Mobile admin hydration warning (found 2026-10-17).** The shared sidebar's `useIsMobile` starts
+  with the desktop value during server rendering and can start mobile in the browser, producing a
+  React hydration warning at phone width. It predates the Outstanding Fees work and remains open.
+
 - **2026-10-15: Public-page hero styles and full festival image fitting — code complete; pending production database approval.** The website now has eight curated hero presets (Blush, Gold, Violet, Orchid, Deep Plum, Crimson, Sunset, Rose), with a different default for About, Training, Instructors, Performances, Ananta Festival, Press & Media, Support, and Contact. Content Owners choose them in Website Settings. The Ananta hero heading is raised, and Festival posters/gallery photos now preserve the complete picture over a matching blurred backdrop rather than cropping it. TypeScript, focused public-content tests, and lint pass (the pre-existing temporary helper warnings remain); production build reached app compilation but could not download the existing Google Fonts in this offline environment. **Before deployment, apply only the reviewed additive SQL in `prisma/migrations/20261015090000_add_website_hero_themes/migration.sql` to the approved hosted database, then deploy the matching code.** Do not run blanket Prisma migration commands against the live database. **Update 2026-10-15: at the owner's request that single statement was applied to the hosted database (`heroThemes` JSONB, nullable) and recorded with `prisma migrate resolve --applied`; deployed together with the billing audit fixes.**
 
-- **Waiting on Varsha (billing records left unchanged on purpose, 2026-10-15 audit):**
-  Hannah Mariam Cherian — inactive, enrollment still open, September $0 bill vs $60 by her
-  enrollment dates; needs her last class date and the $20 payment details. Gilvin George — inactive
-  with an open Onam enrollment; needs a last class date (October Onam is paid). Avisha Talele —
-  September $60 unpaid while October shows a $120 credit; her $200 note says it covers September and
-  October; confirm moving $60 of it to September. Aashna nair — two $60 payments (Sept 17 on the
-  October bill, noted "September - Partial"; Sept 18 on the September bill); possible duplicate entry.
-  Nizana Jean — paid $90 for a $38 September bill with the note "System calc error"; the stored $38
-  (two Saturdays from Sept 19, 5% sibling discount) matches her enrollment dates, so Varsha's
-  expected amount is needed. Also: active enrollments remain in inactive classes (Onam, Program
-  Dance September, Bollywood SJ 1) because those classes have no recorded last class date; the
-  Bollywood SJ 1/2 September fee rows say 4 sessions while the class's first date gives 3 (only
-  Raynav Varun is billed, correctly at $60); the Onam September fee row shows flat $160 with a $0
-  monthly fee (this is what places the Onam fee in October); 13 bills still carry older "class fee
-  changed after a payment" review flags although they match a fresh recalculation; possible
-  duplicate student "Raynav" / "Raynav Varun" in one family; several same-surname families are
-  separate records (Thomas ×2, Dawravoo ×3), which decides sibling discounts.
+- **Waiting on Varsha (2026-10-16, after her first answers).** Applied on 2026-10-16 through
+  `recomputeStudentMonthBill` (one serializable transaction, dry-run first, audit clean afterwards):
+  Avisha's $200 payment split $60 September / $140 October (new $60 entry dated 2026-10-01, original
+  reduced to $140, both noted); Aashna's duplicate $60 entry (dated 9/17, on the October bill) deleted,
+  the 9/18 September entry kept; Hannah's enrollment ended 2026-09-10 (one class) — September $20
+  due, October $0. Still open, questions sent to Varsha: Hannah's $20 payment date/method; Onam
+  was for August — move the $160 charge and the nine $160 payments to new August bills (needs her OK,
+  confirmation of the three payments without an Onam note — Vaasuki, Hailyn, Gilvin — and a first
+  rehearsal date); Gilvin's last class "end of August" conflicts with his 9/18 Onam enrollment start
+  until Onam moves; Raynav/Raynav Varun are one child — which record to keep, drop the Bollywood SJ 1
+  enrollment and $57 September charge, and the sibling discount between them goes away; Nizana's
+  $90 — where the extra $52 belongs; the "pending fees per class" view she asked for (scope to
+  confirm). Bollywood SJ 1/SJ 2 are confirmed unused (inactive) — their September fee rows are left
+  as they are. Other same-surname families are confirmed separate.
 
 - **Live production verification was paused for the new-class August-fee question.** The finalized
   action-menu icons are deployed. Live checks confirmed Jazlyn Arackal has no August student bill;
@@ -377,6 +382,35 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-10-17: Outstanding Fees and itemized parent fee notices completed.** Added the paginated,
+  class-filterable Outstanding Fees page; exact-cent allocation prevents overlapping class balances.
+  Parent fee notices now itemize months, students, classes, discounts, payments, balances and credits.
+  The all-classes view uses database paging/counts/totals and follows the shared server-list layout.
+  Final verification: 47 test files / 503 tests, standalone TypeScript, lint (0 errors), production
+  build, and the repeatable desktop/mobile browser suite (7/7) pass. The browser test's exact tagged
+  STAFF account was removed; it changed no billing data. Aiden's unnecessary empty $0 October bill
+  had already been removed after all safeguards passed.
+
+- **2026-10-16: Varsha's second answers — applied to the live database with the owner's approval.** Script (scratchpad `varsha-1016b.ts`, dry-run verified end to end,
+  one serializable transaction, every record precondition-checked): record Hannah's $20 (2026-09-16,
+  method OTHER — not given); delete duplicate "Raynav Varun" (drop unused Bollywood SJ 1 enrollment
+  and its two unpaid bills, move his Onam enrollment and registration to "Raynav"); combine
+  "Sreevidhys Family" into "Varun Family" (Raynav + Zenav are brothers; parent Varun); move Onam to
+  August (class 2026-08-01..08-31, inactive from September; all 15 enrollments start 08-01; Gilvin
+  ends 08-31; $160 charged on new August bills; the nine confirmed $160 payments moved there and
+  assigned to Onam); add Nizana's Bharatanatyam Beginner WoodDale enrollment from 2026-09-10
+  (inferred: her $90 equals 3 + 2 sessions after both discounts, $90.25); recalculate those
+  families for Aug–Oct; delete the five $0 bills left empty. Dry run: payments unchanged except
+  Hannah's new $20; Zenav's paid September bill gains the sibling discount ($2.70 credit); Nizana
+  September $0.25 still due. Live edits since the snapshot (Jia, Abhirami payments, Aiden ended,
+  Emily's payment assigned to Onam) are untouched by it. Takes ~7 minutes against the hosted DB.
+  Applied 2026-10-16 (committed in one transaction); read-only audit afterwards: every bill matches its
+  lines, payments, discounts and status; 27 payments (+Hannah's $20, none lost), 85 bills, August
+  $2,400 due / $1,440 paid / $960 pending from the six unpaid Onam students (Isha, Nizana, Raynav,
+  Tessa, Zaria, Lucas) — Varsha will record those. Remaining for Varsha: Hannah's payment method;
+  confirm Nizana's Bharatanatyam start (Sept 10 inferred; leaves $0.25); Zenav's $2.70 September credit.
+
 
 - **2026-10-15: Fully distinct hero colour families.** The formerly similar Orchid and Rose choices are now Teal and Sage Green. Every hero choice has a separate colour family: blush, violet, gold, crimson, deep plum, teal, sunset, or sage green. TypeScript, formatting, and changed-file lint checks pass.
 

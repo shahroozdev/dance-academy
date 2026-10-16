@@ -7,6 +7,8 @@ export type FamilyNotificationPreview = {
   month: string;
   students: { billingId: string; name: string; finalAmountDue: number }[];
   total: number;
+  // Itemized per-month, per-class breakdown used in both the WhatsApp text and the email.
+  breakdown: string;
   message: string;
   waLink: string;
   alreadySent: boolean;

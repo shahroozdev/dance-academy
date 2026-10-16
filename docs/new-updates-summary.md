@@ -1,5 +1,24 @@
 # Updates Summary
 
+## 2026-10-17
+
+- Aiden's empty $0 October bill was removed. His class ended in September and nothing was owed or sent for October.
+
+## 2026-10-16
+
+- The Onam Dance fee now appears under August, the month it was for. Every Onam student has an August bill of $160, and the nine Onam payments already received moved there with it. October bills no longer include Onam.
+- Raynav's duplicate record was removed and Raynav and Zenav are now in one family, so both receive the sibling discount. The unused Bollywood SJ 1 charge was removed.
+- Nizana's Bharatanatyam Beginner WoodDale class was added from September 10, so she now receives the multiple-class and sibling discounts.
+- Hannah's $20 September payment was recorded, so her bill is paid in full.
+- New Outstanding Fees page: one list of every student who still owes money, across all months, with the month, the classes still pending, what was paid, and what is still due. Choose a class (for example Onam) to see how many students still owe for it and the total. Open it from Billing, or by clicking the dashboard's unpaid bills or outstanding amount.
+- A class stays pending until the student's whole bill is paid, unless the payment was recorded for that class. A payment that isn't for a specific class is shared across the bill's classes, so the class amounts always add up to exactly what the student still owes and never count the same money twice.
+- The Outstanding Fees list shows 20 bills per page (10–100 to choose from), with the totals always covering every bill.
+- The fee message to parents is now itemized: for each month and child it lists every class with the number of classes and the price per class after discounts, any one-time fee, what was already paid, what is still due, or the credit if they paid more. The amounts listed for each class always add up exactly to the child's total. Earlier months that still have money owed are included, with a total for all of them. It ends with your payment note asking parents to reply when they pay.
+- The default monthly fee email uses the same itemized breakdown and closing. A fee email you have already customized in Settings keeps your wording until you choose Reset to Default.
+- Avisha Talele's $200 payment is now split as confirmed: $60 pays her September bill in full and $140 goes to October, leaving a $60 credit on October.
+- Aashna Nair's duplicated $60 September payment was removed. Her one real $60 payment stays on September, which now shows $35 still due; October shows $93 still due.
+- Hannah Mariam Cherian's enrollment now ends after the one September class she attended. September shows $20, and her October charge was removed. Her $20 payment will be recorded once its date and method are confirmed.
+
 ## 2026-10-15
 
 - Each public page hero now has its own more visibly different default colour treatment. The available choices use clearly distinct blush, gold, violet, teal, deep plum, crimson, sunset, and sage green backgrounds, with matching background artwork instead of a near-identical wash across pages.

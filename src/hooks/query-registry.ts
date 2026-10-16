@@ -26,6 +26,7 @@ import {
   getPendingNotifications,
 } from "@/actions/notifications";
 import { getOtherIncomeById, getOtherIncome } from "@/actions/other-income";
+import { getOutstandingFees } from "@/actions/outstanding-fees";
 import { getPayments } from "@/actions/payments";
 import { getActivePrograms, getProgramById, getPrograms } from "@/actions/programs";
 import {
@@ -57,6 +58,7 @@ export const queryRegistry = {
   getRegistrationFamilyOptions,
   getRegistrationAssignmentClasses,
   getMonthlyBillings,
+  getOutstandingFees,
   getMonthlyBillingById,
   getStudentBillingPaymentOptions,
   getMonthlyClassSessionTracking,

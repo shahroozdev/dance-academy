@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:site": "playwright test e2e/public-site.spec.ts e2e/content-portal.spec.ts",
+    "test:e2e:outstanding": "playwright test e2e/outstanding-fees.spec.ts",
     "db:seed-mock": "tsx prisma/seed-mock-data.ts",
     "content:create-owner": "tsx scripts/create-content-owner.ts",
     "content:seed": "tsx scripts/seed-website-content.ts",

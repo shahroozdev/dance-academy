@@ -210,12 +210,15 @@ export default function BillingPage() {
             {reviewOnly ? (
               <Button variant="outline" asChild><Link href="/admin/billing">Back to Monthly Billing</Link></Button>
             ) : (
+              <>
+              <Button variant="outline" asChild><Link href="/admin/billing/outstanding">Outstanding Fees</Link></Button>
               <input
                 type="month"
                 value={month}
                 onChange={(e) => { setMonth(e.target.value); setPage(1); }}
                 className="flex h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
+              </>
             )}
             {!reviewOnly && <TooltipWrapper
               label={

@@ -59,8 +59,13 @@ export function billingCell(row: Locator, column: number): Locator {
 // the subprocess-spawn cost doesn't add up. The payload crosses as base64 (not a raw JSON string),
 // and Node invokes tsx directly so no shell can alter it.
 export function runDbCli<T>(command: "setup" | "cleanup", payload: unknown): T {
+  return runFixtureCli<T>("e2e/fixtures/db-cli.ts", command, payload);
+}
+
+// Runs any fixture CLI under e2e/fixtures the same way and returns its last output line as JSON.
+export function runFixtureCli<T>(file: string, command: string, payload: unknown): T {
   const payloadB64 = Buffer.from(JSON.stringify(payload)).toString("base64");
-  const output = execFileSync(process.execPath, ["node_modules/tsx/dist/cli.mjs", "e2e/fixtures/db-cli.ts", command, payloadB64], {
+  const output = execFileSync(process.execPath, ["node_modules/tsx/dist/cli.mjs", file, command, payloadB64], {
     encoding: "utf8",
     timeout: 180_000,
   });

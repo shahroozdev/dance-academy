@@ -294,6 +294,42 @@ export function computeStudentBilling({
   };
 }
 
+const toCents = (amount: number) => Math.round(amount * 100);
+
+// Splits `totalCents` across `weights` in proportion, in whole cents, so the parts always add up to
+// the total exactly: each part is rounded down, then the leftover cents go to the parts with the
+// largest remainders (earlier parts first on a tie).
+export function splitCentsProportionally(totalCents: number, weights: number[]): number[] {
+  const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+  if (weightSum <= 0) return weights.map(() => 0);
+  const exact = weights.map((weight) => (totalCents * weight) / weightSum);
+  const parts = exact.map(Math.floor);
+  let leftover = totalCents - parts.reduce((sum, part) => sum + part, 0);
+  const byRemainder = exact.map((value, index) => ({ index, remainder: value - parts[index] }))
+    .sort((a, b) => b.remainder - a.remainder || a.index - b.index);
+  for (const { index } of byRemainder) {
+    if (leftover <= 0) break;
+    parts[index] += 1;
+    leftover -= 1;
+  }
+  return parts;
+}
+
+// Each class line's share of a bill after discounts, in exact cents. Discount-eligible lines share
+// the multi-class and sibling discounts in proportion to their amount; other lines (seasonal fees)
+// are unchanged. The shares always add up to base tuition minus both discounts, so an itemized
+// list of classes plus the adjustment equals the bill's final amount exactly.
+export function discountedLineAmounts(
+  bill: { multiClassDiscount: number; siblingDiscount: number },
+  lines: Array<{ amount: number; discountEligible: boolean }>,
+): number[] {
+  const eligible = lines.map((line) => (line.discountEligible ? toCents(line.amount) : 0));
+  const eligibleCents = eligible.reduce((sum, cents) => sum + cents, 0);
+  const discountedCents = eligibleCents - toCents(bill.multiClassDiscount) - toCents(bill.siblingDiscount);
+  const shares = splitCentsProportionally(discountedCents, eligible);
+  return lines.map((line, index) => (line.discountEligible ? shares[index] / 100 : round2(line.amount)));
+}
+
 // ---------- Payment reminders (§5.4) ----------
 
 // A bill's due date is `dueDayOfMonth` of its billing month, pinned to UTC for the same reason
