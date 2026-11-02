@@ -5,7 +5,10 @@ import { expect, type Locator, type Page } from "@playwright/test";
 // Shared by the public-site and Content Portal suites.
 
 /** Runs e2e/fixtures/content-db-cli.ts and returns its parsed JSON result (see that file). */
-export function runContentDbCli<T>(command: "seed-inquiry" | "cleanup", payload: { tag: string }): T {
+export function runContentDbCli<T>(
+  command: "seed-inquiry" | "seed-application" | "resume-exists" | "cleanup",
+  payload: { tag: string; jobId?: string; publicId?: string },
+): T {
   const payloadB64 = Buffer.from(JSON.stringify(payload)).toString("base64");
   const output = execFileSync("npx", ["tsx", "e2e/fixtures/content-db-cli.ts", command, payloadB64], {
     encoding: "utf8",

@@ -38,7 +38,14 @@ Shared source of truth for what's in progress, what's next, and what's done — 
     published (`SectionDots` takes a `sections` prop). New inquiry interest "Job Application".
   - **Checked:** TypeScript, lint, 471 unit tests, `npm run build`; public pages and the application form
     (preselection, validation, 390 px) with sample openings (temporary stub, removed). No application was
-    submitted end to end (it would write to the live database and email the studio). This machine's database login currently fails ("credentials are
+    submitted through the public form (it would email the studio).
+  - **2026-11-02: migration confirmed applied** (`prisma migrate status`: up to date) and the module passed a live
+    browser run, `npx playwright test e2e/careers.spec.ts` (5 tests): create draft → publish → Careers and home
+    page show it → Apply preselects the position, form checks required fields and non-PDF resumes, contact form
+    has no "Job Application" → application (inserted by `content-db-cli.ts seed-application`, no email) shows
+    under Job Applications only, position filter works, Open resume returns the PDF through the signed link →
+    delete application (resume file confirmed gone) → delete opening (gone from Careers and home). Teardown
+    left 0 job openings, 0 applications, 0 tagged rows. This machine's database login currently fails ("credentials are
     incorrect"), so the site ran on its built-in fallbacks and **no portal screen was opened signed in**.
     The e2e suite was not run.
   - **Next:** (1) owner approves, then apply only that SQL file to the hosted database and
