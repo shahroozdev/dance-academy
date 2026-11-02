@@ -50,6 +50,16 @@ describe("payment corrections", () => {
     });
   });
 
+  it("keeps an edited refund as money returned instead of turning it into a payment", async () => {
+    mocks.tx.payment.findUniqueOrThrow.mockResolvedValue({ id: "payment", billingId: "bill", amount: -25 });
+
+    await updateBillPayment("payment", { paymentDate: "2026-10-05", amount: 20, method: "ZELLE", notes: "Refund: extra" });
+
+    expect(mocks.tx.payment.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ amount: -20 }),
+    }));
+  });
+
   it("rejects assigning a payment to a class outside its monthly bill", async () => {
     mocks.tx.monthlyBillingLineItem.findFirst.mockResolvedValue(null);
 

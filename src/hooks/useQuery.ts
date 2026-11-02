@@ -53,13 +53,19 @@ export function useQuery<K extends QueryKey>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, argsKey, enabled]);
 
+  // Server-seeded data is current for the args it was fetched with, so no fetch is made while the
+  // args are unchanged (as documented above) — also when React runs this effect twice on mount in
+  // development. Once the args change it refetches as usual, and invalidations always refetch.
+  // Without this every seeded page loaded its data twice.
+  const seededArgsKey = useRef(initialData !== undefined ? argsKey : null);
   useEffect(() => {
+    if (seededArgsKey.current === argsKey) return;
+    seededArgsKey.current = null;
     // Fetch-on-mount/deps-change: `run` synchronously resets loading/error
     // state before making the (always async) request — the standard shape
     // for this kind of hook, not props-to-state duplication.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     run();
-  }, [run]);
+  }, [run, argsKey]);
 
   useEffect(() => subscribe(key, run), [key, run]);
 

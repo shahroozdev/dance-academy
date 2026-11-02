@@ -36,12 +36,12 @@ export default async function AdminDashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard label="Current month tuition due" value={formatCurrency(summary.currentMonthTuitionDue)} />
         <StatCard label="Current month collected" value={formatCurrency(summary.currentMonthCollected)} />
-        <StatCard label="Current month outstanding" value={formatCurrency(summary.currentMonthOutstanding)} />
+        <StatCard label="Current month outstanding" value={formatCurrency(summary.currentMonthOutstanding)} href="/admin/billing/outstanding" />
         <StatCard label="Active students" value={String(summary.activeStudentCount)} />
         <StatCard
           label="Unpaid / Partial bills"
           value={String(summary.unpaidCount + summary.partialCount)}
-          href="/admin/billing"
+          href="/admin/billing/outstanding"
         />
       </div>
 

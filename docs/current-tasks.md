@@ -364,7 +364,31 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Next / Blocked
 
-- **2026-10-15: Public-page hero styles and full festival image fitting — code complete; pending production database approval.** The website now has eight curated hero presets (Blush, Gold, Violet, Orchid, Deep Plum, Crimson, Sunset, Rose), with a different default for About, Training, Instructors, Performances, Ananta Festival, Press & Media, Support, and Contact. Content Owners choose them in Website Settings. The Ananta hero heading is raised, and Festival posters/gallery photos now preserve the complete picture over a matching blurred backdrop rather than cropping it. TypeScript, focused public-content tests, and lint pass (the pre-existing temporary helper warnings remain); production build reached app compilation but could not download the existing Google Fonts in this offline environment. **Before deployment, apply only the reviewed additive SQL in `prisma/migrations/20261015090000_add_website_hero_themes/migration.sql` to the approved hosted database, then deploy the matching code.** Do not run blanket Prisma migration commands against the live database.
+- **Outstanding Fees class-filter scaling (deferred 2026-10-17).** The default all-classes view is
+  database-paginated. A single-class filter first narrows candidates in the database, then calculates
+  exact payment allocation and pagination in memory because the current schema does not persist each
+  class line's discounted outstanding share. The current studio dataset is small enough for this;
+  revisit the documented allocation-field migration before materially larger-scale use.
+- **Mobile admin hydration warning (found 2026-10-17).** The shared sidebar's `useIsMobile` starts
+  with the desktop value during server rendering and can start mobile in the browser, producing a
+  React hydration warning at phone width. It predates the Outstanding Fees work and remains open.
+
+- **2026-10-15: Public-page hero styles and full festival image fitting — code complete; pending production database approval.** The website now has eight curated hero presets (Blush, Gold, Violet, Orchid, Deep Plum, Crimson, Sunset, Rose), with a different default for About, Training, Instructors, Performances, Ananta Festival, Press & Media, Support, and Contact. Content Owners choose them in Website Settings. The Ananta hero heading is raised, and Festival posters/gallery photos now preserve the complete picture over a matching blurred backdrop rather than cropping it. TypeScript, focused public-content tests, and lint pass (the pre-existing temporary helper warnings remain); production build reached app compilation but could not download the existing Google Fonts in this offline environment. **Before deployment, apply only the reviewed additive SQL in `prisma/migrations/20261015090000_add_website_hero_themes/migration.sql` to the approved hosted database, then deploy the matching code.** Do not run blanket Prisma migration commands against the live database. **Update 2026-10-15: at the owner's request that single statement was applied to the hosted database (`heroThemes` JSONB, nullable) and recorded with `prisma migrate resolve --applied`; deployed together with the billing audit fixes.**
+
+- **Waiting on Varsha (2026-10-16, after her first answers).** Applied on 2026-10-16 through
+  `recomputeStudentMonthBill` (one serializable transaction, dry-run first, audit clean afterwards):
+  Avisha's $200 payment split $60 September / $140 October (new $60 entry dated 2026-10-01, original
+  reduced to $140, both noted); Aashna's duplicate $60 entry (dated 9/17, on the October bill) deleted,
+  the 9/18 September entry kept; Hannah's enrollment ended 2026-09-10 (one class) — September $20
+  due, October $0. Still open, questions sent to Varsha: Hannah's $20 payment date/method; Onam
+  was for August — move the $160 charge and the nine $160 payments to new August bills (needs her OK,
+  confirmation of the three payments without an Onam note — Vaasuki, Hailyn, Gilvin — and a first
+  rehearsal date); Gilvin's last class "end of August" conflicts with his 9/18 Onam enrollment start
+  until Onam moves; Raynav/Raynav Varun are one child — which record to keep, drop the Bollywood SJ 1
+  enrollment and $57 September charge, and the sibling discount between them goes away; Nizana's
+  $90 — where the extra $52 belongs; the "pending fees per class" view she asked for (scope to
+  confirm). Bollywood SJ 1/SJ 2 are confirmed unused (inactive) — their September fee rows are left
+  as they are. Other same-surname families are confirmed separate.
 
 - **Live production verification was paused for the new-class August-fee question.** The finalized
   action-menu icons are deployed. Live checks confirmed Jazlyn Arackal has no August student bill;
@@ -408,6 +432,56 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## Done
 
+- **2026-10-17: Production "Too many database connections" after the f535173 deploy — fixed and deployed (ceeab64).** Deploy f535173 (Outstanding Fees + itemized notices) is live and Vercel reports
+  success. Between 01:17 and 01:22 (+05:00) production logged Prisma P2037 errors on admin pages,
+  Outstanding Fees and one `/register` request; the database role (`prisma_migration`) allows 45
+  connections and 43 were held idle by production instances (pg's default pool of 10 per instance;
+  idle timeouts cannot fire while Vercel suspends an instance). It cleared on its own (15 open later).
+  No billing data changed in that window, so any save attempted then did not happen.
+  Fix: `src/lib/db-pool.ts` caps each instance at 5 connections, 5s idle timeout, 15s
+  wait for a free connection (`src/lib/db.ts` uses it; test `src/lib/db-pool.test.ts`); `useQuery`
+  no longer refetches server-seeded data whose args are unchanged (its documented behavior — every
+  seeded page, including Outstanding Fees, the settings page and the theme injector, fetched twice;
+  the Strict-Mode double effect is handled too). Browser spec now asserts no duplicate data fetch on
+  load (fails without the fix, passes with it). Further hardening to consider: `attachDatabasePool`
+  from `@vercel/functions` (new dependency) to release idle connections before an instance is
+  suspended, or a pooled connection string for the hosted database.
+  Verified on production after deploying ceeab64: the Outstanding Fees browser spec passed 7/7
+  against https://malhaar-dance-company.vercel.app (temporary tagged login removed); no P2037
+  errors since the deploy; 24 of 45 connections in use right after the test burst; public and login
+  pages 200; billing audit clean. Remaining log noise: pg's "SSL modes ... verify-full" warning,
+  logged at error level on successful requests — set `sslmode=verify-full` in the hosting
+  environment's DATABASE_URL to silence it.
+
+- **2026-10-17: Outstanding Fees and itemized parent fee notices completed.** Added the paginated,
+  class-filterable Outstanding Fees page; exact-cent allocation prevents overlapping class balances.
+  Parent fee notices now itemize months, students, classes, discounts, payments, balances and credits.
+  The all-classes view uses database paging/counts/totals and follows the shared server-list layout.
+  Final verification: 47 test files / 503 tests, standalone TypeScript, lint (0 errors), production
+  build, and the repeatable desktop/mobile browser suite (7/7) pass. The browser test's exact tagged
+  STAFF account was removed; it changed no billing data. Aiden's unnecessary empty $0 October bill
+  had already been removed after all safeguards passed.
+
+- **2026-10-16: Varsha's second answers — applied to the live database with the owner's approval.** Script (scratchpad `varsha-1016b.ts`, dry-run verified end to end,
+  one serializable transaction, every record precondition-checked): record Hannah's $20 (2026-09-16,
+  method OTHER — not given); delete duplicate "Raynav Varun" (drop unused Bollywood SJ 1 enrollment
+  and its two unpaid bills, move his Onam enrollment and registration to "Raynav"); combine
+  "Sreevidhys Family" into "Varun Family" (Raynav + Zenav are brothers; parent Varun); move Onam to
+  August (class 2026-08-01..08-31, inactive from September; all 15 enrollments start 08-01; Gilvin
+  ends 08-31; $160 charged on new August bills; the nine confirmed $160 payments moved there and
+  assigned to Onam); add Nizana's Bharatanatyam Beginner WoodDale enrollment from 2026-09-10
+  (inferred: her $90 equals 3 + 2 sessions after both discounts, $90.25); recalculate those
+  families for Aug–Oct; delete the five $0 bills left empty. Dry run: payments unchanged except
+  Hannah's new $20; Zenav's paid September bill gains the sibling discount ($2.70 credit); Nizana
+  September $0.25 still due. Live edits since the snapshot (Jia, Abhirami payments, Aiden ended,
+  Emily's payment assigned to Onam) are untouched by it. Takes ~7 minutes against the hosted DB.
+  Applied 2026-10-16 (committed in one transaction); read-only audit afterwards: every bill matches its
+  lines, payments, discounts and status; 27 payments (+Hannah's $20, none lost), 85 bills, August
+  $2,400 due / $1,440 paid / $960 pending from the six unpaid Onam students (Isha, Nizana, Raynav,
+  Tessa, Zaria, Lucas) — Varsha will record those. Remaining for Varsha: Hannah's payment method;
+  confirm Nizana's Bharatanatyam start (Sept 10 inferred; leaves $0.25); Zenav's $2.70 September credit.
+
+
 - **2026-10-15: Fully distinct hero colour families.** The formerly similar Orchid and Rose choices are now Teal and Sage Green. Every hero choice has a separate colour family: blush, violet, gold, crimson, deep plum, teal, sunset, or sage green. TypeScript, formatting, and changed-file lint checks pass.
 
 - **2026-10-15: More distinguishable hero palette previews.** Hero choices now use more clearly separated hues and wider gradient-strip previews in Website Settings. The preview and the public-page background use the same colour settings. TypeScript, formatting, and changed-file lint checks pass.
@@ -419,6 +493,48 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 - **2026-10-15: Stronger public-page hero colour distinction.** Each selectable hero style now has its own stronger gradient and matching decorative artwork: warm blush, violet, gold, crimson, or deep plum. The Ananta loading view shares its matching deep-plum artwork. TypeScript, formatting, and changed-file lint checks pass.
 
 - **2026-10-15: Ananta Festival loading state.** The Ananta route now has a responsive, page-shaped loading view for both the newest-edition redirect and each published festival year. It keeps the hero, content, festival highlights, artists, support, and contact areas visibly structured while public festival information is being read. TypeScript and formatting checks pass.
+
+- **2026-10-15: Second deep billing/enrollment audit (24-point checklist).** Read-only live audit:
+  all 77 bills match their line items, payment ledgers, discounts, balances and statuses, and match
+  a fresh recalculation under both the old and new rules, except Hannah's September bill (ambiguous).
+  **No live data was changed.** Fixed in code: `updateClass` reset an inactive class's
+  `lastClassDate`/`inactiveFromMonth` to today on every edit (the form always sends `isActive`) and
+  Zod 4 `.partial()` applied create defaults (pricing type/discount eligibility) — status now only via
+  `toggleClassActive`, update schema built from default-free fields; `reactivateEnrollment` overwrote
+  the ended row's dates — now creates a new period; overlapping periods for one class rejected;
+  `endEnrollment` rejects an end before the start; same-class periods in one month merged
+  (`computeClassMonthAmount` in `src/lib/billing.ts`: merged ranges, cut at the class's last class
+  date, capped at the full-month fee); sibling count no longer depends on the student's current
+  active flag (inactive students count only via ended enrollments); seasonal charge-once keyed on
+  student+class; one shared `recomputeStudentMonthBill` (generation and Recalculate) that also flags a
+  bill whose payment is assigned to a class no longer charged, and never creates empty $0 bills;
+  student deactivation recalculates the family once from the last-class month; refund edits keep the
+  negative sign (month picker hidden while editing); dashboard outstanding sums only positive
+  balances. Regression tests: `src/actions/billing-regressions.test.ts` (11), plus additions in
+  `src/lib/billing.test.ts`, `classes.test.ts`, `payment-service.test.ts`. 471 tests, TypeScript,
+  ESLint (0 errors; 16 warnings in untracked `tmp-*` scripts) and `npm run build` pass. Docs 04/10
+  updated. Follow-up the same day (owner-approved): independent review found that editing an
+  enrollment's start date could still make two periods of one class overlap — the overlap guard now
+  covers start-date edits too (+1 regression test; 472 tests, TypeScript, ESLint 0 errors, build
+  pass). Also removed, after confirming nothing referenced them, the three leftover records from
+  browser-test run `mv3ulkn1`: the active OWNER login `e2e-owner-mv3ulkn1@example.test`, class
+  "E2E Jazz mv3ulkn1" and its processed registration request (one transaction, one row each; two
+  real owners remain; a scan of every text column found no other E2E-tagged rows). A before/after
+  read-only comparison showed no change to students, families, enrollments, fees, bills, line items
+  or payments. Then, at the owner's request, the same Zod default issue was fixed in
+  `programs.schema.ts`/`teachers.schema.ts` (an update omitting `isActive` reactivated the record);
+  coverage in `src/actions/update-schemas.test.ts`. Final: 476 tests, TypeScript, ESLint (0 errors)
+  and build pass. Not covered: no browser run (would write live data).
+
+- **2026-10-15: Deep billing edge-case audit after Varsha's reports.** Cross-checked every
+  September and October bill against its line items, payment ledger, enrollment dates, class
+  lifecycle, pauses, session counts, discounts, balances, and statuses. Corrected the summer break
+  to end in August, repaired stale class-fee totals and all provable active-student September and
+  October bills, and preserved every recorded payment. Monthly regeneration now rebuilds complete
+  existing bills (including paid/partial bills) and prevents a seasonal fee from being duplicated
+  when an older month is recalculated. Hannah remains intentionally unresolved because neither her
+  last attendance date nor the remembered $20 payment exists in stored data. 453 tests,
+  TypeScript, lint, and the production build pass.
 
 - **2026-10-15: Corrected Varsha's remaining billing and lifecycle issues.** Reported class counts
   now update fees and all affected balances automatically while preserving payments; paid bills can

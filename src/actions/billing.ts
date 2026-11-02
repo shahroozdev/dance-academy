@@ -1,20 +1,14 @@
 "use server";
 import { requireAdmin } from "@/actions/access";
-import { buildLineItemInputs, familyQualifyingSiblingCount, generateMonthlyBilling as runMonthlyBilling } from "@/actions/billing-service";
+import { generateMonthlyBilling as runMonthlyBilling, getDiscountRates, recomputeStudentMonthBill } from "@/actions/billing-service";
 import { billingAdjustmentSchema } from "@/actions/billing.schema";
 import type { BillingAdjustmentInput } from "@/actions/billing.schema";
 import { sendAdminOperationalAlert } from "@/actions/email";
 import { serializableTransaction } from "@/actions/transaction";
 import { validateListQuery , idSchema } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
-import {
-  computeBillingStatus,
-  computeStudentBilling,
-  normalizeMonth,
-  round2,
-} from "@/lib/billing";
+import { computeBillingStatus, normalizeMonth, round2 } from "@/lib/billing";
 import { db } from "@/lib/db";
-import { getMultiClassDiscountPct, getSiblingDiscountPct } from "@/lib/settings";
 
 export async function generateMonthlyBilling(monthInput: string) {
   await requireAdmin();
@@ -226,54 +220,19 @@ export async function resolveBillingManualReview(id: string) {
 export async function recalculateBilling(id: string) {
   await requireAdmin();
   id = idSchema.parse(id);
-  const multiClassDiscountPct = await getMultiClassDiscountPct();
-  const siblingDiscountPct = await getSiblingDiscountPct();
+  const rates = await getDiscountRates();
 
   return serializableTransaction(async (tx) => {
-    const billing = await tx.monthlyStudentBilling.findUniqueOrThrow({ where: { id }, include: { payments: true } });
-    const student = await tx.student.findUniqueOrThrow({ where: { id: billing.studentId } });
-    const siblingCount = await familyQualifyingSiblingCount(tx, student.familyId, billing.month);
-    const lineItemInputs = await buildLineItemInputs(tx, student.id, billing.month);
-
-    const computed = computeStudentBilling({
-      lineItems: lineItemInputs,
-      hasSiblingDiscount: siblingCount >= 2,
-      adjustment: Number(billing.adjustment),
-      multiClassDiscountPct,
-      siblingDiscountPct,
-    });
-    const amountPaid = round2(billing.payments.reduce((sum, payment) => sum + Number(payment.amount), 0));
-    const balance = round2(computed.finalAmountDue - amountPaid);
-    const status = computeBillingStatus(computed.finalAmountDue, amountPaid);
-
-    const updated = await tx.monthlyStudentBilling.update({
+    const billing = await tx.monthlyStudentBilling.findUniqueOrThrow({
       where: { id },
-      data: {
-        baseTuition: computed.baseTuition,
-        multiClassDiscount: computed.multiClassDiscount,
-        siblingDiscount: computed.siblingDiscount,
-        finalAmountDue: computed.finalAmountDue,
-        amountPaid,
-        balance,
-        status,
-        needsManualReview: false,
-        manualReviewReason: null,
-        manualReviewAt: null,
-      },
+      select: { studentId: true, month: true, student: { select: { familyId: true } } },
     });
-
-    await tx.monthlyBillingLineItem.deleteMany({ where: { billingId: id } });
-    if (lineItemInputs.length > 0) {
-      await tx.monthlyBillingLineItem.createMany({
-        data: lineItemInputs.map((li) => ({
-          billingId: id,
-          enrollmentId: li.enrollmentId,
-          classMonthlyFeeId: li.classMonthlyFeeId,
-          amount: li.amount,
-        })),
-      });
-    }
-
-    return updated;
+    const outcome = await recomputeStudentMonthBill(
+      tx,
+      { studentId: billing.studentId, familyId: billing.student.familyId, month: billing.month },
+      rates,
+      { clearReview: true },
+    );
+    return outcome!.billing;
   });
 }

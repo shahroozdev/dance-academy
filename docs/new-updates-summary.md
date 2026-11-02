@@ -13,6 +13,25 @@
 - While at least one position is published, the home page also shows a "Join our Team" section listing them.
 - New Job Openings section in the Content Portal to add, edit, publish, archive, and permanently delete positions.
 
+## 2026-10-17
+
+- Aiden's empty $0 October bill was removed. His class ended in September and nothing was owed or sent for October.
+
+## 2026-10-16
+
+- The Onam Dance fee now appears under August, the month it was for. Every Onam student has an August bill of $160, and the nine Onam payments already received moved there with it. October bills no longer include Onam.
+- Raynav's duplicate record was removed and Raynav and Zenav are now in one family, so both receive the sibling discount. The unused Bollywood SJ 1 charge was removed.
+- Nizana's Bharatanatyam Beginner WoodDale class was added from September 10, so she now receives the multiple-class and sibling discounts.
+- Hannah's $20 September payment was recorded, so her bill is paid in full.
+- New Outstanding Fees page: one list of every student who still owes money, across all months, with the month, the classes still pending, what was paid, and what is still due. Choose a class (for example Onam) to see how many students still owe for it and the total. Open it from Billing, or by clicking the dashboard's unpaid bills or outstanding amount.
+- A class stays pending until the student's whole bill is paid, unless the payment was recorded for that class. A payment that isn't for a specific class is shared across the bill's classes, so the class amounts always add up to exactly what the student still owes and never count the same money twice.
+- The Outstanding Fees list shows 20 bills per page (10–100 to choose from), with the totals always covering every bill.
+- The fee message to parents is now itemized: for each month and child it lists every class with the number of classes and the price per class after discounts, any one-time fee, what was already paid, what is still due, or the credit if they paid more. The amounts listed for each class always add up exactly to the child's total. Earlier months that still have money owed are included, with a total for all of them. It ends with your payment note asking parents to reply when they pay.
+- The default monthly fee email uses the same itemized breakdown and closing. A fee email you have already customized in Settings keeps your wording until you choose Reset to Default.
+- Avisha Talele's $200 payment is now split as confirmed: $60 pays her September bill in full and $140 goes to October, leaving a $60 credit on October.
+- Aashna Nair's duplicated $60 September payment was removed. Her one real $60 payment stays on September, which now shows $35 still due; October shows $93 still due.
+- Hannah Mariam Cherian's enrollment now ends after the one September class she attended. September shows $20, and her October charge was removed. Her $20 payment will be recorded once its date and method are confirmed.
+
 ## 2026-10-15
 
 - Each public page hero now has its own more visibly different default colour treatment. The available choices use clearly distinct blush, gold, violet, teal, deep plum, crimson, sunset, and sage green backgrounds, with matching background artwork instead of a near-identical wash across pages.
@@ -21,6 +40,26 @@
 - The Ananta Festival page now shows a page-shaped loading view while it finds the newest festival edition and loads its details, rather than briefly showing a blank page.
 
 ## 2026-10-15
+
+- Saving changes to an inactive class (for example renaming it) no longer resets its last class date to the day of the edit, which could have removed that class's charges from the current month's bills. Editing a class also no longer risks switching a seasonal class back to regular pricing.
+- Re-enrolling a student in a class now starts a new enrollment and keeps the earlier one exactly as it was, so months already billed for the earlier enrollment stay correct.
+- A student who leaves and rejoins a class in the same month is charged for the classes in both periods, once.
+- A student can no longer be given two overlapping enrollments in the same class, and an enrollment's last class date can no longer be set before its first billable date.
+- A student who joins partway through a month is never charged more than a full-month student, and is not charged for weeks after a class has ended.
+- Deactivating a student no longer removes the sibling discount from their brother's or sister's earlier bills for months both children attended.
+- A seasonal or performance fee is charged only once per student, even if the student is removed from and added back to that program.
+- If a payment was recorded for a class that later stops being charged on that bill, the payment is kept and the bill is marked for review so you can decide where it belongs.
+- Monthly billing no longer creates empty $0 bills for students with nothing to pay that month.
+- Refunds can now be edited without accidentally turning them into payments.
+- The dashboard's outstanding amount now shows only money still owed; a family's credit no longer lowers the total other families owe.
+- Saving changes to an inactive dance program or teacher can no longer accidentally make it active again.
+- The leftover test sign-in account, test class, and test registration from earlier system checks were removed. No real student, family, bill, or payment was affected.
+
+- Monthly billing now refreshes the complete month even when a bill already has an amount or recorded payments. Newly added classes, corrected session counts, and class-status changes can no longer leave part of a student's bill stale or missing.
+- Recalculating an older month can no longer duplicate a one-time seasonal or performance fee that is already recorded in another month.
+- The Bharatanatyam summer break now correctly ends in August. September charges for active students were restored from their enrollment dates, while Hannah's uncertain final bill was left unchanged for manual confirmation.
+- September and October billing was fully cross-checked and repaired: stale class amounts were updated, missing October Onam charges were restored, and all existing payments were preserved.
+- The remaining isolated browser-test student, family, class, and empty bill were removed after confirming they had no payments or shared records.
 
 - Saving the actual number of regular classes held now immediately updates that month’s class fee and every affected student balance. Existing payments stay recorded and are applied to the newly calculated amount.
 - Recalculate now works on bills with payments. It refreshes class fees and discounts without deleting or changing payment history, then updates the remaining balance or credit automatically.

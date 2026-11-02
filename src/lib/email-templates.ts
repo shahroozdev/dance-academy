@@ -70,10 +70,14 @@ export const EMAIL_TEMPLATES: Record<EmailTemplateKeyValue, EmailTemplateMeta> =
     defaultBody: [
       "Hi {{parentName}},",
       "",
-      "{{monthLabel}} dance fees:",
+      "Here is the dance fee breakdown:",
+      "",
       "{{feeSummary}}",
       "",
-      "Please send the payment when convenient. Thank you!",
+      "Please let me know if you have any questions. When you make the payment, kindly reply to this message. If you have already paid, please ignore this message.",
+      "",
+      "Thank you,",
+      "{{studioName}}",
     ].join("\n"),
   },
   PAYMENT_REMINDER: {

@@ -4,11 +4,12 @@ import type { Class, Prisma } from "@/generated/prisma/client";
 import {
   computeBillingStatus,
   classIsBillableForMonth,
-  computeProratedLineItemAmount,
+  computeClassMonthAmount,
   computeStudentBilling,
   countClassSessionsForMonth,
-  enrollmentIsPausedForMonth,
+  enrollmentIsBillableForMonth,
   enrollmentOverlapsMonth,
+  mergeBillableRanges,
   normalizeMonth,
   round2,
 } from "@/lib/billing";
@@ -17,7 +18,7 @@ import { db } from "@/lib/db";
 import { enrollmentCalendarDate } from "@/lib/enrollment-date";
 import { getMultiClassDiscountPct, getSiblingDiscountPct } from "@/lib/settings";
 
-type LineItemInput = ClassFeeLineItem;
+type LineItemInput = ClassFeeLineItem & { classId: string };
 
 // Get-or-create this class's fee row for this month. Once created, a fee never changes on its
 // own — see docs/04 §4.3 — the admin overrides it explicitly via /admin/class-fees.
@@ -42,13 +43,18 @@ async function getOrCreateClassMonthlyFee(tx: Prisma.TransactionClient, cls: Cla
   });
 }
 
+// A student counts toward the family's sibling discount for a month when they had a billable
+// enrollment that month. Deactivation ends enrollments on the exact last class date, so a
+// sibling who has since left still counts for the months they attended — bills for those months
+// keep their discount when recalculated later. An inactive student's enrollment without an end
+// date is incomplete data and never extends the discount.
 export async function familyQualifyingSiblingCount(
   tx: Prisma.TransactionClient,
   familyId: string,
   month: Date,
 ): Promise<number> {
   const students = await tx.student.findMany({
-    where: { familyId, isActive: true },
+    where: { familyId },
     include: {
       enrollments: {
         include: { billingPauses: true, class: { include: { billingPauses: true } } },
@@ -56,13 +62,7 @@ export async function familyQualifyingSiblingCount(
     },
   });
   return students.filter((s) =>
-    s.enrollments.some(
-      (e) =>
-        enrollmentOverlapsMonth(e, month) &&
-        classIsBillableForMonth(e.class, month) &&
-        !enrollmentIsPausedForMonth(e.billingPauses, month) &&
-        !enrollmentIsPausedForMonth(e.class.billingPauses, month),
-    ),
+    s.enrollments.some((e) => (s.isActive || e.endDate !== null) && enrollmentIsBillableForMonth(e, month)),
   ).length;
 }
 
@@ -76,64 +76,54 @@ export async function buildLineItemInputs(
     include: { class: { include: { billingPauses: true } }, billingPauses: true },
     orderBy: { startDate: "asc" },
   });
-  const overlapping = enrollments.filter(
-    (e) =>
-      enrollmentOverlapsMonth(e, month) &&
-      classIsBillableForMonth(e.class, month) &&
-      !enrollmentIsPausedForMonth(e.billingPauses, month) &&
-      !enrollmentIsPausedForMonth(e.class.billingPauses, month),
-  );
+  // A re-enrollment is a second row for the same class. Every billable period of one class is
+  // combined into a single line so the class is charged once, for all of its sessions.
+  const periodsByClass = new Map<string, typeof enrollments>();
+  for (const enrollment of enrollments.filter((e) => enrollmentIsBillableForMonth(e, month))) {
+    periodsByClass.set(enrollment.classId, [...(periodsByClass.get(enrollment.classId) ?? []), enrollment]);
+  }
 
+  const monthStart = normalizeMonth(month);
+  const monthEnd = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1));
   const lineItems: LineItemInput[] = [];
-  const billedClasses = new Set<string>();
-  for (const enrollment of overlapping) {
-    // Rejoining the same class (or legacy duplicate enrollments) must not charge its monthly fee twice.
-    if (billedClasses.has(enrollment.classId)) continue;
-    billedClasses.add(enrollment.classId);
-
-    // Seasonal/special-program fees are charged exactly once per enrollment, ever — never
-    // recreated on a later month's run just because the enrollment still overlaps it.
-    let seasonalAlreadyCharged = false;
-    if (enrollment.class.pricingType === "SEASONAL") {
-      seasonalAlreadyCharged = Boolean(await tx.monthlyBillingLineItem.findFirst({
-        where: {
-          enrollmentId: enrollment.id,
-          classMonthlyFee: { classId: enrollment.classId },
-          // Only an earlier charge suppresses this month. A mistakenly generated future charge
-          // must not prevent repairing the correct first month.
-          billing: { month: { lt: month } },
-        },
-      }));
-    }
-
-    const classStart = enrollmentCalendarDate(enrollment.class.firstClassDate);
-    const savedEnrollmentStart = enrollmentCalendarDate(enrollment.startDate);
-    const enrollmentStart = savedEnrollmentStart > classStart ? savedEnrollmentStart : classStart;
-    const fee = await getOrCreateClassMonthlyFee(tx, enrollment.class, month);
+  for (const [classId, periods] of periodsByClass) {
+    const cls = periods[0].class;
+    const classStart = enrollmentCalendarDate(cls.firstClassDate);
+    const ranges = mergeBillableRanges(periods.map((enrollment) => {
+      const start = enrollmentCalendarDate(enrollment.startDate);
+      return { start: start > classStart ? start : classStart, end: enrollment.endDate };
+    }));
+    const fee = await getOrCreateClassMonthlyFee(tx, cls, month);
     let baseAmount = 0;
-    if (enrollment.class.pricingType === "SEASONAL") {
-      baseAmount = seasonalAlreadyCharged ? 0 : Number(fee.monthlyClassFee);
+    if (cls.pricingType === "SEASONAL") {
+      // Charged exactly once per student and class, whichever enrollment row carries it. This
+      // month's own line is excluded so it is kept, while a charge in any other month — earlier
+      // or later — stops a recalculation from billing the fee a second time.
+      const chargedElsewhere = await tx.monthlyBillingLineItem.findFirst({
+        where: { classMonthlyFee: { classId }, billing: { studentId, month: { not: month } } },
+      });
+      baseAmount = chargedElsewhere ? 0 : Number(fee.monthlyClassFee);
     } else {
-      baseAmount = computeProratedLineItemAmount({
-            month,
-            dayOfWeek: enrollment.class.dayOfWeek,
-            fullMonthAmount: Number(fee.monthlyClassFee),
-            perSessionRate: fee.rate === null ? null : Number(fee.rate),
-            enrollmentStart,
-            enrollmentEnd: enrollment.endDate,
-          });
+      baseAmount = computeClassMonthAmount({
+        month,
+        dayOfWeek: cls.dayOfWeek,
+        fullMonthAmount: Number(fee.monthlyClassFee),
+        perSessionRate: fee.rate === null ? null : Number(fee.rate),
+        ranges,
+        classLastDate: cls.lastClassDate,
+      });
     }
-    const monthStart = normalizeMonth(month);
-    const monthEnd = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1));
-    const enrollmentEnd = enrollment.endDate ? enrollmentCalendarDate(enrollment.endDate) : null;
+    // Rehearsals are charged only to students enrolled on the rehearsal date.
     const extraSessions = await tx.classExtraSession.findMany({
       where: {
-        classId: enrollment.classId,
-        sessionDate: {
-          gte: enrollmentStart > monthStart ? enrollmentStart : monthStart,
-          lt: monthEnd,
-          ...(enrollmentEnd && { lte: enrollmentEnd }),
-        },
+        classId,
+        OR: ranges.map((range) => ({
+          sessionDate: {
+            gte: range.start > monthStart ? range.start : monthStart,
+            lt: monthEnd,
+            ...(range.end && { lte: range.end }),
+          },
+        })),
       },
       select: { amount: true },
     });
@@ -142,16 +132,95 @@ export async function buildLineItemInputs(
     );
     if (amount === 0) continue;
     lineItems.push({
-      enrollmentId: enrollment.id,
+      classId,
+      enrollmentId: periods[0].id,
       classMonthlyFeeId: fee.id,
       amount,
       // Seasonal/special-program charges never receive (or count toward) either discount —
       // enforced here regardless of the admin-set Class.discountEligible flag.
-      discountEligible: enrollment.class.discountEligible && enrollment.class.pricingType !== "SEASONAL",
+      discountEligible: cls.discountEligible && cls.pricingType !== "SEASONAL",
     });
   }
   return lineItems;
 }
+
+type DiscountRates = { multiClassDiscountPct: number; siblingDiscountPct: number };
+
+export async function getDiscountRates(): Promise<DiscountRates> {
+  return { multiClassDiscountPct: await getMultiClassDiscountPct(), siblingDiscountPct: await getSiblingDiscountPct() };
+}
+
+// The one place a monthly bill is (re)built: class lines and discounts are refreshed from the
+// current enrollment, class, and fee data; the adjustment is kept; every payment ledger entry is
+// left untouched and summed back into the paid amount, balance, and status. Returns null when
+// there is no bill and nothing to charge, so empty $0 bills are never created.
+export async function recomputeStudentMonthBill(
+  tx: Prisma.TransactionClient,
+  { studentId, familyId, month }: { studentId: string; familyId: string; month: Date },
+  rates: DiscountRates,
+  { clearReview }: { clearReview: boolean },
+) {
+  const existing = await tx.monthlyStudentBilling.findUnique({
+    where: { studentId_month: { studentId, month } },
+    include: { payments: { select: { amount: true, classId: true, class: { select: { name: true } } } } },
+  });
+  const lineItemInputs = await buildLineItemInputs(tx, studentId, month);
+  if (!existing && lineItemInputs.length === 0) return null;
+
+  const siblingCount = await familyQualifyingSiblingCount(tx, familyId, month);
+  const computed = computeStudentBilling({
+    lineItems: lineItemInputs,
+    hasSiblingDiscount: siblingCount >= 2,
+    adjustment: existing ? Number(existing.adjustment) : 0,
+    ...rates,
+  });
+  const payments = existing?.payments ?? [];
+  const amountPaid = round2(payments.reduce((sum, payment) => sum + Number(payment.amount), 0));
+  const balance = round2(computed.finalAmountDue - amountPaid);
+  const status = computeBillingStatus(computed.finalAmountDue, amountPaid);
+
+  // A payment recorded against a class that is no longer charged on this bill is kept as-is, but
+  // the bill is flagged so staff decide where that money belongs.
+  const billedClassIds = new Set(lineItemInputs.map((lineItem) => lineItem.classId));
+  const strandedClasses = [...new Set(payments
+    .filter((payment) => payment.classId && !billedClassIds.has(payment.classId))
+    .map((payment) => payment.class?.name ?? "a removed class"))];
+  const review = strandedClasses.length > 0
+    ? {
+        needsManualReview: true,
+        manualReviewReason: `A payment is assigned to ${strandedClasses.join(", ")}, which is no longer charged on this bill. Review which class or month the payment belongs to.`,
+        manualReviewAt: new Date(),
+      }
+    : clearReview && { needsManualReview: false, manualReviewReason: null, manualReviewAt: null };
+
+  const amounts = {
+    baseTuition: computed.baseTuition,
+    multiClassDiscount: computed.multiClassDiscount,
+    siblingDiscount: computed.siblingDiscount,
+    finalAmountDue: computed.finalAmountDue,
+    amountPaid,
+    balance,
+    status,
+  };
+  const billing = await tx.monthlyStudentBilling.upsert({
+    where: { studentId_month: { studentId, month } },
+    create: { studentId, month, adjustment: computed.adjustment, ...amounts, ...review },
+    update: { ...amounts, ...review },
+  });
+  await tx.monthlyBillingLineItem.deleteMany({ where: { billingId: billing.id } });
+  if (lineItemInputs.length > 0) {
+    await tx.monthlyBillingLineItem.createMany({
+      data: lineItemInputs.map((lineItem) => ({
+        billingId: billing.id,
+        enrollmentId: lineItem.enrollmentId,
+        classMonthlyFeeId: lineItem.classMonthlyFeeId,
+        amount: lineItem.amount,
+      })),
+    });
+  }
+  return { billing, created: !existing };
+}
+
 
 // ---------- Billing finalization gate (§4.7 / §5) ----------
 //
@@ -191,7 +260,7 @@ export async function assertFinalizedForNotification(billingIds: string[]): Prom
   }
 }
 
-// ---------- Monthly generation job (§4.5) — idempotent, never overwrites a bill with payments ----------
+// ---------- Monthly generation job (§4.5) — idempotent, preserves payment ledger entries ----------
 
 export type GenerateMonthlyBillingSummary = {
   month: string;
@@ -203,8 +272,7 @@ export type GenerateMonthlyBillingSummary = {
 
 export async function generateMonthlyBilling(monthInput: string): Promise<GenerateMonthlyBillingSummary> {
   const month = normalizeMonth(monthInput);
-  const multiClassDiscountPct = await getMultiClassDiscountPct();
-  const siblingDiscountPct = await getSiblingDiscountPct();
+  const rates = await getDiscountRates();
   const candidates = await db.student.findMany({
     where: {
       isActive: true,
@@ -213,23 +281,12 @@ export async function generateMonthlyBilling(monthInput: string): Promise<Genera
         { monthlyBillings: { some: { month } } },
       ],
     },
-    include: {
-      enrollments: { include: { class: { select: { firstClassDate: true, inactiveFromMonth: true, lastClassDate: true } } } },
-      monthlyBillings: {
-        where: { month },
-        select: {
-          id: true,
-          finalAmountDue: true,
-          amountPaid: true,
-          lineItems: {
-            select: {
-              classMonthlyFee: {
-                select: { class: { select: { firstClassDate: true, inactiveFromMonth: true, lastClassDate: true } } },
-              },
-            },
-          },
-        },
-      },
+    select: {
+      id: true,
+      fullName: true,
+      familyId: true,
+      enrollments: { select: { startDate: true, endDate: true, class: { select: { firstClassDate: true, inactiveFromMonth: true, lastClassDate: true } } } },
+      monthlyBillings: { where: { month }, select: { id: true } },
     },
   });
   const eligibleStudents = candidates.filter((student) => student.enrollments.some(
@@ -238,87 +295,23 @@ export async function generateMonthlyBilling(monthInput: string): Promise<Genera
       classIsBillableForMonth(enrollment.class, month),
   ) || student.monthlyBillings.length > 0);
 
-  const students: GenerateMonthlyBillingSummary["students"] = eligibleStudents
-    .filter((student) => {
-      const existing = student.monthlyBillings[0];
-      const hasInactiveLine = existing?.lineItems.some(
-        (lineItem) => !classIsBillableForMonth(lineItem.classMonthlyFee.class, month),
-      ) ?? false;
-      const hasEmptyZeroBill = existing && Number(existing.finalAmountDue) === 0 && Number(existing.amountPaid) === 0 && existing.lineItems.length === 0;
-      return existing && !hasInactiveLine && !hasEmptyZeroBill;
-    })
-    .map((student) => ({ studentId: student.id, studentName: student.fullName, result: "skipped" }));
-  const studentsToProcess = eligibleStudents.filter((student) => {
-    const existing = student.monthlyBillings[0];
-    const hasInactiveLine = existing?.lineItems.some(
-      (lineItem) => !classIsBillableForMonth(lineItem.classMonthlyFee.class, month),
-    ) ?? false;
-    const hasEmptyZeroBill = existing && Number(existing.finalAmountDue) === 0 && Number(existing.amountPaid) === 0 && existing.lineItems.length === 0;
-    return !existing || hasInactiveLine || hasEmptyZeroBill;
-  });
-
-  const processStudent = async (student: (typeof eligibleStudents)[number]) => serializableTransaction(async (tx) => {
-    const siblingCount = await familyQualifyingSiblingCount(tx, student.familyId, month);
-    const existing = await tx.monthlyStudentBilling.findUnique({
-      where: { studentId_month: { studentId: student.id, month } },
-      include: { payments: true },
-    });
-    if (existing && existing.payments.length > 0) {
-      return { studentId: student.id, studentName: student.fullName, result: "skipped" as const };
+  // Existing bills are rebuilt too — skipping a non-zero or paid bill let later enrollment,
+  // class-status, or session-count corrections leave only part of the month represented.
+  // Review flags are left for staff; payment ledger entries are never deleted or reassigned.
+  const students: GenerateMonthlyBillingSummary["students"] = [];
+  for (const student of eligibleStudents) {
+    const outcome = await serializableTransaction((tx) => recomputeStudentMonthBill(
+      tx,
+      { studentId: student.id, familyId: student.familyId, month },
+      rates,
+      { clearReview: false },
+    ));
+    const summary = { studentId: student.id, studentName: student.fullName };
+    if (!outcome) {
+      students.push({ ...summary, result: "skipped" });
+      continue;
     }
-
-    const lineItemInputs = await buildLineItemInputs(tx, student.id, month);
-    const computed = computeStudentBilling({
-      lineItems: lineItemInputs,
-      hasSiblingDiscount: siblingCount >= 2,
-      adjustment: existing ? Number(existing.adjustment) : 0,
-      multiClassDiscountPct,
-      siblingDiscountPct,
-    });
-    const status = computeBillingStatus(computed.finalAmountDue, 0);
-    const billing = await tx.monthlyStudentBilling.upsert({
-      where: { studentId_month: { studentId: student.id, month } },
-      create: {
-        studentId: student.id,
-        month,
-        baseTuition: computed.baseTuition,
-        multiClassDiscount: computed.multiClassDiscount,
-        siblingDiscount: computed.siblingDiscount,
-        adjustment: computed.adjustment,
-        finalAmountDue: computed.finalAmountDue,
-        amountPaid: 0,
-        balance: computed.finalAmountDue,
-        status,
-      },
-      update: {
-        baseTuition: computed.baseTuition,
-        multiClassDiscount: computed.multiClassDiscount,
-        siblingDiscount: computed.siblingDiscount,
-        finalAmountDue: computed.finalAmountDue,
-        balance: computed.finalAmountDue,
-        status,
-      },
-    });
-    await tx.monthlyBillingLineItem.deleteMany({ where: { billingId: billing.id } });
-    if (lineItemInputs.length > 0) {
-      await tx.monthlyBillingLineItem.createMany({
-        data: lineItemInputs.map((lineItem) => ({
-          billingId: billing.id,
-          enrollmentId: lineItem.enrollmentId,
-          classMonthlyFeeId: lineItem.classMonthlyFeeId,
-          amount: lineItem.amount,
-        })),
-      });
-    }
-    return {
-      studentId: student.id,
-      studentName: student.fullName,
-      result: existing ? "updated" as const : "created" as const,
-    };
-  });
-
-  for (const student of studentsToProcess) {
-    students.push(await processStudent(student));
+    students.push({ ...summary, result: outcome.created ? "created" : "updated" });
   }
   return {
     month: month.toISOString(),

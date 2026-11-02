@@ -8,7 +8,7 @@ import { validateListQuery , idSchema } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
 import { normalizeMonth } from "@/lib/billing";
 import { db } from "@/lib/db";
-import { buildFeeSummary, firstName } from "@/lib/notifications";
+import { firstName } from "@/lib/notifications";
 
 
 
@@ -88,7 +88,7 @@ export async function sendFamilyNotificationEmail(
     {
       parentName: firstName(family.parentGuardianName),
       monthLabel,
-      feeSummary: buildFeeSummary(preview.students),
+      feeSummary: preview.breakdown,
     },
     family.email,
   );

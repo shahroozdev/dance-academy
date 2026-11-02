@@ -41,7 +41,7 @@ On registration approval, the app compares the parent's phone or email with exis
 
 Within the matched family, the student's name is checked without regard to capitalization. A different student name creates another student in that family. An existing name reuses that student.
 
-The sibling discount applies when at least two active students in the same family each have an enrollment overlapping the billed month. An enrollment ending later still counts for its earlier months. A sibling with no enrollment during the selected month does not qualify. Each qualifying student's sibling discount is applied after the multi-class discount; the default is 5%, adjustable in Settings.
+The sibling discount applies when at least two students in the same family each have a billable enrollment in the billed month. An enrollment ending later still counts for its earlier months, so deactivating a student (which ends their enrollments on the chosen last class date) does not remove the discount from months they attended. An inactive student whose enrollment has no end date does not count until staff record that last class date. A sibling with no enrollment during the selected month does not qualify. Each qualifying student's sibling discount is applied after the multi-class discount; the default is 5%, adjustable in Settings.
 
 Example: Nia and Leia share one Family record and both have September enrollments. Both qualify. A $100 fee becomes $95 if there is no multi-class discount. If Leia has no September enrollment, Nia does not receive a sibling discount merely because Leia is listed in the family.
 

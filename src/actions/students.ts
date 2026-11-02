@@ -2,13 +2,14 @@
 
 import { requireAdmin } from "@/actions/access";
 import { recalculateBilling } from "@/actions/billing";
-import { recalculateEnrollmentRangeBills } from "@/actions/billing-impact";
+import { recalculateAffectedBills } from "@/actions/billing-impact";
 import { deleteStudentRecords } from "@/actions/record-deletion";
 import { studentActiveStatusSchema, studentCreateSchema, studentImportSchema, studentUpdateSchema } from "@/actions/students.schema";
 import type { StudentCreateInput, StudentImportRow, StudentUpdateInput } from "@/actions/students.schema";
 import { serializableTransaction } from "@/actions/transaction";
 import { idSchema, validateListQuery } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
+import { normalizeMonth } from "@/lib/billing";
 import { db } from "@/lib/db";
 import { matchRegistrationFamily } from "@/lib/family-matching";
 // ---------- Queries ----------
@@ -200,7 +201,7 @@ export async function toggleStudentActive(id: string, isActive: boolean, lastCla
   const endDate = parsed.isActive ? null : new Date(`${parsed.lastClassDate}T00:00:00.000Z`);
   const result = await serializableTransaction(async (tx) => {
     const student = await tx.student.update({ where: { id }, data: { isActive: parsed.isActive } });
-    if (!endDate) return { student, enrollmentIds: [] as string[] };
+    if (!endDate) return student;
     const enrollments = await tx.enrollment.findMany({
       where: { studentId: id, status: "ACTIVE" },
       select: { id: true, startDate: true },
@@ -212,17 +213,14 @@ export async function toggleStudentActive(id: string, isActive: boolean, lastCla
       where: { id: { in: enrollments.map(({ id: enrollmentId }) => enrollmentId) } },
       data: { status: "ENDED", endDate },
     });
-    return { student, enrollmentIds: enrollments.map(({ id: enrollmentId }) => enrollmentId) };
+    return student;
   });
-  for (const enrollmentId of result.enrollmentIds) {
-    await recalculateEnrollmentRangeBills(
-      enrollmentId,
-      undefined,
-      undefined,
-      "The student was deactivated with a last class date after payment was recorded. Review the final bill and adjust it if needed.",
-    );
+  // Months before the last class date are unaffected (the student still counts as a sibling for
+  // the months attended), so only the family's bills from that month onward are refreshed.
+  if (endDate) {
+    await recalculateAffectedBills({ month: { gte: normalizeMonth(endDate) }, student: { familyId: result.familyId } });
   }
-  return result.student;
+  return result;
 }
 
 export async function deleteStudent(id: string, confirmationName: string) {
