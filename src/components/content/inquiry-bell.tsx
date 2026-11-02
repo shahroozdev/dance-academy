@@ -3,6 +3,7 @@
 import { Bell } from "lucide-react";
 import { useEffect } from "react";
 
+import { JOB_APPLICATION_TOPIC } from "@/actions/inquiries.schema";
 import { Badge } from "@/components/common/badge";
 import {
   DropdownMenu,
@@ -55,7 +56,10 @@ export function InquiryBell() {
         ) : (
           data.latest.map((inquiry) => (
             <DropdownMenuItem key={inquiry.id} asChild>
-              <Link href="/content/inquiries" className="flex flex-col items-start gap-0.5">
+              <Link
+                href={inquiry.interestedIn === JOB_APPLICATION_TOPIC ? "/content/applications" : "/content/inquiries"}
+                className="flex flex-col items-start gap-0.5"
+              >
                 <span className="max-w-full truncate text-sm font-medium text-foreground">{inquiry.name}</span>
                 <span className="max-w-full truncate text-xs text-muted-foreground">
                   {inquiry.interestedIn} · {formatWhen(inquiry.createdAt)}

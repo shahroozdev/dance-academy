@@ -5,10 +5,14 @@ import { useEffect, useState } from "react";
 import { HOME_SECTIONS, type HomeSectionId } from "@/lib/public-site";
 import { cn } from "@/lib/utils";
 
-type SectionDotsProps = { scrollContainerId: string };
+type SectionDotsProps = {
+  scrollContainerId: string;
+  /** The sections showing on the page, when some are left out. */
+  sections?: readonly { id: HomeSectionId; label: string }[];
+};
 
 // Right-edge dot navigator: one dot per full-screen section, the visible one filled in.
-export function SectionDots({ scrollContainerId }: SectionDotsProps) {
+export function SectionDots({ scrollContainerId, sections = HOME_SECTIONS }: SectionDotsProps) {
   const [activeId, setActiveId] = useState<HomeSectionId>(HOME_SECTIONS[0].id);
 
   useEffect(() => {
@@ -30,7 +34,7 @@ export function SectionDots({ scrollContainerId }: SectionDotsProps) {
   return (
     <nav aria-label="Sections" className="absolute top-1/2 right-6 z-20 hidden -translate-y-1/2 lg:block">
       <ul className="flex flex-col gap-1">
-        {HOME_SECTIONS.map((section) => (
+        {sections.map((section) => (
           <li key={section.id}>
             <a
               href={`#${section.id}`}

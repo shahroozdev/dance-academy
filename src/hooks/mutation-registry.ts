@@ -11,7 +11,8 @@ import { createClassBillingPause, deleteClassBillingPause } from "@/actions/clas
 import { applyReportedClassSessions, reportMonthlyClassSessions } from "@/actions/class-sessions";
 import { createClass, updateClass, toggleClassActive } from "@/actions/classes";
 import { createFestival, updateFestival } from "@/actions/content-festivals";
-import { setInquiryStatus } from "@/actions/content-inquiries";
+import { deleteJobApplication, setInquiryStatus } from "@/actions/content-inquiries";
+import { createJobOpening, deleteJobOpening, updateJobOpening } from "@/actions/content-jobs";
 import {
   addContentMediaLink,
   createContentUploadTicket,
@@ -46,7 +47,7 @@ import {
   toggleFamilyActive,
 } from "@/actions/families";
 import { combineFamilies, createFamilyGuardian, deleteFamilyGuardian, setPrimaryFamilyGuardian, updateFamilyGuardian } from "@/actions/family-guardians";
-import { submitWebsiteInquiry } from "@/actions/inquiries";
+import { submitJobApplication, submitWebsiteInquiry } from "@/actions/inquiries";
 import { markFamilyNotificationSent, sendFamilyNotificationEmail, sendFamilyPaymentReminder } from "@/actions/notifications";
 import { createOtherIncome, deleteOtherIncome, updateOtherIncome } from "@/actions/other-income";
 import { createPayment, createRefund, updatePayment } from "@/actions/payments";
@@ -136,18 +137,23 @@ export const mutationRegistry = {
   sendFamilyNotificationEmail,
   sendFamilyPaymentReminder,
   submitWebsiteInquiry,
+  submitJobApplication,
   createFestival,
   updateFestival,
   createPerformance,
   updatePerformance,
   createPressItem,
   updatePressItem,
+  createJobOpening,
+  updateJobOpening,
+  deleteJobOpening,
   setContentStatus,
   createContentUploadTicket,
   registerContentUpload,
   uploadContentDocument,
   setSiteMediaSlot,
   setInquiryStatus,
+  deleteJobApplication,
   addContentMediaLink,
   updateContentMedia,
   deleteContentMedia,

@@ -26,7 +26,7 @@ export default async function SupportPage() {
         eyebrow="Support Malhaar"
         heading={[
           { text: "Help keep the" },
-          { text: "Arts thriving", accent: true },
+          { text: "Arts thriving" },
         ]}
         lead={SUPPORT_INTRO[0]}
       />
@@ -45,7 +45,7 @@ export default async function SupportPage() {
           <SectionHeading
             parts={[
               { text: "Get" },
-              { text: "Involved", accent: true },
+              { text: "Involved" },
             ]}
           />
           <CtaLink href={inquiryHref("Sponsorship")}>Contact Malhaar</CtaLink>

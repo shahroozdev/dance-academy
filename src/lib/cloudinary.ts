@@ -28,6 +28,9 @@ const UPLOAD_CHUNK_BYTES = 6 * 1024 * 1024;
 const extraUploadFields = (kind: CloudinaryUploadKind): Record<string, string> =>
   kind === "VIDEO" ? { eager: VIDEO_DELIVERY_TRANSFORMATION, eager_async: "true" } : {};
 
+export const isCloudinaryConfigured = () =>
+  Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
+
 export function getCloudinaryConfig() {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -47,8 +50,18 @@ export function signCloudinaryParams(params: Record<string, string | number>, ap
   return createHash("sha1").update(payload + apiSecret).digest("hex");
 }
 
-const apiUrl = (cloudName: string, resourceType: CloudinaryResourceType, call: "upload" | "destroy") =>
+const apiUrl = (cloudName: string, resourceType: CloudinaryResourceType | "raw", call: "upload" | "destroy" | "download") =>
   `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/${call}`;
+
+/** A request body carrying `fields` with the account's key and their signature. */
+function signedBody(fields: Record<string, string | number>) {
+  const { apiKey, apiSecret } = getCloudinaryConfig();
+  const body = new FormData();
+  for (const [name, value] of Object.entries(fields)) body.set(name, String(value));
+  body.set("api_key", apiKey);
+  body.set("signature", signCloudinaryParams(fields, apiSecret));
+  return body;
+}
 
 /**
  * Everything a browser needs to send one file straight to Cloudinary. The signature covers the
@@ -104,19 +117,14 @@ type ServerUpload = { kind: CloudinaryUploadKind; file: Blob; publicId: string }
  * returns its stored address. Used by the scripts that move the site's own files into Cloudinary.
  */
 export async function uploadToCloudinary({ kind, file, publicId }: ServerUpload) {
-  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
+  const { cloudName } = getCloudinaryConfig();
   const { resourceType } = CLOUDINARY_UPLOADS[kind];
-  const fields = {
+  const body = signedBody({
     ...extraUploadFields(kind),
     overwrite: "true",
     public_id: publicId,
     timestamp: Math.floor(Date.now() / 1000),
-  };
-
-  const body = new FormData();
-  for (const [name, value] of Object.entries(fields)) body.set(name, String(value));
-  body.set("api_key", apiKey);
-  body.set("signature", signCloudinaryParams(fields, apiSecret));
+  });
 
   // A large file is sent in pieces: one long request can time out before Cloudinary answers.
   // Every piece carries the same signed fields and upload id; the reply to the last one
@@ -141,13 +149,43 @@ export async function uploadToCloudinary({ kind, file, publicId }: ServerUpload)
 export async function deleteFromCloudinary(url: string) {
   const address = parseCloudinaryUrl(url);
   if (!address) return;
-  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
-  const fields = { public_id: address.publicId, timestamp: Math.floor(Date.now() / 1000) };
-
-  const body = new FormData();
-  for (const [name, value] of Object.entries(fields)) body.set(name, String(value));
-  body.set("api_key", apiKey);
-  body.set("signature", signCloudinaryParams(fields, apiSecret));
-
+  const { cloudName } = getCloudinaryConfig();
+  const body = signedBody({ public_id: address.publicId, timestamp: Math.floor(Date.now() / 1000) });
   await callCloudinary(apiUrl(cloudName, address.resourceType, "destroy"), body);
+}
+
+// ---------- Private documents (job applicants' resumes) ----------
+// Stored as "authenticated" raw files: Cloudinary refuses their ordinary address, so they can
+// only be opened through a signed link that expires a few minutes after it is made.
+
+const PRIVATE_DOCUMENTS_FOLDER = "malhaar/applications";
+const PRIVATE_LINK_SECONDS = 5 * 60;
+
+/** Uploads a document privately and returns its public id (which includes the extension). */
+export async function uploadPrivateDocument(file: Blob, fileName: string) {
+  const { cloudName } = getCloudinaryConfig();
+  const body = signedBody({ folder: PRIVATE_DOCUMENTS_FOLDER, timestamp: Math.floor(Date.now() / 1000), type: "authenticated" });
+  body.set("file", file, fileName);
+  const result = (await callCloudinary(apiUrl(cloudName, "raw", "upload"), body)) as CloudinaryResult & { public_id?: string };
+  if (!result.public_id) throw new Error("Cloudinary did not return the stored file.");
+  return result.public_id;
+}
+
+/** A link that opens a private document for the next few minutes. */
+export function privateDocumentUrl(publicId: string) {
+  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
+  const now = Math.floor(Date.now() / 1000);
+  const fields = { expires_at: now + PRIVATE_LINK_SECONDS, public_id: publicId, timestamp: now, type: "authenticated" };
+  const query = new URLSearchParams({
+    ...Object.fromEntries(Object.entries(fields).map(([name, value]) => [name, String(value)])),
+    api_key: apiKey,
+    signature: signCloudinaryParams(fields, apiSecret),
+  });
+  return `${apiUrl(cloudName, "raw", "download")}?${query}`;
+}
+
+export async function deletePrivateDocument(publicId: string) {
+  const { cloudName } = getCloudinaryConfig();
+  const body = signedBody({ invalidate: "true", public_id: publicId, timestamp: Math.floor(Date.now() / 1000), type: "authenticated" });
+  await callCloudinary(apiUrl(cloudName, "raw", "destroy"), body);
 }

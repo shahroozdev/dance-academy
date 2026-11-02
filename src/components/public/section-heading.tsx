@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export type HeadingPart = { text: string; accent?: boolean; breakAfter?: boolean };
+export type HeadingPart = { text: string; breakAfter?: boolean };
 
 const SIZE_CLASSES = {
   hero: "text-4xl sm:text-5xl lg:text-6xl xl:text-7xl",
@@ -16,15 +16,13 @@ type SectionHeadingProps = {
   className?: string;
 };
 
-// The site's signature heading: light uppercase sans words mixed with italic serif accents.
+// The site's section heading: the italic serif, on every page.
 export function SectionHeading({ parts, as: Tag = "h2", size = "section", className }: SectionHeadingProps) {
   return (
-    <Tag className={cn("font-public font-light tracking-wide text-foreground uppercase", SIZE_CLASSES[size], className)}>
+    <Tag className={cn("font-display font-normal text-foreground italic", SIZE_CLASSES[size], className)}>
       {parts.map((part) => (
         <span key={part.text}>
-          <span className={cn(part.accent && "font-display font-normal tracking-normal normal-case italic")}>
-            {part.text}
-          </span>
+          {part.text}
           {part.breakAfter ? <br /> : " "}
         </span>
       ))}

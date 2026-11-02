@@ -5,6 +5,48 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
+- **2026-11-02: Client email requests (one heading font, lighter backgrounds, jobs section) — code complete;
+  waiting on the database change.**
+  - **Font:** `SectionHeading` now renders every part in Playfair italic (`font-display`); the `accent` flag was
+    removed from `HeadingPart` and every call site. Training program names and the festival's two box headings
+    were switched too. Card titles (performance/press/instructor names) were left as they were.
+  - **Backgrounds:** the floral map moved from `panel.tsx` to `HOME_BACKGROUNDS` in `src/lib/site-media.ts`; each
+    home section has a `home-background-<id>` site-media slot (owner picks it in Website Settings). `Panel` is
+    now async and reads `getPublicSiteMedia()` (cached). Every background shows at `opacity-25` (was 80%, and
+    100% on Performances), always `object-cover` so it fills the section's full height; the original florals are
+    pinned to their flowers' side. `content:seed` skips these slots
+    (`isHomeBackgroundSlot`) so the originals stay site files.
+  - **Jobs:** model `JobOpening` (uses `ContentStatus`), migration
+    `prisma/migrations/20261102090000_add_job_openings_and_applications` (creates `JobOpening`, adds six
+    optional columns + an index + a SET NULL foreign key to `Inquiry`; matches `prisma migrate diff` from the
+    previous schema).
+  - **Job applications (owner's choice: same `Inquiry` table, separate UI).** Saved with
+    `interestedIn = "Job Application"` (`JOB_APPLICATION_TOPIC` in `inquiries.schema.ts`, removed from the
+    contact form's topics) plus `jobOpeningId`/`jobTitle` (title kept if the opening is deleted), `experience`,
+    `availability`, `resumePublicId`, `resumeName`. Public form `components/public/job-application-form.tsx`
+    on `/careers` (`?position=<id>#apply` preselects), action `submitJobApplication(formData)` in
+    `src/actions/inquiries.ts` (shares rate limit, save and email steps with the contact form; only published
+    openings accepted; résumé checked for size and `%PDF-` bytes). Résumés are Cloudinary **raw
+    "authenticated"** files in `malhaar/applications` (`uploadPrivateDocument` / `privateDocumentUrl` /
+    `deletePrivateDocument` in `src/lib/cloudinary.ts`); the portal opens them through a 5-minute signed
+    download link. A test upload on 2026-11-02 confirmed the plain address is refused (401), the signed link
+    returns the PDF, and delete works; the test file was deleted. Portal: `components/content/inquiry-inbox.tsx`
+    (`kind` = inquiries | applications) + `inquiry-detail.tsx`, pages `/content/inquiries` and
+    `/content/applications`; owner-only `deleteJobApplication` also removes the résumé. Entity `job` in the publish workflow; actions
+    `src/actions/content-jobs.ts` (owner-only `deleteJobOpening`); portal pages `/content/jobs`; public
+    `/careers` (+ menu, sitemap, `careers` hero theme default VIOLET); home panel shown only when something is
+    published (`SectionDots` takes a `sections` prop). New inquiry interest "Job Application".
+  - **Checked:** TypeScript, lint, 471 unit tests, `npm run build`; public pages and the application form
+    (preselection, validation, 390 px) with sample openings (temporary stub, removed). No application was
+    submitted end to end (it would write to the live database and email the studio). This machine's database login currently fails ("credentials are
+    incorrect"), so the site ran on its built-in fallbacks and **no portal screen was opened signed in**.
+    The e2e suite was not run.
+  - **Next:** (1) owner approves, then apply only that SQL file to the hosted database and
+    `prisma migrate resolve --applied 20261102090000_add_job_openings_and_applications`; **deploy only after
+    that**, or the portal's Overview, Job Openings, Inquiries and Job Applications screens and the job
+    application form fail (the public pages themselves fall back safely). (2) Signed-in walk through Job Openings, Job
+    Applications (open a résumé, delete) and the new background pickers, plus one real application.
+
 - **2026-10-14: Browser tests for the public site and the Content Portal.** Run both with
   `npm run test:e2e:site` (plain `npm run test:e2e` also runs the older admin acceptance flow, which writes
   billing data — do not run that against the live database).

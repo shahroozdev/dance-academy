@@ -25,6 +25,8 @@ type EditorFrameProps = PublishedBy & {
   invalidateKeys: QueryKey[];
   /** The draft preview page, for content that has its own public page. */
   previewHref?: string;
+  /** Further buttons beside the publishing controls. */
+  actions?: ReactNode;
   children: ReactNode;
 };
 
@@ -41,6 +43,7 @@ export function EditorFrame({
   status,
   invalidateKeys,
   previewHref,
+  actions,
   publishedAt,
   publishedByName,
   children,
@@ -64,6 +67,7 @@ export function EditorFrame({
               </Button>
             )}
             <PublishControls entity={entity} id={id} status={status} invalidateKeys={invalidateKeys} />
+            {actions}
           </>
         }
       />

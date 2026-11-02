@@ -5,7 +5,7 @@ export type ContentRole = "OWNER" | "EDITOR";
 export type MediaAssetKind = "IMAGE" | "VIDEO" | "DOCUMENT";
 
 /** The content types that go through draft, publish, and archive. */
-export const CONTENT_ENTITIES = ["festival", "performance", "press"] as const;
+export const CONTENT_ENTITIES = ["festival", "performance", "press", "job"] as const;
 export type ContentEntity = (typeof CONTENT_ENTITIES)[number];
 
 export type ContentActor = { id: string; name: string; role: ContentRole };
@@ -71,6 +71,15 @@ export type PublicPressItem = {
   href: string | null;
   documentHref: string | null;
   image: PublicImage | null;
+};
+
+export type PublicJobOpening = {
+  id: string;
+  title: string;
+  location: string | null;
+  employmentType: string | null;
+  description: string;
+  applyUrl: string | null;
 };
 
 export type PublicProfile = {

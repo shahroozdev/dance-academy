@@ -776,6 +776,24 @@ model PressItem {
   @@index([status])
 }
 
+model JobOpening {
+  id              String        @id @default(cuid())
+  title           String
+  location        String?
+  employmentType  String?
+  description     String        @db.Text
+  applyUrl        String?
+  status          ContentStatus @default(DRAFT)
+  publishedAt     DateTime?
+  publishedById   String?
+  publishedByName String?
+  applications    Inquiry[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status])
+}
+
 model PublicProfile {
   id              String      @id @default(cuid())
   name            String
@@ -866,9 +884,20 @@ model Inquiry {
   // one visitor can send in an hour. The address itself is never stored.
   senderKey         String?
   handledByName     String?
+  // Job applications only (interestedIn "Job Application"). The position's title is kept as sent,
+  // so the application still says what it was for after the opening is deleted.
+  jobOpeningId      String?
+  jobOpening        JobOpening?   @relation(fields: [jobOpeningId], references: [id], onDelete: SetNull)
+  jobTitle          String?
+  experience        String?       @db.Text
+  availability      String?
+  // The résumé is a private Cloudinary file, opened only through a short-lived signed link.
+  resumePublicId    String?
+  resumeName        String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
   @@index([status, createdAt])
+  @@index([interestedIn, createdAt])
   @@index([senderKey, createdAt])
 }

@@ -76,7 +76,7 @@ export default async function PressPage() {
         eyebrow="Press & Media"
         heading={[
           { text: "Malhaar" },
-          { text: "in the Press", accent: true },
+          { text: "in the Press" },
           { text: "& media" },
         ]}
         lead={PRESS_INTRO}
@@ -106,7 +106,7 @@ export default async function PressPage() {
           <SectionHeading
             parts={[
               { text: "Media & press" },
-              { text: "Inquiries", accent: true },
+              { text: "Inquiries" },
             ]}
           />
           <a href={`mailto:${settings.email}`} className="font-display text-2xl text-primary italic hover:underline">

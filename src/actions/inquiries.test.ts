@@ -6,15 +6,24 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   update: vi.fn(),
   forwardedFor: vi.fn(),
+  findJob: vi.fn(),
+  uploadPrivateDocument: vi.fn(),
+  deletePrivateDocument: vi.fn(),
 }));
 
 vi.mock("@/actions/email", () => ({ sendAdminOperationalAlert: mocks.sendAdminOperationalAlert }));
-vi.mock("@/lib/db", () => ({ db: { inquiry: { count: mocks.count, create: mocks.create, update: mocks.update } } }));
+vi.mock("@/lib/db", () => ({
+  db: { inquiry: { count: mocks.count, create: mocks.create, update: mocks.update }, jobOpening: { findFirst: mocks.findJob } },
+}));
+vi.mock("@/lib/cloudinary", () => ({
+  uploadPrivateDocument: mocks.uploadPrivateDocument,
+  deletePrivateDocument: mocks.deletePrivateDocument,
+}));
 vi.mock("next/headers", () => ({
   headers: async () => ({ get: (name: string) => (name === "x-forwarded-for" ? mocks.forwardedFor() : null) }),
 }));
 
-import { submitWebsiteInquiry } from "@/actions/inquiries";
+import { submitJobApplication, submitWebsiteInquiry } from "@/actions/inquiries";
 
 const inquiry = {
   name: "Anu Sharma",
@@ -131,5 +140,79 @@ describe("website inquiry", () => {
 
     expect(mocks.create).not.toHaveBeenCalled();
     expect(mocks.sendAdminOperationalAlert).not.toHaveBeenCalled();
+  });
+});
+
+describe("job application", () => {
+  const pdf = () => new File(["%PDF-1.4 resume"], "cv.pdf", { type: "application/pdf" });
+  const application = (fields: Record<string, string> = {}, resume?: File) => {
+    const formData = new FormData();
+    const values = {
+      name: "Meera Nair",
+      email: "meera@example.test",
+      phone: "+1 312 555 0142",
+      jobOpeningId: "job-1",
+      experience: "Ten years of Bharatanatyam.",
+      ...fields,
+    };
+    for (const [name, value] of Object.entries(values)) formData.set(name, value);
+    if (resume) formData.set("resume", resume);
+    return formData;
+  };
+
+  beforeEach(() => {
+    mocks.findJob.mockResolvedValue({ id: "job-1", title: "Bharatanatyam Instructor" });
+    mocks.uploadPrivateDocument.mockResolvedValue("malhaar/applications/abc.pdf");
+    mocks.deletePrivateDocument.mockResolvedValue(undefined);
+  });
+
+  it("saves it as a job application for the position it was sent for, with its resume kept privately", async () => {
+    await expect(submitJobApplication(application({}, pdf()))).resolves.toEqual({ sent: true });
+
+    expect(mocks.findJob).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "job-1", status: "PUBLISHED" } }));
+    expect(mocks.create.mock.calls[0][0].data).toMatchObject({
+      interestedIn: "Job Application",
+      jobOpeningId: "job-1",
+      jobTitle: "Bharatanatyam Instructor",
+      resumePublicId: "malhaar/applications/abc.pdf",
+      resumeName: "cv.pdf",
+      message: "",
+    });
+  });
+
+  it("accepts a general application without looking up a position", async () => {
+    await submitJobApplication(application({ jobOpeningId: "GENERAL" }));
+
+    expect(mocks.findJob).not.toHaveBeenCalled();
+    expect(mocks.create.mock.calls[0][0].data).toMatchObject({ jobOpeningId: null, jobTitle: null, resumePublicId: null });
+  });
+
+  it("refuses a position that is no longer open", async () => {
+    mocks.findJob.mockResolvedValue(null);
+
+    await expect(submitJobApplication(application({}, pdf()))).rejects.toThrow("no longer open");
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses a resume that is not really a PDF", async () => {
+    const disguised = new File(["MZ not a pdf"], "cv.pdf", { type: "application/pdf" });
+
+    await expect(submitJobApplication(application({}, disguised))).rejects.toThrow("PDF");
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+  });
+
+  it("checks the hourly limit before storing any resume", async () => {
+    mocks.count.mockResolvedValue(5);
+
+    await expect(submitJobApplication(application({}, pdf()))).rejects.toThrow("Too many");
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+  });
+
+  it("removes the stored resume when the application cannot be saved", async () => {
+    mocks.create.mockRejectedValue(new Error("database unavailable"));
+
+    await expect(submitJobApplication(application({}, pdf()))).resolves.toEqual({ sent: true });
+    expect(mocks.deletePrivateDocument).toHaveBeenCalledWith("malhaar/applications/abc.pdf");
   });
 });

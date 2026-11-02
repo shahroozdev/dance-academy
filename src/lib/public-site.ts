@@ -50,6 +50,7 @@ export const NAV_LINKS = [
   { href: "/ananta", label: "Ananta Festival" },
   { href: "/press", label: "Press & Media" },
   { href: "/support", label: "Support" },
+  { href: "/careers", label: "Careers" },
   { href: "/contact", label: "Contact" },
 ] as const;
 
@@ -63,6 +64,7 @@ export const HOME_SECTIONS = [
   { id: "ananta", label: "Ananta Festival" },
   { id: "press", label: "Press & Media" },
   { id: "support", label: "Support" },
+  { id: "careers", label: "Careers" },
   { id: "contact", label: "Contact" },
 ] as const;
 
@@ -256,6 +258,11 @@ export const ANANTA_EDITIONS: readonly AnantaEdition[] = [
 ];
 
 export const ANANTA_INTEREST = "Malhaar Ananta Arts Festival";
+
+// ---------- Careers ----------
+
+export const CAREERS_INTRO =
+  "We are looking for people who share our passion for dance and for the students and audiences we serve. These are the positions currently open at Malhaar Dance Company.";
 export const ANANTA_TICKETS_URL = "https://www.sycamoretickets.org/";
 
 // The built-in festival pages and founder profiles, in the shape the pages render. They are what

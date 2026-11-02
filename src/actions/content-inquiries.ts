@@ -2,10 +2,12 @@
 
 import { z } from "zod";
 
-import { requireContentUser } from "@/actions/content-access";
-import { INQUIRY_INTERESTS } from "@/actions/inquiries.schema";
+import { requireContentOwner, requireContentUser } from "@/actions/content-access";
+import { recordContentAudit } from "@/actions/content-service";
+import { GENERAL_APPLICATION, INQUIRY_INTERESTS, JOB_APPLICATION_TOPIC } from "@/actions/inquiries.schema";
 import { idSchema } from "@/actions/validation.schema";
 import type { Prisma } from "@/generated/prisma/client";
+import { deletePrivateDocument, privateDocumentUrl } from "@/lib/cloudinary";
 import { db } from "@/lib/db";
 
 // Website inquiries, read and handled in the Content Portal by owners and editors alike. They
@@ -25,6 +27,10 @@ const inquiryColumns = {
   interestedIn: true,
   preferredLocation: true,
   message: true,
+  jobTitle: true,
+  experience: true,
+  availability: true,
+  resumeName: true,
   status: true,
   emailAlertSent: true,
   handledByName: true,
@@ -35,7 +41,11 @@ const listQuerySchema = z
   .object({
     // "OPEN" is everything not archived, which is what the list shows by default.
     status: z.enum([...INQUIRY_STATUSES, "OPEN"]).optional(),
+    // Contact-form messages and job applications share the table but are listed separately.
+    kind: z.enum(["inquiries", "applications"]).optional(),
     interest: z.enum(INQUIRY_INTERESTS).optional(),
+    // An opening's id, or GENERAL_APPLICATION for applications not tied to one.
+    position: z.string().max(100).optional(),
     search: z.string().trim().max(200).optional(),
     page: z.number().int().min(1).max(100000).optional(),
     pageSize: z.number().int().min(1).max(100).optional(),
@@ -46,16 +56,27 @@ type InquiryListQuery = z.infer<typeof listQuerySchema>;
 
 export async function getContentInquiries(params?: InquiryListQuery) {
   await requireContentUser();
-  const { status = "OPEN", interest, search, page = 1, pageSize = 20 } = listQuerySchema.parse(params ?? {});
+  const { status = "OPEN", kind = "inquiries", interest, position, search, page = 1, pageSize = 20 } = listQuerySchema.parse(
+    params ?? {},
+  );
+
+  const topic: Prisma.InquiryWhereInput =
+    kind === "applications"
+      ? {
+          interestedIn: JOB_APPLICATION_TOPIC,
+          ...(position && { jobOpeningId: position === GENERAL_APPLICATION ? null : position }),
+        }
+      : { interestedIn: interest ?? { not: JOB_APPLICATION_TOPIC } };
 
   const where: Prisma.InquiryWhereInput = {
+    ...topic,
     status: status === "OPEN" ? { not: "ARCHIVED" } : status,
-    ...(interest && { interestedIn: interest }),
     ...(search && {
       OR: [
         { name: { contains: search, mode: "insensitive" } },
         { email: { contains: search, mode: "insensitive" } },
         { message: { contains: search, mode: "insensitive" } },
+        { jobTitle: { contains: search, mode: "insensitive" } },
       ],
     }),
   };
@@ -99,4 +120,40 @@ export async function setInquiryStatus(id: string, status: InquiryStatus) {
     data: { status, handledByName: status === "NEW" ? null : user.name },
     select: inquiryColumns,
   });
+}
+
+const findApplication = (id: string) =>
+  db.inquiry.findFirstOrThrow({
+    where: { id: idSchema.parse(id), interestedIn: JOB_APPLICATION_TOPIC },
+    select: { name: true, resumePublicId: true },
+  });
+
+/** A link that opens an applicant's resume for the next few minutes. */
+export async function getJobApplicationResumeUrl(id: string) {
+  await requireContentUser();
+  const { resumePublicId } = await findApplication(id);
+  if (!resumePublicId) throw new Error("This application has no resume.");
+  return privateDocumentUrl(resumePublicId);
+}
+
+/** Removes a job application and its resume for good. Content Owners only. */
+export async function deleteJobApplication(id: string) {
+  const owner = await requireContentOwner();
+  id = idSchema.parse(id);
+  const application = await findApplication(id);
+
+  await db.inquiry.delete({ where: { id } });
+  if (application.resumePublicId) {
+    // The record is already gone, so a failure here only leaves an unreachable private file.
+    await deletePrivateDocument(application.resumePublicId).catch((error: unknown) =>
+      console.error("[content] A deleted application's resume could not be removed:", error instanceof Error ? error.message : error),
+    );
+  }
+  await recordContentAudit(owner, {
+    action: "deleted",
+    entityType: "job-application",
+    entityId: id,
+    summary: `Deleted the job application from ${application.name}.`,
+  });
+  return { id };
 }

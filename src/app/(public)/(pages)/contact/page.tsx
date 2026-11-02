@@ -28,7 +28,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
         eyebrow="Contact Malhaar Dance Company"
         heading={[
           { text: "Get in" },
-          { text: "Touch", accent: true },
+          { text: "Touch" },
         ]}
         lead="Interested in joining Malhaar, booking a performance, or supporting our work? Send us a message and we will reply by email."
       />

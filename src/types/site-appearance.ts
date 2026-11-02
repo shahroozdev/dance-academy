@@ -1,5 +1,5 @@
 /** The public inner pages whose hero treatment a Content Owner may choose. */
-export const HERO_PAGE_KEYS = ["about", "training", "instructors", "performances", "festival", "press", "support", "contact"] as const;
+export const HERO_PAGE_KEYS = ["about", "training", "instructors", "performances", "festival", "press", "support", "careers", "contact"] as const;
 export type HeroPageKey = (typeof HERO_PAGE_KEYS)[number];
 
 /** Curated styles preserve Malhaar's contrast and brand consistency. */

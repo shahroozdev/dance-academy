@@ -51,9 +51,10 @@ beforeEach(() => {
   mocks.tx.classExtraSession.findMany.mockResolvedValue([]);
 });
 
-// The only actions a visitor without a session may call: the public registration form and the
-// website contact form. Everything else must reject before reading its arguments.
-const PUBLIC_ACTIONS = new Set(["createRegistrationRequest", "submitWebsiteInquiry"]);
+// The only actions a visitor without a session may call: the public registration form, the
+// website contact form, and the Careers page's application form. Everything else must reject
+// before reading its arguments.
+const PUBLIC_ACTIONS = new Set(["createRegistrationRequest", "submitWebsiteInquiry", "submitJobApplication"]);
 
 describe("action access", () => {
   const adminActions = Object.entries({ ...queryRegistry, ...mutationRegistry })

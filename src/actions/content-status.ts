@@ -49,6 +49,13 @@ const statusTargets: Record<ContentEntity, StatusTarget> = {
     },
     update: (id, data) => db.pressItem.update({ where: { id }, data }),
   },
+  job: {
+    find: async (id) => {
+      const job = await db.jobOpening.findUniqueOrThrow({ where: { id }, select: { status: true, title: true } });
+      return { status: job.status, name: `the job opening "${job.title}"`, paths: ["/careers"] };
+    },
+    update: (id, data) => db.jobOpening.update({ where: { id }, data }),
+  },
 };
 
 const statusVerbs: Record<ContentStatus, string> = {

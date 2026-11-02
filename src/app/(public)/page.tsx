@@ -3,6 +3,7 @@ import Image from "next/image";
 
 import {
   getPublicFestivals,
+  getPublicJobOpenings,
   getPublicPerformances,
   getPublicProfiles,
   getPublicSiteMedia,
@@ -22,6 +23,8 @@ import {
   ABOUT_STORY,
   ANANTA_INTEREST,
   ANANTA_INTRO,
+  CAREERS_INTRO,
+  HOME_SECTIONS,
   PERFORMANCE_PHOTOS,
   PERFORMANCES_INTRO,
   PRESS_KINDS,
@@ -66,6 +69,7 @@ const SOCIAL_ICON_PATHS = {
   ),
 } as const;
 const HOME_PERFORMANCE_PHOTO_COUNT = 4;
+const SECTIONS_WITHOUT_CAREERS = HOME_SECTIONS.filter((section) => section.id !== "careers");
 
 // The home page shows a short selection; the full set is on the Performances page. The photos
 // are those of the performances published in the Content Portal (covers first, then gallery
@@ -80,12 +84,13 @@ function homePerformancePhotos(performances: PublicPerformance[]): readonly Publ
 
 // The home page: short full-screen teasers, each leading to its own page.
 export default async function HomePage() {
-  const [festivals, performances, profiles, settings, siteMedia] = await Promise.all([
+  const [festivals, performances, profiles, settings, siteMedia, jobs] = await Promise.all([
     getPublicFestivals(),
     getPublicPerformances(),
     getPublicProfiles(),
     getPublicSiteSettings(),
     getPublicSiteMedia(),
+    getPublicJobOpenings(),
   ]);
   const introVideo = siteMedia["home-intro-video"];
   const founders = siteMedia.founders;
@@ -97,7 +102,7 @@ export default async function HomePage() {
       {/* Google reads the site's name and the organization's details from the home page. */}
       <JsonLd data={jsonLdGraph(websiteJsonLd(), organizationJsonLd(settings, profiles))} />
       <SiteHeaderContainer scrollContainerId={SCROLL_CONTAINER_ID} />
-      <SectionDots scrollContainerId={SCROLL_CONTAINER_ID} />
+      <SectionDots scrollContainerId={SCROLL_CONTAINER_ID} sections={jobs.length > 0 ? HOME_SECTIONS : SECTIONS_WITHOUT_CAREERS} />
       <SectionPager scrollContainerId={SCROLL_CONTAINER_ID} />
       <div id={SCROLL_CONTAINER_ID} className="public-scroll h-dvh overflow-x-hidden overflow-y-auto">
         <main>
@@ -142,9 +147,9 @@ export default async function HomePage() {
                     className="block text-background"
                     parts={[
                       { text: "Rooted in" },
-                      { text: "Tradition,", accent: true, breakAfter: true },
+                      { text: "Tradition,", breakAfter: true },
                       { text: "alive in" },
-                      { text: "Expression", accent: true },
+                      { text: "Expression" },
                     ]}
                   />
                 </h1>
@@ -179,9 +184,9 @@ export default async function HomePage() {
                 <SectionHeading
                   parts={[
                     { text: "A shared" },
-                    { text: "Journey", accent: true },
+                    { text: "Journey" },
                     { text: "in dance,", breakAfter: true },
-                    { text: "from Oman to Chicago", accent: true },
+                    { text: "from Oman to Chicago" },
                   ]}
                 />
                 <p className={LEAD_CLASS}>{ABOUT_STORY[2]}</p>
@@ -206,7 +211,7 @@ export default async function HomePage() {
                 <SectionHeading
                   parts={[
                     { text: "Dance" },
-                    { text: "Training", accent: true },
+                    { text: "Training" },
                     { text: "at Malhaar" },
                   ]}
                 />
@@ -251,7 +256,7 @@ export default async function HomePage() {
                 className="text-center"
                 parts={[
                   { text: "Meet the" },
-                  { text: "Founders", accent: true },
+                  { text: "Founders" },
                   { text: "& instructors" },
                 ]}
               />
@@ -289,7 +294,7 @@ export default async function HomePage() {
                 <SectionHeading
                   parts={[
                     { text: "From training" },
-                    { text: "to the Stage", accent: true },
+                    { text: "to the Stage" },
                   ]}
                 />
                 <p className={LEAD_CLASS}>{PERFORMANCES_INTRO[0]}</p>
@@ -338,9 +343,9 @@ export default async function HomePage() {
                   size="stacked"
                   parts={[
                     { text: "Malhaar", breakAfter: true },
-                    { text: "Ananta", accent: true, breakAfter: true },
+                    { text: "Ananta", breakAfter: true },
                     { text: "Arts Festival", breakAfter: true },
-                    ...(latestFestival ? [{ text: latestFestival.year, accent: true }] : []),
+                    ...(latestFestival ? [{ text: latestFestival.year }] : []),
                   ]}
                 />
                 <p className={LEAD_CLASS}>{ANANTA_INTRO[0]}</p>
@@ -360,7 +365,7 @@ export default async function HomePage() {
               <SectionHeading
                 parts={[
                   { text: "Malhaar" },
-                  { text: "in the Press", accent: true },
+                  { text: "in the Press" },
                   { text: "& media" },
                 ]}
               />
@@ -387,13 +392,33 @@ export default async function HomePage() {
               <SectionHeading
                 parts={[
                   { text: "Help keep the" },
-                  { text: "Arts thriving", accent: true },
+                  { text: "Arts thriving" },
                 ]}
               />
               <p className={LEAD_CLASS}>{SUPPORT_INTRO[0]}</p>
               <CtaLink href="/support">Contact Malhaar</CtaLink>
             </div>
           </Panel>
+
+          {jobs.length > 0 && (
+            <Panel id="careers" label="Careers" tone="lilac" decor="center">
+              <div className="mx-auto flex max-w-3xl flex-col items-center gap-8 text-center">
+                <SectionHeading parts={[{ text: "Join our Team" }]} />
+                <p className={LEAD_CLASS}>{CAREERS_INTRO}</p>
+                <ul className="flex flex-wrap justify-center gap-3">
+                  {jobs.map((job) => (
+                    <li
+                      key={job.id}
+                      className="border border-primary/30 bg-card/70 px-4 py-2 font-condensed text-sm tracking-widest text-foreground uppercase"
+                    >
+                      {job.title}
+                    </li>
+                  ))}
+                </ul>
+                <CtaLink href="/careers">View Open Positions</CtaLink>
+              </div>
+            </Panel>
+          )}
 
           <Panel
             id="contact"
@@ -411,7 +436,7 @@ export default async function HomePage() {
                 <SectionHeading
                   parts={[
                     { text: "Get in" },
-                    { text: "Touch", accent: true },
+                    { text: "Touch" },
                   ]}
                 />
                 <p className={LEAD_CLASS}>

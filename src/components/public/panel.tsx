@@ -1,6 +1,8 @@
 import Image from "next/image";
 
+import { getPublicSiteMedia } from "@/actions/public-content";
 import type { HomeSectionId } from "@/lib/public-site";
+import { HOME_BACKGROUNDS, homeBackgroundSlot } from "@/lib/site-media";
 import { cn } from "@/lib/utils";
 
 const TONE_CLASSES = {
@@ -25,28 +27,6 @@ const DECOR_CLASSES = {
   },
 } as const;
 
-// Each floral is a 16:10 picture whose flowers sit against one side and fade to nothing towards
-// the other. It is fitted to the section's height, so on a screen wider than 16:10 it does not
-// span the full width — it must be pinned to the side its flowers are on (`flowersOn`), or the
-// picture's solid edge shows as a hard vertical line partway across the section.
-const FLORALS = {
-  rose: { src: "/images/site/classic-section-backround-3.png", flowersOn: "object-left" },
-  lilac: { src: "/images/site/classic-section-backround-4.png", flowersOn: "object-right" },
-  blossom: { src: "/images/site/classic-section-backround-5.png", flowersOn: "object-right" },
-} as const;
-
-const PANEL_FLORALS = {
-  home: undefined,
-  about: { floral: FLORALS.rose, className: "opacity-80" },
-  training: { floral: FLORALS.lilac, className: "opacity-80" },
-  instructors: { floral: FLORALS.blossom, className: "opacity-80" },
-  performances: { floral: FLORALS.rose, className: "" },
-  ananta: { floral: FLORALS.lilac, className: "opacity-80" },
-  press: { floral: FLORALS.blossom, className: "opacity-80" },
-  support: { floral: FLORALS.rose, className: "opacity-80" },
-  contact: { floral: FLORALS.lilac, className: "opacity-80" },
-} as const satisfies Record<HomeSectionId, { floral: (typeof FLORALS)[keyof typeof FLORALS]; className: string } | undefined>;
-
 type PanelProps = {
   id: HomeSectionId;
   label: string;
@@ -60,9 +40,10 @@ type PanelProps = {
 };
 
 // One full-screen section of the home page.
-export function Panel({ id, label, tone = "blush", decor = "right", className, footer, art, children }: PanelProps) {
+export async function Panel({ id, label, tone = "blush", decor = "right", className, footer, art, children }: PanelProps) {
   const decoration = DECOR_CLASSES[decor];
-  const panelFloral = PANEL_FLORALS[id];
+  const original = HOME_BACKGROUNDS[id];
+  const background = original && (await getPublicSiteMedia())[homeBackgroundSlot(id)];
   return (
     <section
       id={id}
@@ -72,18 +53,19 @@ export function Panel({ id, label, tone = "blush", decor = "right", className, f
     >
       <div aria-hidden="true" className={cn("pointer-events-none absolute -z-10 size-96 rounded-full blur-3xl", decoration.glow)} />
       <div aria-hidden="true" className={cn("pointer-events-none absolute -z-10 size-160 rounded-full border", decoration.ring)} />
-      {panelFloral && (
+      {original && background && (
         <Image
-          src={panelFloral.floral.src}
+          src={background.src}
           alt=""
           fill
           sizes="100vw"
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-0 z-0 object-contain",
-            panelFloral.floral.flowersOn,
-            panelFloral.className,
+            // Kept pale whatever the picture is, so the text on top stays readable.
+            "pointer-events-none absolute inset-0 z-0 object-cover opacity-25",
+            background.src === original.src && original.flowersOn,
           )}
+          style={{ objectPosition: background.position }}
         />
       )}
       <div className={cn("relative z-10 mx-auto w-full max-w-7xl px-6 pt-28 pb-16 sm:px-10 lg:px-16 lg:pt-24 lg:pb-12", className)}>

@@ -34,12 +34,24 @@ describe("inquiries list", () => {
     expect(mocks.findMany.mock.calls[0][0].select).not.toHaveProperty("senderKey");
   });
 
-  it("filters by status and topic, and searches name, email, and message", async () => {
+  it("filters by status and topic, and searches name, email, message, and position", async () => {
     await getContentInquiries({ status: "NEW", interest: "Sponsorship", search: "anu" });
 
     const { where } = mocks.findMany.mock.calls[0][0];
     expect(where).toMatchObject({ status: "NEW", interestedIn: "Sponsorship" });
-    expect(where.OR).toHaveLength(3);
+    expect(where.OR).toHaveLength(4);
+  });
+
+  it("keeps job applications out of the inquiries list", async () => {
+    await getContentInquiries({});
+
+    expect(mocks.findMany.mock.calls[0][0].where).toMatchObject({ interestedIn: { not: "Job Application" } });
+  });
+
+  it("lists only job applications on their own screen, by position or general", async () => {
+    await getContentInquiries({ kind: "applications", position: "GENERAL" });
+
+    expect(mocks.findMany.mock.calls[0][0].where).toMatchObject({ interestedIn: "Job Application", jobOpeningId: null });
   });
 
   it("pages the results", async () => {

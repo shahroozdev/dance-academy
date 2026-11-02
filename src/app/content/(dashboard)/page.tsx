@@ -1,4 +1,4 @@
-import { FilePenLine, Image as ImageIcon, Newspaper, PartyPopper, Plus, UserRound, type LucideIcon } from "lucide-react";
+import { BriefcaseBusiness, FilePenLine, Image as ImageIcon, Newspaper, PartyPopper, Plus, UserRound, type LucideIcon } from "lucide-react";
 
 import { getContentOverview } from "@/actions/content-overview";
 import { Button } from "@/components/common/button";
@@ -51,6 +51,14 @@ const CONTENT_AREAS: ContentArea[] = [
     figures: (overview) => statusFigures(overview.counts.press),
   },
   {
+    title: "Job Openings",
+    description: "Positions you are hiring for, shown on the Careers page.",
+    href: "/content/jobs",
+    addHref: "/content/jobs/new",
+    icon: BriefcaseBusiness,
+    figures: (overview) => statusFigures(overview.counts.job),
+  },
+  {
     title: "Media Library",
     description: "Website images, video links, and documents, with their descriptions.",
     href: "/content/media",
@@ -72,7 +80,7 @@ const formatWhen = (value: Date) => value.toLocaleString("en-US", { dateStyle: "
 export default async function ContentDashboardPage() {
   const overview = await getContentOverview();
   const isOwner = overview.role === "OWNER";
-  const unpublishedDrafts = overview.counts.festival.DRAFT + overview.counts.performance.DRAFT + overview.counts.press.DRAFT;
+  const unpublishedDrafts = overview.counts.festival.DRAFT + overview.counts.performance.DRAFT + overview.counts.press.DRAFT + overview.counts.job.DRAFT;
 
   return (
     <div className="space-y-6">

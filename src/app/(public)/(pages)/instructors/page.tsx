@@ -32,7 +32,7 @@ export default async function InstructorsPage() {
         eyebrow="Instructors & Artistic Team"
         heading={[
           { text: "Meet the" },
-          { text: "Founders", accent: true },
+          { text: "Founders" },
           { text: "& instructors" },
         ]}
         lead="Malhaar is led by two sisters whose training and performance experience spans Indian classical, contemporary, and cinematic dance."
@@ -45,7 +45,7 @@ export default async function InstructorsPage() {
               className="text-center"
               parts={[
                 { text: "Our" },
-                { text: "Founders", accent: true },
+                { text: "Founders" },
               ]}
             />
             <InstructorCards instructors={profiles} />

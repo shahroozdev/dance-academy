@@ -101,7 +101,7 @@ export default async function PerformancesPage() {
         eyebrow="Performances"
         heading={[
           { text: "From training" },
-          { text: "to the Stage", accent: true },
+          { text: "to the Stage" },
         ]}
         lead={PERFORMANCES_INTRO[0]}
       />
@@ -133,7 +133,7 @@ export default async function PerformancesPage() {
           <SectionHeading
             parts={[
               { text: "Invite Malhaar" },
-              { text: "to perform", accent: true },
+              { text: "to perform" },
             ]}
           />
           <p className="font-public text-base leading-relaxed text-muted-foreground lg:text-lg">

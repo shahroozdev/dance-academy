@@ -11,6 +11,7 @@ import type {
   PublicFestival,
   PublicImage,
   PublicPerformance,
+  PublicJobOpening,
   PublicPressItem,
   PublicProfile,
 } from "@/types/content";
@@ -119,6 +120,17 @@ export function toPublicPressItem(item: PressItemRecord): PublicPressItem {
     href: item.externalUrl,
     documentHref: item.document?.url ?? null,
     image: optionalImage(item.image),
+  };
+}
+
+export function toPublicJobOpening(job: Prisma.JobOpeningGetPayload<object>): PublicJobOpening {
+  return {
+    id: job.id,
+    title: job.title,
+    location: job.location,
+    employmentType: job.employmentType,
+    description: job.description,
+    applyUrl: job.applyUrl,
   };
 }
 

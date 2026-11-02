@@ -24,6 +24,7 @@ const HERO_PAGE_LABELS = {
   festival: "Ananta Festival",
   press: "Press & Media",
   support: "Support",
+  careers: "Careers",
   contact: "Contact",
 } as const;
 const HERO_THEME_SELECT_OPTIONS = Object.entries(HERO_THEME_OPTIONS).map(([value, label]) => ({ value, label }));

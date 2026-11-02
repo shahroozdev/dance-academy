@@ -1,5 +1,18 @@
 # Updates Summary
 
+## 2026-11-02
+
+- Every section heading on the website now uses the same elegant italic lettering as "Arts thriving", instead of mixing plain capitals with italic words.
+- The flower backgrounds on the home page are now much paler, so the writing on top of them is easy to read.
+- Each home page section's background can now be changed in Website Settings by choosing a picture from the Media Library. Removing the choice brings back the original flowers, and any picture is shown pale so text stays readable.
+- New Careers page, linked from the menu and footer, listing the positions you are hiring for. Each Apply button opens the job application form with that position already chosen, or your own application link if you added one.
+- New job application form on the Careers page, with only job questions: name, email, phone, position, experience, availability, an optional PDF resume (up to 4 MB), and a message. People can also send a general application when no position is open.
+- Resumes are stored privately: only signed-in Content Portal users can open them, and each opening link stops working after a few minutes.
+- New Job Applications screen in the Content Portal, separate from Inquiries, with a position filter, each applicant's answers, an Open resume button, and Reply by email. Owners can delete an application, which also removes its resume.
+- New job applications appear in the portal's bell and send the usual staff email alert. The contact form no longer offers "Job Application" as a topic.
+- While at least one position is published, the home page also shows a "Join our Team" section listing them.
+- New Job Openings section in the Content Portal to add, edit, publish, archive, and permanently delete positions.
+
 ## 2026-10-15
 
 - Each public page hero now has its own more visibly different default colour treatment. The available choices use clearly distinct blush, gold, violet, teal, deep plum, crimson, sunset, and sage green backgrounds, with matching background artwork instead of a near-identical wash across pages.

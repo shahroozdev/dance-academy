@@ -9,6 +9,7 @@ import {
   profileInclude,
   toPublicFestival,
   toPublicImage,
+  toPublicJobOpening,
   toPublicPerformance,
   toPublicPressItem,
   toPublicProfile,
@@ -18,6 +19,7 @@ import { BUILT_IN_FESTIVALS, BUILT_IN_PROFILES, DEFAULT_SITE_SETTINGS } from "@/
 import { DEFAULT_HERO_THEMES, readHeroThemes } from "@/lib/site-appearance";
 import { SITE_MEDIA_SLOTS } from "@/lib/site-media";
 import type {
+  PublicJobOpening,
   PublicPerformance,
   PublicPressItem,
   PublicSiteMedia,
@@ -90,6 +92,18 @@ export const getPublicPressItems = cache(() =>
         include: pressItemInclude,
       });
       return items.map(toPublicPressItem);
+    },
+    [],
+  ),
+);
+
+/** Published job openings, newest first. Empty until openings are published in the portal. */
+export const getPublicJobOpenings = cache(() =>
+  fromPortal<PublicJobOpening[]>(
+    "job openings",
+    async () => {
+      const jobs = await db.jobOpening.findMany({ where: { status: "PUBLISHED" }, orderBy: { publishedAt: "desc" } });
+      return jobs.map(toPublicJobOpening);
     },
     [],
   ),

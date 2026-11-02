@@ -4,6 +4,7 @@ import { getMonthlyClassSessionTracking } from "@/actions/class-sessions";
 import { getClasses, getClassById, getClassRoster } from "@/actions/classes";
 import { getContentFestivalById, getContentFestivals } from "@/actions/content-festivals";
 import { getContentInquiries, getContentInquirySummary } from "@/actions/content-inquiries";
+import { getContentJobOpeningById, getContentJobOpenings } from "@/actions/content-jobs";
 import { getContentMediaAssets } from "@/actions/content-media";
 import { getContentHistory, getContentOverview } from "@/actions/content-overview";
 import { getContentPerformanceById, getContentPerformances } from "@/actions/content-performances";
@@ -88,6 +89,8 @@ export const queryRegistry = {
   getContentPerformanceById,
   getContentPressItems,
   getContentPressItemById,
+  getContentJobOpenings,
+  getContentJobOpeningById,
   getContentMediaAssets,
   getContentProfiles,
   getContentProfileById,

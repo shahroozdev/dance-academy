@@ -101,6 +101,17 @@ export const pressItemSchema = z.object({
 });
 export type PressItemInput = z.infer<typeof pressItemSchema>;
 
+// ---------- Job openings ----------
+
+export const jobOpeningSchema = z.object({
+  title: text("Position title", 200),
+  location: optionalText(200),
+  employmentType: optionalText(100),
+  description: text("Description", 10000),
+  applyUrl: optionalLinkSchema,
+});
+export type JobOpeningInput = z.infer<typeof jobOpeningSchema>;
+
 // ---------- Media library ----------
 
 const focalPercent = z
@@ -166,6 +177,7 @@ export const heroThemesSchema = z.object({
   festival: heroThemeSchema,
   press: heroThemeSchema,
   support: heroThemeSchema,
+  careers: heroThemeSchema,
   contact: heroThemeSchema,
 });
 

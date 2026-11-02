@@ -16,11 +16,12 @@ const PAGES = [
   { path: "/instructors", title: /Instructors/, heading: /Meet the/i },
   { path: "/performances", title: /Performances/, heading: /From training/i },
   { path: "/press", title: /Press & Media/, heading: /in the Press/i },
+  { path: "/careers", title: /Careers/, heading: /Join our Team/i },
   { path: "/support", title: /Support/, heading: /./ },
   { path: "/contact", title: /Contact/, heading: /Get in/i },
 ] as const;
 
-const MENU_LINKS = ["Home", "About", "Training", "Instructors", "Performances", "Ananta Festival", "Press & Media", "Support", "Contact"];
+const MENU_LINKS = ["Home", "About", "Training", "Instructors", "Performances", "Ananta Festival", "Press & Media", "Support", "Careers", "Contact"];
 
 /** Records every image or video request that fails while a page is used. */
 function trackBrokenMedia(page: Page) {

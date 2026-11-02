@@ -15,7 +15,7 @@ import {
   PERFORMANCE_PHOTOS,
   PERFORMANCES_INTRO,
 } from "../src/lib/public-site";
-import { SITE_MEDIA_SLOTS } from "../src/lib/site-media";
+import { SITE_MEDIA_SLOTS, isHomeBackgroundSlot } from "../src/lib/site-media";
 
 // Moves the website's built-in content (src/lib/public-site.ts) into the Content Portal's
 // tables, so the public pages read it from there. The photos and videos themselves are already
@@ -190,7 +190,7 @@ async function seedPerformances(publisher: { id: string | null; name: string }) 
 
 async function seedSiteMedia() {
   const chosen = new Set((await db.siteMediaSlot.findMany({ select: { key: true } })).map((slot) => slot.key));
-  const missing = SITE_MEDIA_SLOTS.filter((slot) => !chosen.has(slot.key));
+  const missing = SITE_MEDIA_SLOTS.filter((slot) => !chosen.has(slot.key) && !isHomeBackgroundSlot(slot.key));
 
   for (const slot of missing) {
     const assetId = await ensureAsset({

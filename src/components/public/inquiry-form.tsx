@@ -1,6 +1,5 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -11,6 +10,7 @@ import {
 } from "@/actions/inquiries.schema";
 import { Button } from "@/components/common/button";
 import { FORM, FormFeilds } from "@/components/common/form";
+import { FormSentNotice, PUBLIC_FIELD_CLASS, PUBLIC_SUBMIT_CLASS, SpamTrapField } from "@/components/public/public-form-parts";
 import { useMutate } from "@/hooks/useMutate";
 import { SITE_EMAIL } from "@/lib/public-site";
 
@@ -32,8 +32,6 @@ const buildDefaults = (interest: string | undefined) => ({
   company: "",
 });
 
-const FIELD_CLASS = "rounded-none bg-background/80";
-
 type InquiryFormProps = {
   /** Pre-selects "Interested In", e.g. when arriving from a "Become a Sponsor" button. */
   defaultInterest?: string;
@@ -50,11 +48,7 @@ export function InquiryForm({ defaultInterest, contactEmail = SITE_EMAIL }: Inqu
 
   if (submitted) {
     return (
-      <div className="flex flex-col items-start gap-3 bg-background/80 p-8" role="status">
-        <CheckCircle2 className="size-8 text-primary" />
-        <p className="font-display text-2xl text-foreground italic">Thank you for reaching out.</p>
-        <p className="font-public text-muted-foreground">We have received your message and will reply by email soon.</p>
-      </div>
+      <FormSentNotice title="Thank you for reaching out." body="We have received your message and will reply by email soon." />
     );
   }
 
@@ -73,32 +67,28 @@ export function InquiryForm({ defaultInterest, contactEmail = SITE_EMAIL }: Inqu
       }}
     >
       <div className="grid gap-3 font-public sm:grid-cols-2">
-        <FormFeilds name="name" label="Name" required className={FIELD_CLASS} />
-        <FormFeilds name="email" label="Email" type="email" required className={FIELD_CLASS} />
-        <FormFeilds name="phone" label="Phone" type="tel" className={FIELD_CLASS} />
-        <FormFeilds name="interestedIn" label="Interested In" type="select" options={INTEREST_OPTIONS} placeholder="Choose one" required className={FIELD_CLASS} />
-        <FormFeilds name="studentName" label="Student Name (if applicable)" className={FIELD_CLASS} />
+        <FormFeilds name="name" label="Name" required className={PUBLIC_FIELD_CLASS} />
+        <FormFeilds name="email" label="Email" type="email" required className={PUBLIC_FIELD_CLASS} />
+        <FormFeilds name="phone" label="Phone" type="tel" className={PUBLIC_FIELD_CLASS} />
+        <FormFeilds name="interestedIn" label="Interested In" type="select" options={INTEREST_OPTIONS} placeholder="Choose one" required className={PUBLIC_FIELD_CLASS} />
+        <FormFeilds name="studentName" label="Student Name (if applicable)" className={PUBLIC_FIELD_CLASS} />
         <div className="grid grid-cols-2 gap-3">
-          <FormFeilds name="studentAge" label="Student Age" className={FIELD_CLASS} />
-          <FormFeilds name="preferredLocation" label="Location" type="select" options={LOCATION_OPTIONS} placeholder="Either" className={FIELD_CLASS} />
+          <FormFeilds name="studentAge" label="Student Age" className={PUBLIC_FIELD_CLASS} />
+          <FormFeilds name="preferredLocation" label="Location" type="select" options={LOCATION_OPTIONS} placeholder="Either" className={PUBLIC_FIELD_CLASS} />
         </div>
         <div className="sm:col-span-2">
-          <FormFeilds name="message" label="Message" type="textarea" required className={FIELD_CLASS} />
+          <FormFeilds name="message" label="Message" type="textarea" required className={PUBLIC_FIELD_CLASS} />
         </div>
-        <div className="hidden" aria-hidden="true">
+        <SpamTrapField>
           <FormFeilds name="company" label="Company" />
-        </div>
+        </SpamTrapField>
         {failed && (
           <p className="text-sm text-destructive sm:col-span-2" role="alert">
             We could not send your message. Please try again, or email us at {contactEmail}.
           </p>
         )}
         <div className="sm:col-span-2">
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="h-12 rounded-none bg-foreground px-8 font-condensed text-sm font-semibold tracking-widest text-background uppercase hover:bg-primary hover:text-primary-foreground"
-          >
+          <Button type="submit" disabled={isLoading} className={PUBLIC_SUBMIT_CLASS}>
             {isLoading ? "Sending…" : "Send Inquiry"}
           </Button>
         </div>

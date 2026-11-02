@@ -12,7 +12,7 @@ import { useQuery } from "@/hooks/useQuery";
 
 /**
  * The fixed places on the website whose picture or video is chosen from the Media Library: the
- * home page's opening video, the founders' photo, and each training program's picture. A choice
+ * home page's opening video, the founders' photo, each training program's picture, and each home page section's background. A choice
  * is saved, and goes live, as soon as it is made.
  */
 export function SiteMediaCard() {
@@ -36,7 +36,8 @@ export function SiteMediaCard() {
     >
       <p className="text-sm text-muted-foreground">
         Choose a file from the Media Library for each place. A change appears on the website straight away. Removing a
-        choice brings back the original picture.
+        choice brings back the original picture. Home page backgrounds are always shown pale so the writing on top
+        stays easy to read.
       </p>
       {Boolean(error) && (
         <p role="alert" className="text-sm text-destructive">

@@ -8,6 +8,7 @@ export const DEFAULT_HERO_THEMES: HeroThemes = {
   festival: "PLUM",
   press: "CRIMSON",
   support: "SUNSET",
+  careers: "VIOLET",
   contact: "ROSE",
 };
 

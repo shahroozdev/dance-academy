@@ -33,7 +33,7 @@ export default async function TrainingPage() {
         eyebrow="Dance Training"
         heading={[
           { text: "More than" },
-          { text: "Choreography", accent: true },
+          { text: "Choreography" },
         ]}
         lead={TRAINING_INTRO}
       />
@@ -53,7 +53,7 @@ export default async function TrainingPage() {
               />
             </div>
             <div className="flex flex-col items-start gap-6">
-              <h2 className="font-public text-3xl font-light tracking-wide text-foreground uppercase sm:text-4xl">
+              <h2 className="font-display text-3xl text-foreground italic sm:text-4xl">
                 {program.name}
               </h2>
               {"audience" in program && (
@@ -71,7 +71,7 @@ export default async function TrainingPage() {
           <SectionHeading
             parts={[
               { text: "Join us in" },
-              { text: SITE_LOCATIONS.join(" & "), accent: true },
+              { text: SITE_LOCATIONS.join(" & ") },
             ]}
           />
           <p className={BODY_CLASS}>{TRAINING_AVAILABILITY}</p>

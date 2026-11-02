@@ -32,7 +32,7 @@ export default async function AboutPage() {
         eyebrow="About Malhaar Dance Company"
         heading={[
           { text: "A shared" },
-          { text: "Journey", accent: true },
+          { text: "Journey" },
           { text: "in dance" },
         ]}
         lead={ABOUT_INTRO}
@@ -54,7 +54,7 @@ export default async function AboutPage() {
             <SectionHeading
               parts={[
                 { text: "Our" },
-                { text: "Story", accent: true },
+                { text: "Story" },
               ]}
             />
             {ABOUT_STORY.map((paragraph) => (
@@ -71,7 +71,7 @@ export default async function AboutPage() {
           <SectionHeading
             parts={[
               { text: "Our" },
-              { text: "Vision", accent: true },
+              { text: "Vision" },
             ]}
           />
           <p className={BODY_CLASS}>{ABOUT_VISION}</p>
@@ -84,7 +84,7 @@ export default async function AboutPage() {
             className="text-center"
             parts={[
               { text: "What Malhaar" },
-              { text: "brings together", accent: true },
+              { text: "brings together" },
             ]}
           />
           <ul className="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-4">

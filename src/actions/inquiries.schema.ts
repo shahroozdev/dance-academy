@@ -36,3 +36,28 @@ export const websiteInquirySchema = z.object({
 });
 
 export type WebsiteInquiryInput = z.infer<typeof websiteInquirySchema>;
+
+// ---------- Job applications ----------
+// Saved as inquiries with this topic, but sent from their own form on the Careers page and read
+// on their own screen in the Content Portal.
+
+export const JOB_APPLICATION_TOPIC = "Job Application";
+
+/** The position value for an application not tied to a listed opening. */
+export const GENERAL_APPLICATION = "GENERAL";
+
+export const MAX_RESUME_BYTES = 4 * 1024 * 1024;
+
+export const jobApplicationSchema = z.object({
+  name: z.string().trim().min(1, "Your name is required").max(200),
+  email: z.email("Enter a valid email").trim().toLowerCase(),
+  phone: phoneSchema,
+  jobOpeningId: z.string().min(1, "Please choose a position").max(100),
+  experience: z.string().trim().min(1, "Please tell us about your experience").max(4000),
+  availability: z.string().trim().max(500).optional(),
+  message: z.string().trim().max(4000).optional(),
+  // Hidden from people; a filled value means an automated submission, which the action drops.
+  company: z.string().max(200).optional(),
+});
+
+export type JobApplicationInput = z.infer<typeof jobApplicationSchema>;

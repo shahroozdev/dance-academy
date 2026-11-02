@@ -65,9 +65,9 @@ export function FestivalView({ edition, years, contactEmail, heroTheme }: Festiv
         eyebrow={`Presented by Malhaar Dance Company · ${edition.label}`}
         heading={[
           { text: "Malhaar", breakAfter: true },
-          { text: "Ananta", accent: true },
+          { text: "Ananta" },
           { text: "Arts Festival", breakAfter: true },
-          { text: edition.year, accent: true },
+          { text: edition.year },
         ]}
         lead={ANANTA_INTRO[0]}
       >
@@ -113,7 +113,7 @@ export function FestivalView({ edition, years, contactEmail, heroTheme }: Festiv
           <SectionHeading
             parts={[
               { text: "About the" },
-              { text: "Festival", accent: true },
+              { text: "Festival" },
             ]}
           />
           {ANANTA_INTRO.slice(1).map((paragraph) => (
@@ -131,7 +131,7 @@ export function FestivalView({ edition, years, contactEmail, heroTheme }: Festiv
               className="text-center"
               parts={[
                 { text: "Festival" },
-                { text: "Highlights", accent: true },
+                { text: "Highlights" },
               ]}
             />
             {edition.posters.length > 0 && <PosterGrid images={edition.posters} aspectClass="aspect-3/4" />}
@@ -149,7 +149,7 @@ export function FestivalView({ edition, years, contactEmail, heroTheme }: Festiv
             className="text-center"
             parts={[
               { text: "Featured" },
-              { text: "Artists", accent: true },
+              { text: "Artists" },
             ]}
           />
           <ul className="grid w-full max-w-4xl gap-6 sm:grid-cols-2">
@@ -182,7 +182,7 @@ export function FestivalView({ edition, years, contactEmail, heroTheme }: Festiv
       <PageSection>
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="flex flex-col items-start gap-4 border border-primary/30 bg-card p-8">
-            <h2 className="font-public text-xl font-light tracking-wide text-foreground uppercase">Sponsors & Supporters</h2>
+            <h2 className="font-display text-2xl text-foreground italic">Sponsors & Supporters</h2>
             {edition.sponsors.length > 0 && (
               <ul className="flex flex-wrap items-center gap-4" aria-label="Festival sponsors">
                 {edition.sponsors.map((sponsor) => {
@@ -219,7 +219,7 @@ export function FestivalView({ edition, years, contactEmail, heroTheme }: Festiv
             </CtaLink>
           </div>
           <div className="flex flex-col items-start gap-4 border border-primary/30 bg-card p-8">
-            <h2 className="font-public text-xl font-light tracking-wide text-foreground uppercase">Festival Contact</h2>
+            <h2 className="font-display text-2xl text-foreground italic">Festival Contact</h2>
             <p className="font-public text-sm leading-relaxed text-muted-foreground">
               For questions about the festival, artists, or media, write to us.
             </p>
@@ -235,7 +235,7 @@ export function FestivalView({ edition, years, contactEmail, heroTheme }: Festiv
           <SectionHeading
             parts={[
               { text: "More than a" },
-              { text: "single event", accent: true },
+              { text: "single event" },
             ]}
           />
           <p className={BODY_CLASS}>{ANANTA_FUTURE}</p>

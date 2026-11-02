@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  BriefcaseBusiness,
   FilePenLine,
+  FileUser,
   History,
   Image as ImageIcon,
   Inbox,
@@ -38,11 +40,18 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Festivals", href: "/content/festivals", icon: PartyPopper },
       { label: "Performances", href: "/content/performances", icon: FilePenLine },
       { label: "Press & Media", href: "/content/press", icon: Newspaper },
+      { label: "Job Openings", href: "/content/jobs", icon: BriefcaseBusiness },
       { label: "Public Profiles", href: "/content/profiles", icon: UserRound },
     ],
   },
   { label: "Files", items: [{ label: "Media Library", href: "/content/media", icon: ImageIcon }] },
-  { label: "Messages", items: [{ label: "Inquiries", href: "/content/inquiries", icon: Inbox }] },
+  {
+    label: "Messages",
+    items: [
+      { label: "Inquiries", href: "/content/inquiries", icon: Inbox },
+      { label: "Job Applications", href: "/content/applications", icon: FileUser },
+    ],
+  },
   {
     label: OWNER_GROUP_LABEL,
     items: [

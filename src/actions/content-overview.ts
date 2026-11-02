@@ -21,10 +21,11 @@ function toStatusCounts(rows: { status: ContentStatus }[]) {
 export async function getContentOverview() {
   const user = await requireContentUser();
 
-  const [festivals, performances, press, mediaCount, visibleProfiles, hiddenProfiles, recentActivity] = await Promise.all([
+  const [festivals, performances, press, jobs, mediaCount, visibleProfiles, hiddenProfiles, recentActivity] = await Promise.all([
     db.festival.findMany(statusOnly),
     db.performance.findMany(statusOnly),
     db.pressItem.findMany(statusOnly),
+    db.jobOpening.findMany(statusOnly),
     db.mediaAsset.count(),
     db.publicProfile.count({ where: { isVisible: true } }),
     db.publicProfile.count({ where: { isVisible: false } }),
@@ -36,6 +37,7 @@ export async function getContentOverview() {
     festival: toStatusCounts(festivals),
     performance: toStatusCounts(performances),
     press: toStatusCounts(press),
+    job: toStatusCounts(jobs),
   };
   return { role: user.role, counts, mediaCount, visibleProfiles, hiddenProfiles, recentActivity };
 }
