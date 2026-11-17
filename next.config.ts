@@ -6,16 +6,7 @@ const nextConfig: NextConfig = {
   agentRules: false,
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "blob.vercel-storage.com",
-      },
-      // Blob files are served from the store's own subdomain.
-      {
-        protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
-      },
-      // Images uploaded through the Content Portal's Media Library live in Cloudinary.
+      // Every stored file (site photos and videos, Media Library, logo, receipts) lives in Cloudinary.
       {
         protocol: "https",
         hostname: "res.cloudinary.com",

@@ -51,7 +51,8 @@ docs/
 
 ## 1.4 Environments & config
 
-- `.env`: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `CRON_SECRET`, `BLOB_READ_WRITE_TOKEN`,
+- `.env`: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `CRON_SECRET`, `CLOUDINARY_CLOUD_NAME`/`CLOUDINARY_API_KEY`/`CLOUDINARY_API_SECRET` (every
+  uploaded file — logo, receipts, Media Library, résumés — lives in Cloudinary; Vercel Blob is no longer used),
   `SETTINGS_ENCRYPTION_KEY` (encrypts `StudioSettings.smtpPassword`/`whatsappAccessToken` at rest —
   see `src/lib/crypto.ts`; losing/rotating it makes stored secrets undecryptable).
 - Discount percentages, due date/reminder timing, SMTP (outbound email), and WhatsApp Cloud API

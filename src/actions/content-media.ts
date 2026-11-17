@@ -1,7 +1,5 @@
 "use server";
 
-import { del, put } from "@vercel/blob";
-
 import { requireContentOwner, requireContentUser } from "@/actions/content-access";
 import { recordContentAudit, revalidateWholePublicSite } from "@/actions/content-service";
 import {
@@ -23,15 +21,16 @@ import {
   deleteFromCloudinary,
   isGenuineUploadReceipt,
   storedAssetUrl,
+  uploadNewFile,
   type CloudinaryUploadKind,
 } from "@/lib/cloudinary";
 import { isCloudinaryUrl } from "@/lib/cloudinary-url";
 import { db } from "@/lib/db";
 import type { MediaAssetKind } from "@/types/content";
 
-// Where the Media Library keeps files: images and videos go straight from the browser to
-// Cloudinary, which resizes and compresses them on delivery. PDFs are small and need none of
-// that, so they stay in the Vercel Blob store the admin side already uses.
+// Where the Media Library keeps files: everything is in Cloudinary. Images and videos go
+// straight from the browser to Cloudinary, which resizes and compresses them on delivery. PDFs
+// are small, so they pass through a server action and are stored as they are.
 
 // Kept under the 5 MB request limit set for uploads in next.config.ts.
 const MAX_DOCUMENT_BYTES = 4 * 1024 * 1024;
@@ -132,7 +131,7 @@ export async function registerContentUpload(receipt: MediaUploadReceiptInput) {
   return asset;
 }
 
-/** Stores a PDF in the Blob store and adds it to the library. */
+/** Stores a PDF in Cloudinary and adds it to the library. */
 export async function uploadContentDocument(formData: FormData) {
   const user = await requireContentUser();
 
@@ -142,13 +141,12 @@ export async function uploadContentDocument(formData: FormData) {
   if (file.size > MAX_DOCUMENT_BYTES) throw new Error("PDF documents must be 4 MB or smaller.");
 
   const title = String(formData.get("title") ?? "").trim() || file.name;
-  const safeName = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-");
-  const blob = await put(`website/document/${safeName}`, file, { access: "public", addRandomSuffix: true });
+  const { url } = await uploadNewFile("DOCUMENT", file, `${CLOUDINARY_FOLDER}/document`);
 
   const asset = await db.mediaAsset.create({
     data: {
       kind: "DOCUMENT",
-      url: blob.url,
+      url,
       title: title.slice(0, 200),
       contentType: file.type,
       sizeBytes: file.size,
@@ -215,8 +213,6 @@ export async function updateContentMedia(id: string, data: MediaDetailsInput) {
   return { id };
 }
 
-const BLOB_HOST_PATTERN = /^https:\/\/[^/]+\.blob\.vercel-storage\.com\//;
-
 export async function deleteContentMedia(id: string) {
   const user = await requireContentOwner();
   id = idSchema.parse(id);
@@ -229,7 +225,6 @@ export async function deleteContentMedia(id: string) {
   await db.mediaAsset.delete({ where: { id } });
   // Only files held in our own storage are removed from it; links to other sites are left alone.
   if (isCloudinaryUrl(asset.url)) await deleteFromCloudinary(asset.url);
-  if (BLOB_HOST_PATTERN.test(asset.url)) await del(asset.url);
   await recordContentAudit(user, {
     action: "deleted",
     entityType: "media",

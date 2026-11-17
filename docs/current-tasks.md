@@ -5,6 +5,24 @@ Shared source of truth for what's in progress, what's next, and what's done — 
 
 ## In Progress
 
+- **2026-11-17: All files moved to the client's own Cloudinary account (`nryff08c`); Vercel Blob removed.**
+  - **Done:** new uploads (logo → `malhaar/admin/logo`, receipts → `malhaar/admin/receipts`, library PDFs →
+    `malhaar/website/document` as raw files) go to Cloudinary via `uploadNewFile`; `@vercel/blob`, the Blob
+    hosts in `next.config.ts` and `BLOB_*` in local `.env` are gone. `scripts/move-cloudinary-account.ts`
+    (`npm run content:move-account`) copied all 350 `malhaar/` files (127.6 MB) from our dev account
+    `dgrg5yzfy` to `nryff08c` with the same public ids and switched the 137 `MediaAsset.url` links on the live
+    Supabase database; every stored link HEAD-checks 200 from `nryff08c`. The last Blob file (studio logo)
+    was moved with `content:move-media`. `SITE_FILES_BUCKET` in `src/lib/public-site.ts` now points at
+    `nryff08c`. Browser-style upload to `nryff08c` keeps the `malhaar/website/` public-id prefix.
+    Local `.env`: the old account's keys are renamed `SOURCE_CLOUDINARY_*` (backup of the previous `.env` in
+    `%TEMP%\env.backup-before-cloudinary-move`).
+  - **Next:** (1) Vercel env: set `CLOUDINARY_*` to the client's account, delete `BLOB_*`; (2) deploy;
+    (3) owner turns on "Allow delivery of PDF and ZIP files" in the client's Cloudinary (Settings → Security)
+    before anyone uploads a PDF; (4) after the deployed site is checked, run
+    `npm run content:move-account -- --confirm-host=<host> --delete-source` to remove `malhaar/` (only) from
+    `dgrg5yzfy` — it holds other projects' files, never delete the whole account; (5) delete the Blob store in
+    Vercel and the `SOURCE_CLOUDINARY_*` lines from `.env`.
+
 - **2026-11-02: Client email requests (one heading font, lighter backgrounds, jobs section) — code complete;
   waiting on the database change.**
   - **Font:** `SectionHeading` now renders every part in Playfair italic (`font-display`); the `accent` flag was
@@ -431,6 +449,19 @@ Shared source of truth for what's in progress, what's next, and what's done — 
   `prisma.config.ts`.
 
 ## Done
+
+- **2026-11-17: Database moved from Prisma Postgres (`db.prisma.io`) to Supabase — done locally; Vercel still to switch.**
+  - `prisma migrate deploy` on Supabase (session pooler, port 5432): all 29 migrations applied to an empty DB.
+  - Every row copied in one transaction (35 tables, ~950 rows); each table verified identical to the source by row
+    count and a content checksum. No serial sequences exist (ids are strings), so nothing to reset.
+  - `.env`: `DATABASE_URL` now = Supabase transaction pooler (port 6543); old Prisma Postgres URL kept as a
+    comment. App's Prisma client (`src/lib/db.ts`) verified reading from Supabase.
+  - **Note:** `prisma migrate` commands hang on port 6543 — for future migrations run them with
+    `DATABASE_URL` set to the same URL on port **5432**.
+  - **Owner to do:** set `DATABASE_URL` in Vercel (Production + Preview) to the Supabase 6543 URL and redeploy.
+    Until then the live site keeps writing to the old database, so data entered there after 2026-11-17 would need
+    re-copying into Supabase (wipe Supabase's tables first, then copy again).
+
 
 - **2026-10-17: Production "Too many database connections" after the f535173 deploy — fixed and deployed (ceeab64).** Deploy f535173 (Outstanding Fees + itemized notices) is live and Vercel reports
   success. Between 01:17 and 01:22 (+05:00) production logged Prisma P2037 errors on admin pages,

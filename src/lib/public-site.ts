@@ -9,7 +9,7 @@ import type { PublicFestival, PublicProfile, PublicSiteSettings } from "@/types/
 
 // The site's own photos and videos are kept in the Cloudinary bucket, not in this repository.
 // These build the address of one of them from its name.
-const SITE_FILES_BUCKET = "https://res.cloudinary.com/dgrg5yzfy";
+const SITE_FILES_BUCKET = "https://res.cloudinary.com/nryff08c";
 export const siteImage = (name: string) => `${SITE_FILES_BUCKET}/image/upload/malhaar/website/site/images/${name}`;
 export const siteVideo = (name: string) => `${SITE_FILES_BUCKET}/video/upload/malhaar/website/site/media/${name}`;
 

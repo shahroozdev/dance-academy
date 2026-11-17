@@ -1,7 +1,5 @@
 "use server";
 
-import { put } from "@vercel/blob";
-
 import { requireAdmin, requireOwner } from "@/actions/access";
 import {
   registrationPolicySettingsSchema,
@@ -10,6 +8,7 @@ import {
   type StudioSettingsUpdateInput,
 } from "@/actions/settings.schema";
 import type { StudioSettings } from "@/generated/prisma/client";
+import { CLOUDINARY_ADMIN_FOLDER, uploadNewFile } from "@/lib/cloudinary";
 import { encryptSecret } from "@/lib/crypto";
 import { db } from "@/lib/db";
 import {
@@ -187,16 +186,12 @@ export async function uploadLogo(formData: FormData): Promise<StudioSettingsData
     throw new Error("Logo must be PNG, JPEG, WebP, or SVG.");
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
-  const blob = await put(`studio-logo.${ext}`, file, {
-    access: "public",
-    addRandomSuffix: true,
-  });
+  const { url: logoUrl } = await uploadNewFile("IMAGE", file, `${CLOUDINARY_ADMIN_FOLDER}/logo`);
 
   const settings = await db.studioSettings.upsert({
     where: { id: "default" },
-    create: { ...DEFAULT_SETTINGS, logoUrl: blob.url },
-    update: { logoUrl: blob.url },
+    create: { ...DEFAULT_SETTINGS, logoUrl },
+    update: { logoUrl },
   });
 
   return toClientSettings(settings);

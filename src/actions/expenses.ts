@@ -1,11 +1,11 @@
 "use server";
-import { put } from "@vercel/blob";
 
 import { requireAdmin } from "@/actions/access";
 import { expenseCreateSchema, expenseUpdateSchema } from "@/actions/expenses.schema";
 import type { ExpenseCreateInput, ExpenseUpdateInput } from "@/actions/expenses.schema";
 import { validateListQuery , idSchema } from "@/actions/validation.schema";
 import type { ExpenseCategory, Prisma } from "@/generated/prisma/client";
+import { CLOUDINARY_ADMIN_FOLDER, uploadNewFile } from "@/lib/cloudinary";
 import { db } from "@/lib/db";
 
 export async function getExpenses(params?: {
@@ -100,7 +100,7 @@ export async function deleteExpense(id: string) {
   await db.expense.delete({ where: { id } });
 }
 
-// Uploads to Blob only and hands back the URL — it doesn't touch the Expense row itself, so the
+// Uploads to Cloudinary only and hands back the URL — it doesn't touch the Expense row itself, so the
 // same call works whether the expense already exists or is still being drafted in the create
 // form; the caller folds the URL into the create/update payload like any other field.
 export async function uploadExpenseReceipt(formData: FormData): Promise<{ url: string }> {
@@ -119,11 +119,7 @@ export async function uploadExpenseReceipt(formData: FormData): Promise<{ url: s
     throw new Error("Receipt must be PNG, JPEG, WebP, or PDF.");
   }
 
-  const ext = file.name.split(".").pop() ?? "pdf";
-  const blob = await put(`expense-receipt.${ext}`, file, {
-    access: "public",
-    addRandomSuffix: true,
-  });
-
-  return { url: blob.url };
+  const kind = file.type === "application/pdf" ? "DOCUMENT" : "IMAGE";
+  const { url } = await uploadNewFile(kind, file, `${CLOUDINARY_ADMIN_FOLDER}/receipts`);
+  return { url };
 }

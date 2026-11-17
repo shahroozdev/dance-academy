@@ -82,6 +82,16 @@ describe("cloudinary addresses", () => {
     expect(parseCloudinaryUrl("https://example.com/a.jpg")).toBeNull();
   });
 
+  it("keeps a document's extension in its public id, as Cloudinary does for raw files", () => {
+    const document = "https://res.cloudinary.com/demo/raw/upload/malhaar/website/document/flyer-ab12cd34.pdf";
+    expect(storedAssetUrl("DOCUMENT", "malhaar/website/document/flyer-ab12cd34.pdf", "pdf")).toBe(document);
+    expect(parseCloudinaryUrl(document)).toEqual({ resourceType: "raw", publicId: "malhaar/website/document/flyer-ab12cd34.pdf" });
+    expect(parseCloudinaryUrl(document.replace("/upload/", "/upload/v1700000000/"))).toEqual({
+      resourceType: "raw",
+      publicId: "malhaar/website/document/flyer-ab12cd34.pdf",
+    });
+  });
+
   it("plays a Cloudinary video from its compressed copy and leaves every other video alone", () => {
     expect(videoDeliveryUrl(video)).toBe(
       "https://res.cloudinary.com/demo/video/upload/q_auto/malhaar/website/site/media/reel.mp4",

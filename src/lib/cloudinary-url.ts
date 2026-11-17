@@ -1,25 +1,30 @@
 // Pure helpers for Cloudinary addresses, safe to use anywhere (no credentials involved).
 // Addresses are stored without a version segment, e.g.
 //   https://res.cloudinary.com/<cloud>/image/upload/malhaar/website/abc123.jpg
-// so the same file always has the same address.
+// so the same file always has the same address. Documents are stored as "raw" files, whose
+// public id already ends with the file's extension:
+//   https://res.cloudinary.com/<cloud>/raw/upload/malhaar/website/document/flyer-abc123.pdf
 
 const CLOUDINARY_ORIGIN = "https://res.cloudinary.com/";
 
-export type CloudinaryResourceType = "image" | "video";
+export type CloudinaryResourceType = "image" | "video" | "raw";
 
 export const isCloudinaryUrl = (url: string) => url.startsWith(CLOUDINARY_ORIGIN);
 
 type AssetAddress = { cloudName: string; resourceType: CloudinaryResourceType; publicId: string; format: string };
 
 export const cloudinaryAssetUrl = ({ cloudName, resourceType, publicId, format }: AssetAddress) =>
-  `${CLOUDINARY_ORIGIN}${cloudName}/${resourceType}/upload/${publicId}.${format}`;
+  `${CLOUDINARY_ORIGIN}${cloudName}/${resourceType}/upload/${resourceType === "raw" ? publicId : `${publicId}.${format}`}`;
 
-const ADDRESS_PATTERN = /^https:\/\/res\.cloudinary\.com\/[^/]+\/(image|video)\/upload\/(?:v\d+\/)?(.+)\.[a-z0-9]+$/i;
+const MEDIA_ADDRESS_PATTERN = /^https:\/\/res\.cloudinary\.com\/[^/]+\/(image|video)\/upload\/(?:v\d+\/)?(.+)\.[a-z0-9]+$/i;
+const RAW_ADDRESS_PATTERN = /^https:\/\/res\.cloudinary\.com\/[^/]+\/raw\/upload\/(?:v\d+\/)?(.+)$/i;
 
 /** The resource type and public id inside a stored address, or null if it is not a plain one. */
 export function parseCloudinaryUrl(url: string): { resourceType: CloudinaryResourceType; publicId: string } | null {
-  const match = url.match(ADDRESS_PATTERN);
-  return match ? { resourceType: match[1].toLowerCase() as CloudinaryResourceType, publicId: match[2] } : null;
+  const media = url.match(MEDIA_ADDRESS_PATTERN);
+  if (media) return { resourceType: media[1].toLowerCase() as CloudinaryResourceType, publicId: media[2] };
+  const raw = url.match(RAW_ADDRESS_PATTERN);
+  return raw ? { resourceType: "raw", publicId: raw[1] } : null;
 }
 
 /** Adds a delivery instruction (for example "f_auto,q_auto") to a stored address. */

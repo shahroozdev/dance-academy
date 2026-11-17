@@ -1,5 +1,10 @@
 # Updates Summary
 
+## 2026-11-17
+
+- All of the website's photos and videos, the studio logo, expense receipts and uploaded documents are now stored in the studio's own Cloudinary account. All 350 existing files were copied over and checked one by one, and nothing was lost.
+- All studio records (families, students, classes, billing, payments and website content) have been moved to the new Supabase database. Every record was checked against the old copy, and nothing was lost.
+
 ## 2026-11-02
 
 - Every section heading on the website now uses the same elegant italic lettering as "Arts thriving", instead of mixing plain capitals with italic words.

@@ -7,15 +7,20 @@ import {
   type CloudinaryResourceType,
 } from "@/lib/cloudinary-url";
 
-// Server-side Cloudinary access for the Content Portal's Media Library (the admin side keeps
-// using Vercel Blob for the logo and receipts). Only ever imported by server actions and
-// scripts: it reads the API secret. The plain HTTP API is used, so no SDK is needed.
+// Server-side Cloudinary access: every file the app stores lives here (the Media Library, the
+// studio logo, expense receipts, job applicants' résumés). Only ever imported by server actions
+// and scripts: it reads the API secret. The plain HTTP API is used, so no SDK is needed.
 
 export const CLOUDINARY_FOLDER = "malhaar/website";
+/** Studio Admin files: the studio logo and expense receipts. */
+export const CLOUDINARY_ADMIN_FOLDER = "malhaar/admin";
 
 export const CLOUDINARY_UPLOADS = {
   IMAGE: { resourceType: "image", formats: ["jpg", "jpeg", "png", "webp"], maxBytes: 10 * 1024 * 1024 },
   VIDEO: { resourceType: "video", formats: ["mp4", "mov", "webm"], maxBytes: 100 * 1024 * 1024 },
+  // Documents are always PDFs, kept as "raw" files (delivered exactly as uploaded). They are
+  // only ever uploaded from the server, never through a browser upload ticket.
+  DOCUMENT: { resourceType: "raw", formats: ["pdf"], maxBytes: 10 * 1024 * 1024 },
 } as const;
 
 export type CloudinaryUploadKind = keyof typeof CLOUDINARY_UPLOADS;
@@ -50,7 +55,7 @@ export function signCloudinaryParams(params: Record<string, string | number>, ap
   return createHash("sha1").update(payload + apiSecret).digest("hex");
 }
 
-const apiUrl = (cloudName: string, resourceType: CloudinaryResourceType | "raw", call: "upload" | "destroy" | "download") =>
+const apiUrl = (cloudName: string, resourceType: CloudinaryResourceType, call: "upload" | "destroy" | "download") =>
   `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/${call}`;
 
 /** A request body carrying `fields` with the account's key and their signature. */
@@ -113,16 +118,18 @@ async function callCloudinary(url: string, body: FormData, headers?: Record<stri
 type ServerUpload = { kind: CloudinaryUploadKind; file: Blob; publicId: string };
 
 /**
- * Uploads a file from the server under a fixed public id, replacing any earlier copy, and
- * returns its stored address. Used by the scripts that move the site's own files into Cloudinary.
+ * Uploads a file from the server under a fixed public id (without extension), replacing any
+ * earlier copy, and returns its stored address.
  */
 export async function uploadToCloudinary({ kind, file, publicId }: ServerUpload) {
   const { cloudName } = getCloudinaryConfig();
   const { resourceType } = CLOUDINARY_UPLOADS[kind];
+  // A raw file's public id carries its extension, so the stored address ends in ".pdf".
+  const storedPublicId = resourceType === "raw" ? `${publicId}.pdf` : publicId;
   const body = signedBody({
     ...extraUploadFields(kind),
     overwrite: "true",
-    public_id: publicId,
+    public_id: storedPublicId,
     timestamp: Math.floor(Date.now() / 1000),
   });
 
@@ -142,7 +149,22 @@ export async function uploadToCloudinary({ kind, file, publicId }: ServerUpload)
       "Content-Range": `bytes ${start}-${end - 1}/${file.size}`,
     });
   }
-  return { url: storedAssetUrl(kind, publicId, result.format ?? "jpg"), bytes: result.bytes ?? file.size };
+  return { url: storedAssetUrl(kind, storedPublicId, result.format ?? "jpg"), bytes: result.bytes ?? file.size };
+}
+
+/**
+ * Uploads a file sent to a server action into `folder`, named after the original file plus a
+ * random suffix (so a new upload never replaces an older one), and returns its stored address.
+ */
+export function uploadNewFile(kind: CloudinaryUploadKind, file: File, folder: string) {
+  const name =
+    file.name
+      .toLowerCase()
+      .replace(/\.[a-z0-9]+$/, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "file";
+  return uploadToCloudinary({ kind, file, publicId: `${folder}/${name}-${randomUUID().slice(0, 8)}` });
 }
 
 /** Removes a stored file from Cloudinary. Does nothing for an address that is not one of ours. */
